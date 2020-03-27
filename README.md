@@ -1,8 +1,8 @@
-# this is hotel database booking and managment script:
+# Hotel Database Booking and Managment Script:
 
-+ its light and easy use.
-
-+ its devided for three parts:
+light and easy use.
+<br/>
+devided for three parts:
 + front.py.
 + back.py.
 + db file.
