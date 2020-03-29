@@ -3,6 +3,9 @@
 import tkinter
 import tkinter.ttk as ttk
 import tkinter.font as tkfont
+import os
+from datetime import timedelta, date
+from dateutil.relativedelta import relativedelta
 
 '''
 open test7.py:
@@ -99,20 +102,21 @@ LIGHTPINK1    =    "lightpink1"
 PINK1         =    "pink1"
 BROWN1        =    "brown1"
 
+cars = ["Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
 item = {}
 
 def Table_Height():
 	global HEIGHT
-	if len(item) <= 12 :
+	if len(item) <= 8 :
 		HEIGHT =  len(item)
-	elif len(item) > 12:
-		HEIGHT = 12
+	elif len(item) > 8:
+		HEIGHT = 8
 	treeview.configure(height=HEIGHT)
 
 	#show scrollbar if table length more than 14 raws:
-	if HEIGHT >= 12:
+	if HEIGHT >= 8:
 		vsb = ttk.Scrollbar(fen, orient="vertical", command=treeview.yview)
-		vsb.place(x=75+200+200+100+10, y=80, height=260)
+		vsb.place(x=75+200+200+100+10, y=80, height=180)
 
 def setup_background(BACKGROUND_COLOR,FONT_COLOR):
     global __font
@@ -173,6 +177,37 @@ def internalSelectItem(COLUMN_NUM,RAW_NUM,ITEM,BACKGROUND_COLOR,FONT_COLOR,COLUM
 	internal_color_selection(bbox, column,cell_value)
 
 
+def callback():
+	print(value1)
+
+def country_choice():
+	# if you want to print all list with details
+	# import pprint
+	# pprint.pprint(dict(countrylist))
+	print(countrylist.current(), countrylist.get())
+
+####################################################
+#date list:#########################################
+date_list = []
+
+six_months_after = date.today() + relativedelta(months=+6)
+six_months_before = date.today() + relativedelta(months=-6)
+m_before    =   six_months_after.month
+m_after     =   six_months_after.month
+d_before    =   six_months_before.day
+d_after     =   six_months_after.day
+y_before    =   six_months_before.year
+y_after     =   six_months_after.year
+
+def daterange(date1, date2):
+    for n in range(int ((date2 - date1).days)+1):
+        yield date1 + timedelta(n)
+
+start_dt = date(y_before,m_before,d_before)
+end_dt = date(y_after,m_after,d_after)
+for dt in daterange(start_dt, end_dt):
+    date_list.append(dt.strftime("%Y-%m-%d"))
+######################################################
 
 fen = tkinter.Tk()
 fen.title('Hotel')
@@ -193,7 +228,7 @@ treeview.column("#2",width=200,anchor = "w")  #width = 270
 treeview.heading("#3", text="Room Status",anchor = "c")
 treeview.column("#3",width=100,anchor = "c")
 #rectangle in background
-can.create_rectangle(9, 80, 600, 340, outline="white", fill="grey")
+can.create_rectangle(9, 80, 600, 261, outline="white", fill="grey")
 treeview.pack(fill=tkinter.BOTH,expand=1)
 treeview.place(x=10,y=80)
 #=============================================================================================
@@ -242,8 +277,8 @@ def v(event):
 ######################################################################################
 #rooms view options:##################################################################
 Room_View = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
-Room_View.place(relx=0.77, rely=0.150, anchor=tkinter.NW)
-tkinter.Label(fen, text='Rooms View Options').place(relx=.79, rely=0.150,anchor=tkinter.W)
+Room_View.place(relx=0.77, rely=0.217, anchor=tkinter.NW)
+tkinter.Label(fen, text='Rooms View Options').place(relx=.79, rely=0.217,anchor=tkinter.W)
 tkinter.Label(Room_View, text="   Only Show:                   ").pack(pady=10)
 buttom1 = tkinter.Radiobutton(Room_View, text='All Rooms',variable=v,value=3).pack( side=tkinter.TOP, anchor=tkinter.NW)
 buttom2 = tkinter.Radiobutton(Room_View, text='Free Rooms',variable=v,value=3).pack( side=tkinter.TOP, anchor=tkinter.NW)
@@ -254,18 +289,18 @@ tkinter.Label(Room_View, text="             ").pack(side=tkinter.TOP, anchor=tki
 ###########################################################################################
 #clock:####################################################################################
 Time = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
-Time.place(relx=0.77, rely=0.410, anchor=tkinter.NW)
-tkinter.Label(fen, text='Time').place(relx=.79, rely=0.410,anchor=tkinter.W)
+Time.place(relx=0.77, rely=0.07, anchor=tkinter.NW)
+tkinter.Label(fen, text='Time').place(relx=.79, rely=0.07,anchor=tkinter.W)
 #tkinter.Label(Time, text="    ").pack(side=tkinter.TOP, anchor=tkinter.S)
-tkinter.Label(Time, text="   ").pack(side=tkinter.TOP, anchor=tkinter.S)
+#tkinter.Label(Time, text="   ").pack(side=tkinter.TOP, anchor=tkinter.S)
 clock = tkinter.Label(Time, text="  03:09:30  ",font=("Helvetica", 24)).pack(side=tkinter.TOP, anchor=tkinter.W)
 tkinter.Label(Time, text="Tuesday, 19 June 2020").pack(side=tkinter.TOP, anchor=tkinter.S)
-tkinter.Label(Time, text="   ").pack(side=tkinter.TOP, anchor=tkinter.S)
+#tkinter.Label(Time, text="   ").pack(side=tkinter.TOP, anchor=tkinter.S)
 ##########################################################################################
 #Cashier operations:######################################################################
 Cashier = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
-Cashier.place(relx=0.015, rely=0.65, anchor=tkinter.NW)
-tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.65,anchor=tkinter.W)
+Cashier.place(relx=0.015, rely=0.48, anchor=tkinter.NW)
+tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.48,anchor=tkinter.W)
 #Create and pack the NoteBook.############################################################
 #tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
 nb = ttk.Notebook(Cashier,style="Treeview.Heading")
@@ -285,41 +320,111 @@ f3 = tkinter.Frame(nb,background="light gray")
 #do print puttom for checkout in or when finish it you do print automatickly
 nb.add(f3, text=" CheckOut ")
 nb.select(f3)
-#rooms options:
+###########################################################################################################################
+#rooms options:############################################################################################################
 tkinter.Button(f1, text='new Room   ',background="light gray").grid(row=0, column=0,sticky='sw')
 tkinter.Button(f1,text='save Room  ',background="light gray").grid(row=0, column=1,sticky='sw')
 tkinter.Button(f1,text='delete Room',background="light gray").grid(row=0, column=2,sticky='sw')
-tkinter.Label(f1,text="Room Number: ",background="light gray").grid(row=1,column=0,sticky='w')
+tkinter.Label(f1,text="Room Number ",background="light gray").grid(row=1,column=0,sticky='w')
 groove_entry1 = tkinter.Entry(f1, font=10,relief="groove",background="white").grid(row=1,column=1,columnspan=2,sticky='nw')
-tkinter.Label(f1,text="Room Name: ",background="light gray").grid(row=2,column=0,sticky='w')
+tkinter.Label(f1,text="Room Name ",background="light gray").grid(row=2,column=0,sticky='w')
 groove_entry2 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=2,column=1,columnspan=2,sticky='nw')
-tkinter.Label(f1,text="Room Type: ",background="light gray").grid(row=3,column=0,sticky='w')
+tkinter.Label(f1,text="Room Type ",background="light gray").grid(row=3,column=0,sticky='w')
 groove_entry3 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=3,column=1,columnspan=2,sticky='nw')
-tkinter.Label(f1,text="Status:   ",background="light gray").grid(row=1,column=3,sticky='w')
+tkinter.Label(f1,text="Status   ",background="light gray").grid(row=1,column=3,sticky='w')
 status_free = tkinter.Label(f1, text="       Free         ",background="pale green",relief="solid").grid(row=1,column=4,sticky='w')
 #status_inuse = tkinter.Label(f1, text="      IN USE      ",background="tomato",relief="solid").grid(row=1,column=4)
-tkinter.Label(f1,text="Remain Time: ",background="light gray").grid(row=2,column=3,sticky='w')
+tkinter.Label(f1,text="Remain Time ",background="light gray").grid(row=2,column=3,sticky='w')
 tkinter.Label(f1, text="    1m/3d/3h    ",background="white",relief="solid").grid(row=2,column=4,sticky='w')
-tkinter.Label(f1,text="Details:       ",background="light gray").grid(row=3,column=3,sticky='w')
-groove_entry4 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=3,column=4,rowspan=4,columnspan=5,sticky='ns')
-tkinter.Label(f1,text="Room Side:  ",background="light gray").grid(row=4,column=0,sticky='w')
+tkinter.Label(f1,text="Details       ",background="light gray").grid(row=3,column=3,sticky='w')
+groove_entry4 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=3,column=4,columnspan=5,sticky='ns')
+tkinter.Label(f1,text="Room Side  ",background="light gray").grid(row=4,column=0,sticky='w')
 groove_entry5 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=4,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f1,text="Beds  ",background="light gray").grid(row=4,column=3,sticky='w')
+groove_entry6 = tkinter.Entry(f1,font=10,relief="groove",background="white").grid(row=4,column=4,columnspan=5,sticky='nsw')
+############################################################################################################################
+#CHECK IN:
+#Guest information:
+###################################################################################
+#buttons:
+tkinter.Button(f2, text='Print',background="light gray").grid(row=0, column=0,sticky='we')
+tkinter.Button(f2,text='Change Room',background="light gray").grid(row=0, column=1,sticky='we')
+tkinter.Button(f2,text='Update',background="light gray").grid(row=0, column=2,sticky='we')
+tkinter.Button(f2,text='Cancel',background="light gray",width=11).grid(row=0, column=3,columnspan=5,sticky='we')
+###################################################################################
+tkinter.Label(f2,text="Folio No: ",background="light gray").grid(row=1,column=0,sticky='w')
+# w = tkinter.Text(f2, height=1,width=10,bg="white")
+# w.insert(1.0,"009-098")
+# w.grid(row=1,column=1,columnspan=2,sticky='nsw')
+groove_entry0 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+groove_entry0.grid(row=1,column=1,columnspan=2,sticky='nsw')
+groove_entry0.insert(0,"009-098")
+tkinter.Label(f2,text="First name ",background="light gray").grid(row=2,column=0,sticky='w')
+groove_entry1 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text="Last name ",background="light gray").grid(row=3,column=0,sticky='w')
+groove_entry2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=3,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text="RCard No ",background="light gray").grid(row=4,column=0,sticky='w')
+groove_entry3 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=4,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text="Country ",background="light gray").grid(row=5,column=0,sticky='w')
+#country list
+with open(os.path.join( os.getcwd(), 'country.txt')) as f: lineList = f.readlines()
+countrylist = ttk.Combobox(f2,values=list(map(lambda x:x.strip(),lineList)),width=10)
+countrylist.grid(row=5,column=1,sticky='w')
+#to choose first country as first choice
+#countrylist.current(1)
+#print country name you choosed
+#tkinter.Button(f2, text='print month',background="light gray",command=country_choice).grid(row=5, column=0,sticky='sw' )
+tkinter.Label(f2,text="Adress ",background="light gray").grid(row=6,column=0,sticky='w')
+groove_entry4 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=6,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text=" ID_Type ",background="light gray").grid(row=7,column=0,sticky='w')
+ID_TYPE_LIST = ttk.Combobox(f2,values=["(SSN)Social Security Number","Passport number","Driver license","taxpayer ID number","patient ID number"],width=10).grid(row=7,column=1,sticky='w')
+tkinter.Label(f2,text=" ID_No ",background="light gray").grid(row=8,column=0,sticky='w')
+groove_entry5 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=8,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text="Car ",background="light gray").grid(row=1,column=2,sticky='w')
+carlist = ttk.Combobox(f2,values=cars,width=10).grid(row=1,column=3,columnspan=5,sticky='w')
+tkinter.Label(f2,text="Plate NO ",background="light gray").grid(row=2,column=2,sticky='w')
+groove_entry6 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=3,columnspan=5,sticky='nsw')
+tkinter.Label(f2,text="Room NO ",background="light gray").grid(row=3,column=2,sticky='w')
+groove_entry7 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+groove_entry7.grid(row=3,column=3,sticky='nsw')
+groove_entry7.insert(0, "12")
+# Room_No = tkinter.Text(f2, height=1,width=10,bg="white")
+# Room_No.insert(1.0,"009-098")
+# Room_No.grid(row=1,column=1,columnspan=2,sticky='nsw')
+tkinter.Label(f2,text="Date In: ",background="light gray").grid(row=4,column=2,sticky='w')
+DateIn = ttk.Combobox(f2,values=date_list,width=11)
+#choose the date today as first choise
+DateIn.grid(row=4,column=3,columnspan=5,sticky='w')
+DateIn.current(date_list.index(date.today().strftime("%Y-%m-%d")))
+tkinter.Label(f2,text="Date Out: ",background="light gray").grid(row=5,column=2,sticky='w')
+DateOut = ttk.Combobox(f2,values=date_list,width=11).grid(row=5,column=3,columnspan=5,sticky='w')
+tkinter.Label(f2,text="No. of Days ",background="light gray").grid(row=6,column=2,sticky='w')
+groove_entry8 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+groove_entry8.grid(row=6,column=3,sticky='nsw')
+groove_entry8.insert(0, "7")
+tkinter.Button(f2, text='⯇',background="light gray").grid(row=6, column=4,sticky='we')
+tkinter.Button(f2, text='⯈',background="light gray").grid(row=6, column=5,sticky='we')
+tkinter.Label(f2,text="No.of Adults",background="light gray").grid(row=7,column=2,sticky='w')
+groove_entry9 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+groove_entry9.grid(row=7,column=3,sticky='nsw')
+groove_entry9.insert(0, "1")
+tkinter.Button(f2, text='⯇',background="light gray").grid(row=7, column=4,sticky='we')
+tkinter.Button(f2, text='⯈',background="light gray").grid(row=7, column=5,sticky='we')
+tkinter.Label(f2,text="No.of Childs",background="light gray").grid(row=8,column=2,sticky='w')
+groove_entry10 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+groove_entry10.grid(row=8,column=3,sticky='nsw')
+groove_entry10.insert(0, "0")
+tkinter.Button(f2, text='⯇',background="light gray").grid(row=8, column=4,sticky='we')
+tkinter.Button(f2, text='⯈',background="light gray").grid(row=8, column=5,sticky='we')
+tkinter.Label(f2,text="Rate Type",background="light gray").grid(row=1,column=6,sticky='w')
+Rate_Type = ttk.Combobox(f2,values=['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11).grid(row=1,column=7,sticky='w')
 
 
-#groove_entry1 = tkinter.Entry(f1, font=10,  relief="groove").pack(anchor=tkinter.N ,padx=1, pady=7)
-#tkinter.Label(Cashier, text=" "*145).pack(anchor=tkinter.N,side=tkinter.LEFT)
-# groove_entry1 = tkinter.Entry(f1, font=10,  relief="groove").pack(side=tkinter.BOTTOM, anchor=tkinter.S ,padx=7, pady=7)
-#tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
-# tkinter.Label(Cashier, text=" "*145).pack(side=tkinter.TOP, anchor=tkinter.S)
 #alternate rows colors#######################################################
 treeview.tag_configure('gray', background='#cccccc')
 treeview.tag_configure('bb', background='light gray')
 #treeview.bind('<ButtonRelease-1>', selectItem)
 can.pack()
 fen.mainloop()
+
 
