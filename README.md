@@ -6,4 +6,5 @@ devided for three parts:
 + front.py.
 + back.py.
 + db file.
++ config.conf
 
