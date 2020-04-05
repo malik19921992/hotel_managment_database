@@ -7,6 +7,8 @@ import os
 from datetime import timedelta, date , datetime
 from dateutil.relativedelta import relativedelta
 import sqlite3
+from tkinter import messagebox
+
 
 #VARS:
 TABLE_HEIGHT=0
@@ -27,31 +29,35 @@ BROWN1        =    "brown1"
 first_list_Scorll_X = 562
 first_list_Scorll_Y = 80
 cars = ["Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
+room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package']
 date_list = []
 
 #database functions:########################################################################
-def create_main_database():
-    conn = sqlite3.connect('__main.db')
+def create_main_database(DATABESE_NAME):
+    conn = sqlite3.connect(DATABESE_NAME)
     c = conn.cursor()
     c.execute(''' CREATE TABLE IF NOT EXISTS table_name(
                 Room_No INT PRIMARY KEY NOT NULL,
                 Room_Name TEXT NOT NULL,
                 Room_Type TEXT NOT NULL,
-                Room_Status TEXT NOT NULL ) ''' )
+                Room_Status TEXT NOT NULL,
+                Room_Side TEXT NOT NULL,
+                Room_Details TEXT NOT NULL,
+                Room_Beds TEXT NOT NULL  ) ''' )
     conn.commit()
     conn.close()
 
-def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status):
-    conn = sqlite3.connect("__main.db")
+def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
+    conn = sqlite3.connect("__main2.db")
     c = conn.cursor()
-    c.execute("INSERT OR IGNORE INTO table_name VALUES (?,?,?,?)"
-            ,(Room_No,Room_Name,Room_Type,Room_Status))
+    c.execute("INSERT OR IGNORE INTO table_name VALUES (?,?,?,?,?,?,?)"
+            ,(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS))
     conn.commit()
     c.close()
 
 def database_items_count():
 	conn =None;
-	conn = sqlite3.connect("__main.db")
+	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
 	c.execute(''' SELECT COUNT(*) FROM table_name ''')
 	result=c.fetchone()
@@ -64,7 +70,7 @@ def check_if_room_in_database(NUM):
 	my_list = []
 	# print('check started')
 	conn =None;
-	conn = sqlite3.connect("__main.db")
+	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
 	c.execute(''' SELECT * FROM table_name ''')
 	rows = c.fetchall()
@@ -72,19 +78,18 @@ def check_if_room_in_database(NUM):
 		my_list.append(int(row[0]))
 	return int(NUM) in my_list
 
-def database_room_update(NUM,NAME,TYPE):
+def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 	#print(NUM,NAME,TYPE)
 	conn =None;
-	conn = sqlite3.connect("__main.db")
+	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
-	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? WHERE Room_No = ? ',(NAME,TYPE,NUM))
+	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
 	conn.commit()
 	c.close()
 
-
 def database_room_delete(NUM):
 	conn =None;
-	conn = sqlite3.connect("__main.db")
+	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
 	c.execute("DELETE from table_name where Room_No = ?",(NUM,))
 	conn.commit()
@@ -99,9 +104,10 @@ def databse_inserts():
 	insert_to_database(8,'Dobule Room','two besds','Free')
 	insert_to_database(9,'Dobule Room','two besds','Free')
 
-def view_selected_data(STATUS,TYPE,NUM):
+
+def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 	my_list = []
-	conn = sqlite3.connect('__main.db')
+	conn = sqlite3.connect(DATABESE_NAME)
 	c = conn.cursor()
 	if NUM == 'All' and TYPE == 'All' and STATUS == 'All':
 		c.execute(''' SELECT * FROM table_name ORDER BY Room_No ''' )
@@ -117,11 +123,14 @@ def view_selected_data(STATUS,TYPE,NUM):
 	for row in rows:
 		my_list.append(row)
 	return my_list
+	# print(my_list)
+
 
 #################################################################################
 ##################
 #OTHER functions:#
 ##################
+
 
 def treeview_rate_options_table(MASTER):
 	f4 = MASTER
@@ -154,7 +163,6 @@ def treeview_rate_options_table(MASTER):
 	# geomitry:
 	treeview2.grid(row=3,column=1,columnspan=10,sticky='wesn')
 	treeview2.place(x=1,y=74)
-	################################
 	secound_list_Scorll_X = 569+50
 	secound_list_Scorll_Y = 75
 	item2 = {}
@@ -189,6 +197,7 @@ def Cashier_operations():
 	CHECK_OUT(f3)
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
+
 
 def room_price_options(MASTER):
 	f4 = MASTER
@@ -299,6 +308,7 @@ def CHECK_OUT(MASTER):
 	groove_entry33.grid(row=3,column=8,sticky='nsw')
 	groove_entry33.insert(0, "2,916.00")
 
+
 def CHECK_IN(MASTER):
 	f2 = MASTER
 	#BUTTONS:
@@ -399,30 +409,23 @@ def CHECK_IN(MASTER):
 	groove_entry18.insert(0, "4,233.00")
 
 
-def room_options_buttons(OPTION,ROOM_NO,NAME,TYPE):
+def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=None,BEDS=None):
 	try:
    		if OPTION == 'new':
    			if check_if_room_in_database(ROOM_NO) == False:
-   				insert_to_database(ROOM_NO,NAME,TYPE,'Free')
+   				insert_to_database(ROOM_NO,NAME,TYPE,'Free',SIDE,DETAILS,BEDS)
    			elif check_if_room_in_database(ROOM_NO) == True:
-   				# print(my_list)
-   				#tkinter.new widget message:
-   				print('room  is exists ,add new number or use update current room')
-   				#ok button:
+   				messagebox.showinfo("Editing Error", "room  is exists ,add new number or use update current room .")
    		elif OPTION == 'update':	
    			if check_if_room_in_database(ROOM_NO) == True:
-   				database_room_update(ROOM_NO,NAME,TYPE)
+   				database_room_update(ROOM_NO,NAME,TYPE,SIDE,DETAILS,BEDS)
    			elif check_if_room_in_database(ROOM_NO) == False:
-   				#tkinter.new widget message:
-   				print('room  is not exists ,add new number or use update current room')
-   				#ok button:
+   				messagebox.showinfo("Update Error", "room  is not exists ,add new number or use update current room .")
    		elif OPTION == 'delete':
    			if check_if_room_in_database(ROOM_NO) == True:
    				database_room_delete(ROOM_NO)
    			elif check_if_room_in_database(ROOM_NO) == False:
-   				#tkinter.new widget message:
-   				print('room  is not exists')
-   				#ok button:
+   				messagebox.showinfo("Update Error", "room  is not exists .")
    		else:
    			print('room option is wrong')
 
@@ -433,10 +436,12 @@ def room_options_buttons(OPTION,ROOM_NO,NAME,TYPE):
 
 
 def rooms_options(MASTER):
+	global room_status
 	f1 = MASTER
+	global groove_entry1,groove_entry2,groove_entry3,groove_entry4,groove_entry5,groove_entry6
 	#BUTTONS:
-	tkinter.Button(f1, text='  add new     ',background="light gray",command=lambda:room_options_buttons('new',groove_entry1.get(),groove_entry2.get(),groove_entry3.get())).grid(row=0, column=0,sticky='sw')
-	tkinter.Button(f1,text='       update       ',background="light gray",command=lambda:room_options_buttons('update',groove_entry1.get(),groove_entry2.get(),groove_entry3.get())).grid(row=0, column=1,sticky='sw')
+	tkinter.Button(f1, text='  add new     ',background="light gray",command=lambda:room_options_buttons('new',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get())).grid(row=0, column=0,sticky='sw')
+	tkinter.Button(f1,text='       update       ',background="light gray",command=lambda:room_options_buttons('update',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get())).grid(row=0, column=1,sticky='sw')
 	tkinter.Button(f1,text='delete   ',background="light gray",command=lambda:room_options_buttons('delete',groove_entry1.get())).grid(row=0, column=2,sticky='sw')
 	#LABELS:
 	tkinter.Label(f1,text="Room Number ",background="light gray").grid(row=1,column=0,sticky='w')
@@ -448,40 +453,38 @@ def rooms_options(MASTER):
 	tkinter.Label(f1,text="Room Side  ",background="light gray").grid(row=4,column=0,sticky='w')
 	tkinter.Label(f1,text="Details       ",background="light gray").grid(row=5,column=0,sticky='w')
 	tkinter.Label(f1,text="Beds  ",background="light gray").grid(row=6,column=0,sticky='w')
-	status_free = tkinter.Label(f1, text="       Free         ",background="pale green",relief="solid").grid(row=1,column=4,sticky='w')
+	room_status = tkinter.Label(f1, text="       Free         ",background="pale green",relief="solid")
+	room_status.grid(row=1,column=4,sticky='w')
+	#LIST:
+	groove_entry3 = ttk.Combobox(f1,values=room_types,width=11)
+	groove_entry3.grid(row=3,column=1,columnspan=2,sticky='nw')
+	groove_entry3.current(0)
 	#ENTRIES:
 	groove_entry1 = tkinter.Entry(f1, font=10,relief="groove",background="white")
 	groove_entry1.grid(row=1,column=1,columnspan=2,sticky='nw')
-	groove_entry1.insert(0, "room number")
+	groove_entry1.insert(0, "")
 	ROOM_NO = groove_entry1.get() 
-
 	groove_entry2 = tkinter.Entry(f1,font=10,relief="groove",background="white")
 	groove_entry2.grid(row=2,column=1,columnspan=2,sticky='nw')
-	groove_entry2.insert(0, "NAME")
+	groove_entry2.insert(0, "")
 	ROOM_NAME = groove_entry2.get()
-
-	groove_entry3 = tkinter.Entry(f1,font=10,relief="groove",background="white")
-	groove_entry3.grid(row=3,column=1,columnspan=2,sticky='nw')
-	groove_entry3.insert(0, "TYPE")
-	ROOM_TYPE = groove_entry3.get()
-
 	groove_entry5 = tkinter.Entry(f1,font=10,relief="groove",background="white")
 	groove_entry5.grid(row=4,column=1,columnspan=2,sticky='nsw')
-	groove_entry5.insert(0, "SIDE")
-
+	groove_entry5.insert(0, "")
 	groove_entry4 = tkinter.Entry(f1,font=10,relief="groove",background="white")
 	groove_entry4.grid(row=5,column=1,columnspan=2,sticky='nsw')
-	groove_entry4.insert(0, "details")
-
+	groove_entry4.insert(0, "")
 	groove_entry6 = tkinter.Entry(f1,font=10,relief="groove",background="white")
 	groove_entry6.grid(row=6,column=1,columnspan=2,sticky='nsw')
-	groove_entry6.insert(0, "max beds")
+	groove_entry6.insert(0, "")
+
 
 def first_table_show_options(STATUS,TYPE,NUM):
-	ITEMS_NO = len(view_selected_data(STATUS,TYPE,NUM))
-	ITEMS_LIST = view_selected_data(STATUS,TYPE,NUM)
+	ITEMS_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM))
+	ITEMS_LIST = view_selected_data('__main2.db',STATUS,TYPE,NUM)
 	treeview1_inserts(ITEMS_NO,ITEMS_LIST)
 		
+
 def treeview1_inserts(ITEMS_NO,ITEMS_LIST):
 	global COLOR_CHOICE
 	global TABLE_HEIGHT
@@ -497,6 +500,7 @@ def treeview1_inserts(ITEMS_NO,ITEMS_LIST):
 			print('error')
 			print(f'COLOR_CHOICE: {COLOR_CHOICE}')
 		treeview1.insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:4] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
+
 
 def database_Table_view_Height(master,X,Y,ITEMS_NO):
 	global vsb
@@ -524,6 +528,7 @@ def setup_background(BACKGROUND_COLOR,FONT_COLOR):
     canv = tkinter.Canvas(treeview1,background=BACKGROUND_COLOR,borderwidth=0,highlightthickness=0)
     canv_text = canv.create_text(0, 0,fill=FONT_COLOR,anchor='w')
 
+
 def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT):
 	LEN = len(COLUMNS)
 	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(COLUMNS[1:LEN]) ,height=TABLE_HEIGHT)
@@ -546,6 +551,35 @@ def Style_generator(STYLE_NUM,FONT,FONT_SIZE,BG_COLOR):
 	globals()[f'style{STYLE_NUM}'] = ttk.Style()
 	globals()[f'style{STYLE_NUM}'].configure(f"treeview{STYLE_NUM}.Heading", font=(FONT, FONT_SIZE,'bold'),background=BG_COLOR)
 	globals()[f'treeview{STYLE_NUM}'].tag_configure('gray', background=BG_COLOR)
+	globals()[f'treeview{STYLE_NUM}'].bind_all('<<TreeviewSelect>>', selectItem)
+
+def selectItem(a):
+    curItem = treeview1.focus()
+    LIST = view_selected_data('__main2.db','All','All',int(treeview1.item(curItem)['text']))
+    #print(LIST)
+    groove_entry1.delete(0,'end')
+    groove_entry1.insert(0, LIST[0][0])
+    #update name:
+    groove_entry2.delete(0,'end')
+    groove_entry2.insert(0, LIST[0][1])
+    #update type:
+    groove_entry3.current(room_types.index(LIST[0][2]))
+    #update side
+    groove_entry5.delete(0,'end')
+    groove_entry5.insert(0, LIST[0][4])
+    #update beds
+    groove_entry6.delete(0,'end')
+    groove_entry6.insert(0, LIST[0][6])
+    #update details:
+    groove_entry4.delete(0,'end')
+    groove_entry4.insert(0, LIST[0][5])
+    if LIST[0][3] == 'Free':
+    	room_status.configure(text="       Free         ",background="pale green",relief="solid")
+    elif LIST[0][3] == 'IN USE':
+    	room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
+    else:
+    	print('error')
+
 
 def Room_View_Options():
 	#globals:
@@ -602,17 +636,19 @@ def live_time_change():
 	timenow =  datetime.now().time().strftime('%H:%M:%S')
 	datenow = datetime.now().strftime('%A,%d %B %Y')
 	clock.config(text=timenow)
-	DATE.config(text=f'      {datenow}        ')
+	DATE.config(text=f'      {datenow}    ')
 	fen.after(200, live_time_change)
 
 def main():
 	clock_date()
 	Room_View_Options()
-	create_main_database()
+	create_main_database("__main2.db")
+	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
+	view_selected_data('__main2.db','All','All','All')
 	table1()
 	Cashier_operations()
 
-################################################################################
+
 
 #widget:
 fen = tkinter.Tk()
