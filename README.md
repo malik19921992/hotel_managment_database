@@ -7,4 +7,4 @@ devided for three parts:
 + back.py.
 + db file.
 + config.conf
-<img src="https://user-images.githubusercontent.com/40398550/78905574-812e8900-7a7e-11ea-9df6-2a700ac5c7f9.png" width="550"> 
+<img src="https://user-images.githubusercontent.com/40398550/78905574-812e8900-7a7e-11ea-9df6-2a700ac5c7f9.png" width="700"> 
