@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 import sqlite3
 from tkinter import messagebox
 
+###line 176 pass geometry to func as argument "grid"
 
 #VARS:
 TABLE_HEIGHT=0
@@ -33,6 +34,7 @@ room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','P
 date_list = []
 
 #database functions:########################################################################
+
 def create_main_database(DATABESE_NAME):
     conn = sqlite3.connect(DATABESE_NAME)
     c = conn.cursor()
@@ -46,6 +48,28 @@ def create_main_database(DATABESE_NAME):
                 Room_Beds TEXT NOT NULL  ) ''' )
     conn.commit()
     conn.close()
+
+def create_rate_table(DATABESE_NAME):
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS rate_table(
+				id INT PRIMARY KEY,
+                Room_Type TEXT NOT NULL,
+                Room_Rate REAL NOT NULL,
+                Person_No TEXT NOT NULL,
+                Extra_Adults_Rate TEXT NOT NULL,
+                Extra_Childrens_Rate TEXT NOT NULL) ''')
+	conn.commit()
+	conn.close()
+
+def create_type_table(DATABESE_NAME):
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS rate_table(
+				id INT PRIMARY KEY,
+                Room_Type TEXT NOT NULL ) ''')
+	conn.commit()
+	conn.close()
 
 def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
     conn = sqlite3.connect("__main2.db")
@@ -62,8 +86,6 @@ def database_items_count():
 	c.execute(''' SELECT COUNT(*) FROM table_name ''')
 	result=c.fetchone()
 	return result[0]
-	# rows = c.fetchall()
-	# return len(rows)+1
 	c.close()
 
 def check_if_room_in_database(NUM):
@@ -95,15 +117,6 @@ def database_room_delete(NUM):
 	conn.commit()
 	c.close()
 
-def databse_inserts():
-	insert_to_database(3,'Dobule Room','two besds','Free')
-	insert_to_database(4,'Dobule Room','two besds','Free')
-	insert_to_database(5,'Dobule Room','two besds','Free')
-	insert_to_database(6,'Dobule Room','two besds','Free')
-	insert_to_database(7,'Dobule Room','two besds','Free')
-	insert_to_database(8,'Dobule Room','two besds','Free')
-	insert_to_database(9,'Dobule Room','two besds','Free')
-
 
 def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 	my_list = []
@@ -123,14 +136,31 @@ def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 	for row in rows:
 		my_list.append(row)
 	return my_list
-	# print(my_list)
 
+#date list:#########################################################
+date_list = []
+six_months_after = date.today() + relativedelta(months=+6)
+six_months_before = date.today() + relativedelta(months=-6)
+m_before    =   six_months_after.month
+m_after     =   six_months_after.month
+d_before    =   six_months_before.day
+d_after     =   six_months_after.day
+y_before    =   six_months_before.year
+y_after     =   six_months_after.year
+
+def daterange(date1, date2):
+    for n in range(int ((date2 - date1).days)+1):
+        yield date1 + timedelta(n)
+
+start_dt = date(y_before,m_before,d_before)
+end_dt = date(y_after,m_after,d_after)
+for dt in daterange(start_dt, end_dt):
+    date_list.append(dt.strftime("%Y-%m-%d"))
 
 #################################################################################
 ##################
 #OTHER functions:#
 ##################
-
 
 def treeview_rate_options_table(MASTER):
 	f4 = MASTER
@@ -139,35 +169,36 @@ def treeview_rate_options_table(MASTER):
 	can4 = tkinter.Canvas(f4,background="light gray",width=200,height=180)
 	RATE_X = 0
 	RATE_Y = 0
-	can4.create_rectangle(RATE_X,RATE_Y,RATE_X+634,RATE_Y+181, fill="gray")
-	can4.grid(row=3,column=1,columnspan=10,sticky='wesn')
+	can4.create_rectangle(RATE_X,RATE_Y,RATE_X+634,RATE_Y+160, fill="gray")
+	can4.grid(row=6,column=0,columnspan=10,sticky='wen')
+	# can4.place(x=4,y=79)
 	#column names
-	# treeview_table_generator(f4,2,["Room Type","Room Rate","max Person",'Extra Adults Rate','Extra Children Rate'],[65,84,84,95,134,153],10,80,TABLE_HEIGHT)
-	# Style_generator(2,None,9,'light gray')
-
-	treeview2 = ttk.Treeview(f4,columns=("Room Type","Room Rate","No. of Person",'Extra Adults Rate','Extra Children Rate') ,height=8)
+	treeview_table_generator(f4,2,["Room Type","Room Rate","max Person",'Extra Adults Rate','Extra Children Rate'],[100,100,100,145,170,153],10,80,7,geometry={'grid':{'row':7,'column':1,'columnspan':10,'sticky':'sw'},'place':{'X':1,'Y':77}})
+	Style_generator(2,None,9,'light gray')
+	# treeview2 = ttk.Treeview(f4,columns=("Room Type","Room Rate","No. of Person",'Extra Adults Rate','Extra Children Rate') ,height=7)
 	#headings:
-	treeview2.heading("#0", text="Room No", anchor = "w")
-	treeview2.heading("#1", text=" Room Type",anchor = "w")
-	treeview2.heading("#2", text=" Room Rate",anchor = "w")
-	treeview2.heading("#3", text="No. of Person",anchor = "w")
-	treeview2.heading("#4", text="Extra Adults's Rate",anchor = "c")
-	treeview2.heading("#5", text="Extra Children's Rate",anchor = "c")
-	#columns:
-	treeview2.column("#0", width = 65, anchor = "w")
-	treeview2.column("#1", width = 84, anchor = "w")
-	treeview2.column("#2", width = 84, anchor = "w")
-	treeview2.column("#3",width=95,anchor = "w")
-	treeview2.column("#4",width=134,anchor = "w")
-	treeview2.column("#5",width=153,anchor = "w")
-	# geomitry:
-	treeview2.grid(row=3,column=1,columnspan=10,sticky='wesn')
-	treeview2.place(x=1,y=74)
+	# treeview2.heading("#0", text="Room No", anchor = "w")
+	# treeview2.heading("#1", text=" Room Type",anchor = "w")
+	# treeview2.heading("#2", text=" Room Rate",anchor = "w")
+	# treeview2.heading("#3", text="No. of Person",anchor = "w")
+	# treeview2.heading("#4", text="Extra Adults's Rate",anchor = "c")
+	# treeview2.heading("#5", text="Extra Children's Rate",anchor = "c")
+	# #columns:
+	# treeview2.column("#0", width = 65, anchor = "w")
+	# treeview2.column("#1", width = 84, anchor = "w")
+	# treeview2.column("#2", width = 84, anchor = "w")
+	# treeview2.column("#3",width=95,anchor = "w")
+	# treeview2.column("#4",width=134,anchor = "w")
+	# treeview2.column("#5",width=153,anchor = "w")
+	# # geomitry:
+	# # tkinter.Label(f4,text="                 ",background="light gray").grid(row=5,column=1,columnspan=6,sticky='w')
+	# treeview2.grid(row=7,column=1,columnspan=10,sticky='sw')
+	# treeview2.place(x=1,y=77)
 	secound_list_Scorll_X = 569+50
 	secound_list_Scorll_Y = 75
 	item2 = {}
-	item2[0] = treeview2.insert("" , "end" , text = "1", values = ('Standard','1,458.00','2','351.00','0.00'))
-	item2[0] = treeview2.insert("" , "end" , text = "1", values = ('Standard','1,458.00','2','351.00','0.00'),tag='bb')
+	item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'))
+	item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'),tag='bb')
 	# Table_Height(f4,secound_list_Scorll_X,secound_list_Scorll_Y)
 	treeview2.tag_configure('gray', background='#cccccc')
 	treeview2.tag_configure('bb', background='light gray')
@@ -202,32 +233,38 @@ def Cashier_operations():
 def room_price_options(MASTER):
 	f4 = MASTER
 	#BUTTONS:
-	tkinter.Button(f4, text='Update',background="light gray").grid(row=1, column=6,sticky='we')
-	tkinter.Button(f4, text='Update All',background="light gray").grid(row=1, column=7,sticky='we')
+	tkinter.Button(f4, text='New Type',background="light gray").grid(row=1, column=1,sticky='we')
+	tkinter.Button(f4, text='Update',background="light gray").grid(row=1, column=2,sticky='we')
+	tkinter.Button(f4, text='Delete',background="light gray").grid(row=1, column=3,sticky='we')
 	#LABELS:
-	tkinter.Label(f4,text="Rate Type",background="light gray").grid(row=0,column=1,sticky='w')
-	tkinter.Label(f4,text="Room Rate",background="light gray").grid(row=0,column=2,sticky='w')
-	tkinter.Label(f4,text="No. of Person",background="light gray").grid(row=0,column=3,sticky='w')
-	tkinter.Label(f4,text="Adult's Rate",background="light gray").grid(row=0,column=4,sticky='w')
-	tkinter.Label(f4,text="Children's Rate",background="light gray").grid(row=0,column=5,sticky='w')
+	tkinter.Label(f4,text="Rate Type",background="light gray").grid(row=1,column=0)
+	tkinter.Label(f4,text=" Room Rate",background="light gray").grid(row=2,column=1)
+	tkinter.Label(f4,text="No. of Person",background="light gray").grid(row=2,column=2)
+	tkinter.Label(f4,text="Adult's Rate",background="light gray").grid(row=2,column=3)
+	tkinter.Label(f4,text="Children's Rate",background="light gray").grid(row=2,column=4)
+	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=1,column=4,columnspan=7,sticky='w')
+
 	#ENTRIES:
+	groove_entry38 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
+	groove_entry38.grid(row=3,column=0,sticky='nwe')
+	groove_entry38.insert(0, " ")
 	groove_entry34 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
-	groove_entry34.grid(row=1,column=2,sticky='nsw')
+	groove_entry34.grid(row=3,column=1,sticky='nwe')
 	groove_entry34.insert(0, " ")
 	groove_entry35 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
-	groove_entry35.grid(row=1,column=3,sticky='nsw')
+	groove_entry35.grid(row=3,column=2,sticky='nwe')
 	groove_entry35.insert(0, " ")
 	groove_entry36 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
-	groove_entry36.grid(row=1,column=4,sticky='nsw')
+	groove_entry36.grid(row=3,column=3,sticky='nwe')
 	groove_entry36.insert(0, " ")
 	groove_entry37 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
-	groove_entry37.grid(row=1,column=5,sticky='ns')
+	groove_entry37.grid(row=3,column=4,sticky='nwe')
 	groove_entry37.insert(0, " ")
+	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=3,column=5,columnspan=7,sticky='w')
 	#LISTS:
-	Rate_Type = ttk.Combobox(f4,values=['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
-	Rate_Type.grid(row=1,column=1,sticky='w')
-	Rate_Type.current(1)
-
+	Rate_Type = ttk.Combobox(f4,values=['All','Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
+	Rate_Type.grid(row=2,column=0,sticky='w')
+	Rate_Type.current(0)
 
 def CHECK_OUT(MASTER):
 	f3 = MASTER
@@ -310,18 +347,74 @@ def CHECK_OUT(MASTER):
 
 
 def CHECK_IN(MASTER):
+	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
+	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
+	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2
+	global Rate_Type_CHECKIN,DateIn,DateOut
+
 	f2 = MASTER
 	#BUTTONS:
 	tkinter.Button(f2, text='Print',background="light gray").grid(row=0, column=0,sticky='we')
 	tkinter.Button(f2,text='Change Room',background="light gray").grid(row=0, column=1,sticky='we')
 	tkinter.Button(f2,text='Update',background="light gray").grid(row=0, column=2,sticky='we')
 	tkinter.Button(f2,text='Cancel',background="light gray",width=11).grid(row=0, column=3,columnspan=3,sticky='we')
-	tkinter.Button(f2, text='⯇',background="light gray").grid(row=6, column=4,sticky='we')
-	tkinter.Button(f2, text='⯈',background="light gray").grid(row=6, column=5,sticky='we')
-	tkinter.Button(f2, text='⯇',background="light gray").grid(row=7, column=4,sticky='we')
-	tkinter.Button(f2, text='⯈',background="light gray").grid(row=7, column=5,sticky='we')
-	tkinter.Button(f2, text='⯇',background="light gray").grid(row=8, column=4,sticky='we')
-	tkinter.Button(f2, text='⯈',background="light gray").grid(row=8, column=5,sticky='we')
+	
+	def change_num(master,arithmetic,CHANGE_VARS):
+		# print(CHANGE_VARS)
+		for VAR in CHANGE_VARS:
+			if 'tkinter.Entry' in str(globals()[VAR].info):
+				# print(str(globals()[VAR].info))
+				if globals()[VAR].get():
+					first_val = int(globals()[VAR].get())
+					# print(first_val)
+				else :
+					first_val = 0 	
+				if arithmetic == '-':
+					# print('-')
+					if first_val > 0:
+						last_val = int(first_val) - 1
+						globals()[VAR].delete(0,'end')
+						globals()[VAR].insert(0,last_val)
+					else :
+						pass
+				if arithmetic == '+':
+					# print('+')
+					if first_val >= 0:
+						# print(first_val)
+						last_val = int(first_val) + 1
+						# print(last_val)
+						globals()[VAR].delete(0,'end')
+						globals()[VAR].insert(0,last_val)
+					elif first_val == 0:
+						last_val = 0 + 1
+						globals()[VAR].delete(0,'end')
+						globals()[VAR].insert(0,last_val) 
+			elif 'tkinter.ttk.Combobox' in str(globals()[VAR].info):
+				if arithmetic == '-':
+					if first_val > 0:
+						for VAR in CHANGE_VARS:	
+							if 'tkinter.Entry' in str(globals()[VAR].info):	  
+								DAYS_NUM = int(globals()[VAR].get())
+						DateOut_Change = int(date_list.index(DateIn.get()) + DAYS_NUM )
+						DateOut.current(DateOut_Change)
+					else :
+						pass
+				if arithmetic == '+':
+					for VAR in CHANGE_VARS:	
+						if 'tkinter.Entry' in str(globals()[VAR].info):	  
+							DAYS_NUM = int(globals()[VAR].get())
+						DateOut_Change = int(date_list.index(DateIn.get()) + DAYS_NUM )
+						DateOut.current(DateOut_Change)
+			
+	############################################
+	tkinter.Button(f2, text='⯇',background="light gray",command=lambda:change_num(f2,'-',['groove_entry8F2','DateOut'])).grid(row=6, column=4,sticky='we')
+	tkinter.Button(f2, text='⯈',background="light gray",command=lambda:change_num(f2,'+',['groove_entry8F2','DateOut'])).grid(row=6, column=5,sticky='we')
+
+	tkinter.Button(f2, text='⯇',background="light gray",command=lambda:change_num(f2,'-',['groove_entry9F2'])).grid(row=7, column=4,sticky='we')
+	tkinter.Button(f2, text='⯈',background="light gray",command=lambda:change_num(f2,'+',['groove_entry9F2'])).grid(row=7, column=5,sticky='we')
+	
+	tkinter.Button(f2, text='⯇',background="light gray",command=lambda:change_num(f2,'-',['groove_entry10F2'])).grid(row=8, column=4,sticky='we')
+	tkinter.Button(f2, text='⯈',background="light gray",command=lambda:change_num(f2,'+',['groove_entry10F2'])).grid(row=8, column=5,sticky='we')
 	#LABELS:
 	tkinter.Label(f2,text="Folio No: ",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f2,text="First name ",background="light gray").grid(row=2,column=0,sticky='w')
@@ -358,55 +451,74 @@ def CHECK_IN(MASTER):
 	carlist = ttk.Combobox(f2,values=cars,width=10).grid(row=1,column=3,columnspan=5,sticky='w')
 	DateIn = ttk.Combobox(f2,values=date_list,width=11)
 	DateIn.grid(row=4,column=3,columnspan=5,sticky='w')
-	# DateIn.current(date_list.index(date.today().strftime("%Y-%m-%d")))
-	DateOut = ttk.Combobox(f2,values=date_list,width=11).grid(row=5,column=3,columnspan=5,sticky='w')
-	Rate_Type = ttk.Combobox(f2,values=['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11).grid(row=1,column=7,columnspan=8,sticky='w')
+	DateIn.current(date_list.index(date.today().strftime("%Y-%m-%d")))
+	DateIn.bind('<<ComboboxSelected>>', date_choose_checkin_trigger)
+	DateOut = ttk.Combobox(f2,values=date_list,width=11)
+	DateOut.grid(row=5,column=3,columnspan=5,sticky='w')
+	DateOut.bind('<<ComboboxSelected>>', date_choose_checkin_trigger)
+	
+	Rate_Type_CHECKIN = ttk.Combobox(f2,values=['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
+	Rate_Type_CHECKIN.grid(row=1,column=7,columnspan=8,sticky='w')
 	#ENTRIES:
-	groove_entry0 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry0.grid(row=1,column=1,columnspan=2,sticky='nsw')
-	groove_entry0.insert(0,"009-098")
-	groove_entry1 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=1,columnspan=2,sticky='nsw')
-	groove_entry2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=3,column=1,columnspan=2,sticky='nsw')
-	groove_entry3 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=4,column=1,columnspan=2,sticky='nsw')
-	groove_entry4 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=6,column=1,columnspan=2,sticky='nsw')
-	groove_entry5 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=8,column=1,columnspan=2,sticky='nsw')
-	groove_entry6 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=3,columnspan=5,sticky='nsw')
-	groove_entry7 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
-	groove_entry7.grid(row=3,column=3,sticky='nsw')
-	groove_entry7.insert(0, "12")
-	groove_entry8 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
-	groove_entry8.grid(row=6,column=3,sticky='nsw')
-	groove_entry8.insert(0, "7")	
-	groove_entry9 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
-	groove_entry9.grid(row=7,column=3,sticky='nsw')
-	groove_entry9.insert(0, "1")	
-	groove_entry10 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
-	groove_entry10.grid(row=8,column=3,sticky='nsw')
-	groove_entry10.insert(0, "0")
-	groove_entry11 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry11.grid(row=2,column=7,columnspan=8,sticky='nsw')
-	groove_entry11.insert(0, "998.00")
-	groove_entry12 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry12.grid(row=3,column=7,columnspan=8,sticky='nsw')
-	groove_entry12.insert(0, "4,233.00")
-	groove_entry13 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry13.grid(row=4,column=7,columnspan=8,sticky='nsw')
-	groove_entry13.insert(0, "0.00")
-	groove_entry14 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry14.grid(row=4,column=7,columnspan=8,sticky='nsw')
-	groove_entry14.insert(0, "4,233.00")
-	groove_entry15 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8)
-	groove_entry15.grid(row=5,column=7,sticky='nsw')
-	groove_entry15.insert(0, "0.0000")
-	groove_entry16 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry16.grid(row=6,column=7,columnspan=8,sticky='nsw')
-	groove_entry16.insert(0, "4,233.00")
-	groove_entry17 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry17.grid(row=7,column=7,columnspan=8,sticky='nsw')
-	groove_entry17.insert(0, "0.00")
-	groove_entry18 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
-	groove_entry18.grid(row=8,column=7,columnspan=8,sticky='nsw')
-	groove_entry18.insert(0, "4,233.00")
+	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry0F2.grid(row=1,column=1,columnspan=2,sticky='nsw')
+	groove_entry0F2.insert(0,"009-098")
+	groove_entry1F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=1,columnspan=2,sticky='nsw')
+	groove_entry2F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=3,column=1,columnspan=2,sticky='nsw')
+	groove_entry3F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=4,column=1,columnspan=2,sticky='nsw')
+	groove_entry4F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=6,column=1,columnspan=2,sticky='nsw')
+	groove_entry5F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=8,column=1,columnspan=2,sticky='nsw')
+	groove_entry6F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=3,columnspan=5,sticky='nsw')
+	groove_entry7F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry7F2.grid(row=3,column=3,sticky='nsw')
+	groove_entry7F2.insert(0, "")
+	groove_entry8F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry8F2.grid(row=6,column=3,sticky='nsw')
+	groove_entry8F2.insert(0, "")
+	print(groove_entry8F2.get())
+	groove_entry9F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry9F2.grid(row=7,column=3,sticky='nsw')
+	groove_entry9F2.insert(0, "0")	
+	groove_entry10F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry10F2.grid(row=8,column=3,sticky='nsw')
+	groove_entry10F2.insert(0, "0")
+	groove_entry11F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry11F2.grid(row=2,column=7,columnspan=8,sticky='nsw')
+	groove_entry11F2.insert(0, "998.00")
+	groove_entry12F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry12F2.grid(row=3,column=7,columnspan=8,sticky='nsw')
+	groove_entry12F2.insert(0, "4,233.00")
+	groove_entry13F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry13F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
+	groove_entry13F2.insert(0, "0.00")
+	groove_entry14F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry14F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
+	groove_entry14F2.insert(0, "4,233.00")
+	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8)
+	groove_entry15F2.grid(row=5,column=7,sticky='nsw')
+	groove_entry15F2.insert(0, "0.0000")
+	groove_entry16F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry16F2.grid(row=6,column=7,columnspan=8,sticky='nsw')
+	groove_entry16F2.insert(0, "4,233.00")
+	groove_entry17F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry17F2.grid(row=7,column=7,columnspan=8,sticky='nsw')
+	groove_entry17F2.insert(0, "0.00")
+	groove_entry18F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry18F2.grid(row=8,column=7,columnspan=8,sticky='nsw')
+	groove_entry18F2.insert(0, "4,233.00")
+
+def date_choose_checkin_trigger(even):
+	global DAYS_NUM
+	def d(s):
+	  [year,month,day] = map(int, s.split('-'))
+	  return date(year, month, day)
+	def days(start, end):
+	  return (d(end) - d(start)).days
+	if DateIn.get() and DateOut.get():
+		if DateOut.get() > DateIn.get():
+			DAYS_NUM = days(DateIn.get(),DateOut.get())
+			groove_entry8F2.delete(0, 'end')
+			groove_entry8F2.insert(0, DAYS_NUM)
 
 
 def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=None,BEDS=None):
@@ -529,21 +641,36 @@ def setup_background(BACKGROUND_COLOR,FONT_COLOR):
     canv_text = canv.create_text(0, 0,fill=FONT_COLOR,anchor='w')
 
 
-def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT):
+# def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT):
+# 	LEN = len(COLUMNS)
+# 	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(COLUMNS[1:LEN]) ,height=TABLE_HEIGHT)
+# 	COLUMN_NUM = 0
+# 	for COLUMN in COLUMNS:
+# 		# print("#{}".format(COLUMN_NUM),"{}".format(COLUMN))
+# 		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text="{}".format(COLUMN), anchor = "w")
+# 		globals()[f'treeview{TREE_NUM}'].column("#{}".format(COLUMN_NUM), width = WIDTHS[COLUMN_NUM], anchor = "w")
+# 		COLUMN_NUM = COLUMN_NUM + 1
+# 	globals()[f'treeview{TREE_NUM}'].pack(fill=tkinter.BOTH,expand=1)
+# 	globals()[f'treeview{TREE_NUM}'].place(x=X,y=Y)
+
+def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT,geometry):
 	LEN = len(COLUMNS)
 	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(COLUMNS[1:LEN]) ,height=TABLE_HEIGHT)
 	COLUMN_NUM = 0
 	for COLUMN in COLUMNS:
-		# print("#{}".format(COLUMN_NUM),"{}".format(COLUMN))
 		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text="{}".format(COLUMN), anchor = "w")
 		globals()[f'treeview{TREE_NUM}'].column("#{}".format(COLUMN_NUM), width = WIDTHS[COLUMN_NUM], anchor = "w")
 		COLUMN_NUM = COLUMN_NUM + 1
-	globals()[f'treeview{TREE_NUM}'].pack(fill=tkinter.BOTH,expand=1)
-	globals()[f'treeview{TREE_NUM}'].place(x=X,y=Y)
-
+	if 'pack' in geometry:
+		globals()[f'treeview{TREE_NUM}'].pack(fill=geometry['pack']['fill'],expand=geometry['pack']['expand'])
+	if 'grid' in geometry:
+		# print('grid is ok')
+		globals()[f'treeview{TREE_NUM}'].grid(row=geometry['grid']['row'],column=geometry['grid']['column'],columnspan=geometry['grid']['columnspan'],sticky=geometry['grid']['sticky'])
+	if 'place' in geometry:
+		globals()[f'treeview{TREE_NUM}'].place(x=geometry['place']['X'],y=geometry['place']['Y'])
 
 def table1():
-	treeview_table_generator(fen,1,["Room No","Room Name","Room Type","Room Status"],[72,187,187,104],10,80,TABLE_HEIGHT)
+	treeview_table_generator(fen,1,["Room No","Room Name","Room Type","Room Status"],[72,187,187,104],10,80,TABLE_HEIGHT,geometry={'place':{'X':10 , 'Y':80},'pack':{'fill': tkinter.BOTH ,'expand':1}})
 	Style_generator(1,None,9,'light gray')
 	first_table_show_options('All','All','All')
 
@@ -579,7 +706,14 @@ def selectItem(a):
     	room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
     else:
     	print('error')
+    #update chickins:
+    #update room number:
+    groove_entry7F2.delete(0,'end')
+    groove_entry7F2.insert(0,LIST[0][0])
+    #update Room Type:
+    Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
 
+    # DateIn,DateOut
 
 def Room_View_Options():
 	#globals:
@@ -643,6 +777,8 @@ def main():
 	clock_date()
 	Room_View_Options()
 	create_main_database("__main2.db")
+	create_rate_table("__main2.db")
+	# create_type_table("__main2.db")
 	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
 	view_selected_data('__main2.db','All','All','All')
 	table1()
