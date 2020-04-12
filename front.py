@@ -7,9 +7,8 @@ import os
 from datetime import timedelta, date , datetime
 from dateutil.relativedelta import relativedelta
 import sqlite3
-from tkinter import messagebox
+import tkinter.messagebox
 
-###line 176 pass geometry to func as argument "grid"
 
 #VARS:
 TABLE_HEIGHT=0
@@ -35,6 +34,7 @@ date_list = []
 
 #database functions:########################################################################
 
+
 def create_main_database(DATABESE_NAME):
     conn = sqlite3.connect(DATABESE_NAME)
     c = conn.cursor()
@@ -49,12 +49,13 @@ def create_main_database(DATABESE_NAME):
     conn.commit()
     conn.close()
 
+
 def create_rate_table(DATABESE_NAME):
 	conn = sqlite3.connect(DATABESE_NAME)
 	c = conn.cursor()
 	c.execute(''' CREATE TABLE IF NOT EXISTS rate_table(
-				id INT PRIMARY KEY,
-                Room_Type TEXT NOT NULL,
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Rate_Type TEXT NOT NULL,
                 Room_Rate REAL NOT NULL,
                 Person_No TEXT NOT NULL,
                 Extra_Adults_Rate TEXT NOT NULL,
@@ -62,14 +63,6 @@ def create_rate_table(DATABESE_NAME):
 	conn.commit()
 	conn.close()
 
-def create_type_table(DATABESE_NAME):
-	conn = sqlite3.connect(DATABESE_NAME)
-	c = conn.cursor()
-	c.execute(''' CREATE TABLE IF NOT EXISTS rate_table(
-				id INT PRIMARY KEY,
-                Room_Type TEXT NOT NULL ) ''')
-	conn.commit()
-	conn.close()
 
 def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
     conn = sqlite3.connect("__main2.db")
@@ -78,6 +71,16 @@ def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS
             ,(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS))
     conn.commit()
     c.close()
+
+
+def insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute("INSERT OR IGNORE INTO rate_table(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate) VALUES (?,?,?,?,?)"
+        	,(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate))
+	conn.commit()
+	c.close()
+
 
 def database_items_count():
 	conn =None;
@@ -88,9 +91,9 @@ def database_items_count():
 	return result[0]
 	c.close()
 
+
 def check_if_room_in_database(NUM):
 	my_list = []
-	# print('check started')
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
@@ -100,12 +103,32 @@ def check_if_room_in_database(NUM):
 		my_list.append(int(row[0]))
 	return int(NUM) in my_list
 
+
+def check_if_rate_in_database(Rate_Type):
+	my_list = []
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute(''' SELECT * FROM rate_table ''')
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row[1].casefold())
+	return Rate_Type.casefold() in my_list
+
+
 def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
-	#print(NUM,NAME,TYPE)
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
 	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
+	conn.commit()
+	c.close()
+
+def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute('UPDATE rate_table SET  Room_Rate = ? , Person_No = ? , Extra_Adults_Rate = ? , Extra_Childrens_Rate = ? WHERE Rate_Type = ? ',(float(Room_Rate),int(float(Person_No)),float(Extra_Adults_Rate),float(Extra_Childrens_Rate),str(Rate_Type),))
 	conn.commit()
 	c.close()
 
@@ -117,6 +140,13 @@ def database_room_delete(NUM):
 	conn.commit()
 	c.close()
 
+def database_rate_delete(Rate_Type):
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute("DELETE from rate_table where Rate_Type = ?",(Rate_Type,))
+	conn.commit()
+	c.close()
 
 def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 	my_list = []
@@ -137,31 +167,43 @@ def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 		my_list.append(row)
 	return my_list
 
-#date list:#########################################################
-date_list = []
-six_months_after = date.today() + relativedelta(months=+6)
-six_months_before = date.today() + relativedelta(months=-6)
-m_before    =   six_months_after.month
-m_after     =   six_months_after.month
-d_before    =   six_months_before.day
-d_after     =   six_months_after.day
-y_before    =   six_months_before.year
-y_after     =   six_months_after.year
+def view_selected_rate(DATABESE_NAME,RATE_TYPE):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	if RATE_TYPE == 'All':
+		c.execute(''' SELECT Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate FROM rate_table ''' )
+	else:
+		c.execute("SELECT Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate FROM rate_table WHERE Rate_Type=?", (RATE_TYPE,))
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
 
-def daterange(date1, date2):
-    for n in range(int ((date2 - date1).days)+1):
-        yield date1 + timedelta(n)
+##date list:#########################################################
 
-start_dt = date(y_before,m_before,d_before)
-end_dt = date(y_after,m_after,d_after)
-for dt in daterange(start_dt, end_dt):
-    date_list.append(dt.strftime("%Y-%m-%d"))
+def date_list():
+	global date_list
+	date_list = []
+	six_months_after = date.today() + relativedelta(months=+6)
+	six_months_before = date.today() + relativedelta(months=-6)
+	m_before    =   six_months_after.month
+	m_after     =   six_months_after.month
+	d_before    =   six_months_before.day
+	d_after     =   six_months_after.day
+	y_before    =   six_months_before.year
+	y_after     =   six_months_after.year
+	def daterange(date1, date2):
+	    for n in range(int ((date2 - date1).days)+1):
+	        yield date1 + timedelta(n)
+	start_dt = date(y_before,m_before,d_before)
+	end_dt = date(y_after,m_after,d_after)
+	for dt in daterange(start_dt, end_dt):
+	    date_list.append(dt.strftime("%Y-%m-%d"))
 
-#################################################################################
-##################
-#OTHER functions:#
-##################
-
+################################################################################
+####:OTHER functions:###########################################################
+################################################################################
 def treeview_rate_options_table(MASTER):
 	f4 = MASTER
 	global treeview2
@@ -171,38 +213,29 @@ def treeview_rate_options_table(MASTER):
 	RATE_Y = 0
 	can4.create_rectangle(RATE_X,RATE_Y,RATE_X+634,RATE_Y+160, fill="gray")
 	can4.grid(row=6,column=0,columnspan=10,sticky='wen')
-	# can4.place(x=4,y=79)
 	#column names
-	treeview_table_generator(f4,2,["Room Type","Room Rate","max Person",'Extra Adults Rate','Extra Children Rate'],[100,100,100,145,170,153],10,80,7,geometry={'grid':{'row':7,'column':1,'columnspan':10,'sticky':'sw'},'place':{'X':1,'Y':77}})
+	treeview_table_generator(f4,2,["Room Type","Room Rate","max Person",'Extra Adults Rate','Extra Children Rate'],[100,100,100,145,170],10,80,7,geometry={'grid':{'row':7,'column':1,'columnspan':10,'sticky':'sw'},'place':{'X':1,'Y':77}},COUNT='OK')
+	globals()[f'treeview{2}'].bind('<<TreeviewSelect>>',selectItem2)
 	Style_generator(2,None,9,'light gray')
-	# treeview2 = ttk.Treeview(f4,columns=("Room Type","Room Rate","No. of Person",'Extra Adults Rate','Extra Children Rate') ,height=7)
-	#headings:
-	# treeview2.heading("#0", text="Room No", anchor = "w")
-	# treeview2.heading("#1", text=" Room Type",anchor = "w")
-	# treeview2.heading("#2", text=" Room Rate",anchor = "w")
-	# treeview2.heading("#3", text="No. of Person",anchor = "w")
-	# treeview2.heading("#4", text="Extra Adults's Rate",anchor = "c")
-	# treeview2.heading("#5", text="Extra Children's Rate",anchor = "c")
-	# #columns:
-	# treeview2.column("#0", width = 65, anchor = "w")
-	# treeview2.column("#1", width = 84, anchor = "w")
-	# treeview2.column("#2", width = 84, anchor = "w")
-	# treeview2.column("#3",width=95,anchor = "w")
-	# treeview2.column("#4",width=134,anchor = "w")
-	# treeview2.column("#5",width=153,anchor = "w")
-	# # geomitry:
-	# # tkinter.Label(f4,text="                 ",background="light gray").grid(row=5,column=1,columnspan=6,sticky='w')
-	# treeview2.grid(row=7,column=1,columnspan=10,sticky='sw')
-	# treeview2.place(x=1,y=77)
 	secound_list_Scorll_X = 569+50
 	secound_list_Scorll_Y = 75
 	item2 = {}
-	item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'))
-	item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'),tag='bb')
-	# Table_Height(f4,secound_list_Scorll_X,secound_list_Scorll_Y)
+	# item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'))
+	# item2[0] = treeview2.insert("" , "end" , text = "Deluxe", values = ('1,458.00','2','351.00','0.00'),tag='bb')
+	secound_table_show_options('All')
+	#treeview_inserts(f4,2,ITEMS_NO,ITEMS_LIST)
+	#Table_Height(f4,secound_list_Scorll_X,secound_list_Scorll_Y)
 	treeview2.tag_configure('gray', background='#cccccc')
 	treeview2.tag_configure('bb', background='light gray')
 
+def secound_table_show_options(RATE_TYPE):
+	print('func works')
+	ITEMS_NO = len(view_selected_rate('__main2.db',RATE_TYPE))
+	COLUMN_NO = len(view_selected_rate('__main2.db',RATE_TYPE)[0])
+	ITEMS_LIST = view_selected_rate('__main2.db',RATE_TYPE)
+	# print(f'function items: {ITEMS_LIST}')
+	# print(f'secound table: {ITEMS_NO}')
+	treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
 
 def Cashier_operations():
 	# global f1
@@ -228,14 +261,72 @@ def Cashier_operations():
 	CHECK_OUT(f3)
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
+####################################################################################
+####################################################################################
+####################################################################################
+def clear_rate_fields():
+	groove_entry38.delete(0, 'end')
+	groove_entry38.insert(0,'')
+	groove_entry34.delete(0, 'end')
+	groove_entry34.insert(0,'')
+	groove_entry35.delete(0, 'end')
+	groove_entry35.insert(0,'')
+	groove_entry36.delete(0, 'end')
+	groove_entry36.insert(0,'')
+	groove_entry37.delete(0, 'end')
+	groove_entry37.insert(0,'')
+
+def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rate=0,Extra_Childrens_Rate=0):
+	try:
+   		if OPTION == 'new':
+   			print('new')
+   			if check_if_rate_in_database(Rate_Type) == False:
+   				print(False)
+   				insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate)
+   				clear_rate_fields()
+   			elif check_if_rate_in_database(Rate_Type) == True:
+   				tkinter.messagebox.showinfo(message="Editing Error Rate is exists ,add new Rate or use update current one .")
+   		elif OPTION == 'update':	
+   			if check_if_rate_in_database(Rate_Type) == True:
+   				Room_Rate = Room_Rate.replace(',','')
+   				Person_No = Person_No.replace(',','')
+   				Extra_Adults_Rate = Extra_Adults_Rate.replace(',','')
+   				Extra_Childrens_Rate = Extra_Childrens_Rate.replace(',','')
+   				try:
+   					int(float(Room_Rate))
+   					int(float(Person_No))
+   					int(float(Extra_Adults_Rate))
+   					int(float(Extra_Childrens_Rate))
+   					# print('they are all numbers')
+   					database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate)
+   					clear_rate_fields()
+   				except ValueError:
+   					# print(ValueError)
+   					tkinter.messagebox.showinfo(message="selected value is wrong  change it to numaric value .")
+   			elif check_if_rate_in_database(Rate_Type) == False:
+   				tkinter.messagebox.showinfo(message="Update Error Rate  is not exists ,add new Rate or use update current Rate .")
+   		elif OPTION == 'delete':
+   			if check_if_rate_in_database(Rate_Type) == True:
+   				print('delete')
+   				database_rate_delete(Rate_Type)
+   				clear_rate_fields()
+   			elif check_if_rate_in_database(Rate_Type) == False:
+   				tkinter.messagebox.showinfo(message="Delete Error , \n room  is not exists .")
+   		else:
+   			print('rate option is wrong')
+   		# secound not firrst:
+   		# first_table_show_options(Status.get(),R_Type.get(),R_number.get())
+	except ValueError:
+		pass
 
 
 def room_price_options(MASTER):
+	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38
 	f4 = MASTER
 	#BUTTONS:
-	tkinter.Button(f4, text='New Type',background="light gray").grid(row=1, column=1,sticky='we')
-	tkinter.Button(f4, text='Update',background="light gray").grid(row=1, column=2,sticky='we')
-	tkinter.Button(f4, text='Delete',background="light gray").grid(row=1, column=3,sticky='we')
+	tkinter.Button(f4,text='New Type',background="light gray",command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
+	tkinter.Button(f4,text='Update',background="light gray",command=lambda:room_price_buttons('update',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=2,sticky='we')
+	tkinter.Button(f4,text='Delete',background="light gray",command=lambda:room_price_buttons('delete',groove_entry38.get())).grid(row=1, column=3,sticky='we')
 	#LABELS:
 	tkinter.Label(f4,text="Rate Type",background="light gray").grid(row=1,column=0)
 	tkinter.Label(f4,text=" Room Rate",background="light gray").grid(row=2,column=1)
@@ -243,23 +334,22 @@ def room_price_options(MASTER):
 	tkinter.Label(f4,text="Adult's Rate",background="light gray").grid(row=2,column=3)
 	tkinter.Label(f4,text="Children's Rate",background="light gray").grid(row=2,column=4)
 	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=1,column=4,columnspan=7,sticky='w')
-
 	#ENTRIES:
 	groove_entry38 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
 	groove_entry38.grid(row=3,column=0,sticky='nwe')
-	groove_entry38.insert(0, " ")
+	groove_entry38.insert(0, "")
 	groove_entry34 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
 	groove_entry34.grid(row=3,column=1,sticky='nwe')
-	groove_entry34.insert(0, " ")
+	groove_entry34.insert(0, "")
 	groove_entry35 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
 	groove_entry35.grid(row=3,column=2,sticky='nwe')
-	groove_entry35.insert(0, " ")
+	groove_entry35.insert(0, "")
 	groove_entry36 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
 	groove_entry36.grid(row=3,column=3,sticky='nwe')
-	groove_entry36.insert(0, " ")
+	groove_entry36.insert(0, "")
 	groove_entry37 = tkinter.Entry(f4,font=10,relief="groove",background="white",width=10)
 	groove_entry37.grid(row=3,column=4,sticky='nwe')
-	groove_entry37.insert(0, " ")
+	groove_entry37.insert(0, "")
 	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=3,column=5,columnspan=7,sticky='w')
 	#LISTS:
 	Rate_Type = ttk.Combobox(f4,values=['All','Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
@@ -271,12 +361,6 @@ def CHECK_OUT(MASTER):
 	#BUTTONS:
 	tkinter.Button(f3, text='CheckOut',background="light gray").grid(row=0, column=0,sticky='we')
 	tkinter.Button(f3,text='Cancel',background="light gray").grid(row=0, column=1,sticky='we')
-	#tkinter.Button(f3, text='⯇',background="light gray").grid(row=4, column=4,sticky='w')
-	#tkinter.Button(f3, text='⯈',background="light gray").grid(row=4, column=5,sticky='w')
-	#tkinter.Button(f3, text='⯇',background="light gray").grid(row=2, column=4,sticky='w')
-	#tkinter.Button(f3, text='⯈',background="light gray").grid(row=2, column=5,sticky='w')
-	#tkinter.Button(f3, text='⯇',background="light gray").grid(row=3, column=4,sticky='w')
-	#tkinter.Button(f3, text='⯈',background="light gray").grid(row=3, column=5,sticky='w')
 	#LABELS:
 	tkinter.Label(f3,text="Guest Name ",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f3,text="Folio No ",background="light gray").grid(row=2,column=0,sticky='w')
@@ -594,15 +678,15 @@ def rooms_options(MASTER):
 def first_table_show_options(STATUS,TYPE,NUM):
 	ITEMS_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM))
 	ITEMS_LIST = view_selected_data('__main2.db',STATUS,TYPE,NUM)
-	treeview1_inserts(ITEMS_NO,ITEMS_LIST)
+	COLUMN_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM)[0])
+	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)
 		
-
-def treeview1_inserts(ITEMS_NO,ITEMS_LIST):
+##############################################################################
+def treeview_inserts(MASTER,TABLE_NUM,ITEMS_NO,ITEMS_LIST,MAX_ROWS,COLUMN_NO):
 	global COLOR_CHOICE
-	global TABLE_HEIGHT
 	COLOR_CHOICE = 0
-	treeview1.delete(*treeview1.get_children())
-	database_Table_view_Height(fen,first_list_Scorll_X,first_list_Scorll_Y,ITEMS_NO)
+	globals()[f'treeview{TABLE_NUM}'].delete(*globals()[f'treeview{TABLE_NUM}'].get_children())
+	database_Table_view_Height(MASTER,first_list_Scorll_X,first_list_Scorll_Y,ITEMS_NO,TABLE_NUM,MAX_ROWS)
 	for TABLE in ITEMS_LIST:
 		if COLOR_CHOICE == 0:
 			COLOR_CHOICE = COLOR_CHOICE + 1
@@ -611,25 +695,30 @@ def treeview1_inserts(ITEMS_NO,ITEMS_LIST):
 		else:
 			print('error')
 			print(f'COLOR_CHOICE: {COLOR_CHOICE}')
-		treeview1.insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:4] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
+		# if COUNT == 'OK':
+		globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:COLUMN_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
+		# if COUNT == 'NO':
+		# 	print(ITEMS_NO)
+		# 	globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:ITEMS_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
 
 
-def database_Table_view_Height(master,X,Y,ITEMS_NO):
-	global vsb
-	global TABLE_HEIGHT
-	if ITEMS_NO <= 8 :
-		TABLE_HEIGHT =  ITEMS_NO
-	elif ITEMS_NO >= 8:
-		TABLE_HEIGHT = 8
-	treeview1.configure(height=TABLE_HEIGHT)
-	if ITEMS_NO > 8:
-		vsb = ttk.Scrollbar(master, orient="vertical", command=treeview1.yview)
-		vsb.place(x=X, y=Y, height=180)
-	if ITEMS_NO <= 8:
-		if 'vsb' in globals():
-			vsb.place_forget()
-		if 'vsb' in locals():
-			vsb.place_forget()
+
+def database_Table_view_Height(master,X,Y,ITEMS_NO,TABLE_NUM,MAX_ROWS):
+	# global vsb
+	# global TABLE_HEIGHT
+	if ITEMS_NO <= MAX_ROWS :
+		globals()['TABLE{TABLE_NUM}_HEIGHT'] =  ITEMS_NO
+	elif ITEMS_NO >= MAX_ROWS:
+		globals()['TABLE{TABLE_NUM}_HEIGHT'] = MAX_ROWS
+	globals()[f'treeview{TABLE_NUM}'].configure(height=globals()['TABLE{TABLE_NUM}_HEIGHT'])
+	if ITEMS_NO > MAX_ROWS:
+		globals()[f'vbs{TABLE_NUM}'] = ttk.Scrollbar(master, orient="vertical", command=globals()[f'treeview{TABLE_NUM}'].yview)
+		globals()[f'vbs{TABLE_NUM}'].place(x=X, y=Y, height=180)
+	if ITEMS_NO <= MAX_ROWS:
+		if f'vbs{TABLE_NUM}' in globals():
+			globals()[f'vbs{TABLE_NUM}'].place_forget()
+		if f'vbs{TABLE_NUM}' in locals():
+			locals()[f'vbs{TABLE_NUM}'].place_forget()
 
 
 def setup_background(BACKGROUND_COLOR,FONT_COLOR):
@@ -640,27 +729,23 @@ def setup_background(BACKGROUND_COLOR,FONT_COLOR):
     canv = tkinter.Canvas(treeview1,background=BACKGROUND_COLOR,borderwidth=0,highlightthickness=0)
     canv_text = canv.create_text(0, 0,fill=FONT_COLOR,anchor='w')
 
-
-# def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT):
-# 	LEN = len(COLUMNS)
-# 	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(COLUMNS[1:LEN]) ,height=TABLE_HEIGHT)
-# 	COLUMN_NUM = 0
-# 	for COLUMN in COLUMNS:
-# 		# print("#{}".format(COLUMN_NUM),"{}".format(COLUMN))
-# 		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text="{}".format(COLUMN), anchor = "w")
-# 		globals()[f'treeview{TREE_NUM}'].column("#{}".format(COLUMN_NUM), width = WIDTHS[COLUMN_NUM], anchor = "w")
-# 		COLUMN_NUM = COLUMN_NUM + 1
-# 	globals()[f'treeview{TREE_NUM}'].pack(fill=tkinter.BOTH,expand=1)
-# 	globals()[f'treeview{TREE_NUM}'].place(x=X,y=Y)
-
-def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT,geometry):
+def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT,geometry,COUNT):
 	LEN = len(COLUMNS)
-	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(COLUMNS[1:LEN]) ,height=TABLE_HEIGHT)
+	if COUNT == 'OK':
+		columns = COLUMNS[1:LEN]
+	if COUNT == 'NO':
+		columns = COLUMNS
+	globals()[f'treeview{TREE_NUM}'] =  ttk.Treeview(MASTER,columns=(columns) ,height=TABLE_HEIGHT)
 	COLUMN_NUM = 0
 	for COLUMN in COLUMNS:
-		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text="{}".format(COLUMN), anchor = "w")
+		if COUNT == 'OK':
+			TEXT = "{}".format(COLUMN) 
+		if COUNT == 'NO':
+			TEXT = ""
+		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text=TEXT, anchor = "w")
 		globals()[f'treeview{TREE_NUM}'].column("#{}".format(COLUMN_NUM), width = WIDTHS[COLUMN_NUM], anchor = "w")
 		COLUMN_NUM = COLUMN_NUM + 1
+	
 	if 'pack' in geometry:
 		globals()[f'treeview{TREE_NUM}'].pack(fill=geometry['pack']['fill'],expand=geometry['pack']['expand'])
 	if 'grid' in geometry:
@@ -669,51 +754,77 @@ def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT,geo
 	if 'place' in geometry:
 		globals()[f'treeview{TREE_NUM}'].place(x=geometry['place']['X'],y=geometry['place']['Y'])
 
+
 def table1():
-	treeview_table_generator(fen,1,["Room No","Room Name","Room Type","Room Status"],[72,187,187,104],10,80,TABLE_HEIGHT,geometry={'place':{'X':10 , 'Y':80},'pack':{'fill': tkinter.BOTH ,'expand':1}})
+	treeview_table_generator(fen,1,["Room No","Room Name","Room Type","Room Status"],[72,187,187,104],10,80,TABLE_HEIGHT,geometry={'place':{'X':10 , 'Y':80},'pack':{'fill': tkinter.BOTH ,'expand':1}},COUNT='OK')
 	Style_generator(1,None,9,'light gray')
+	globals()['treeview1'].bind('<<TreeviewSelect>>',selectItem)
 	first_table_show_options('All','All','All')
 
 def Style_generator(STYLE_NUM,FONT,FONT_SIZE,BG_COLOR):
 	globals()[f'style{STYLE_NUM}'] = ttk.Style()
 	globals()[f'style{STYLE_NUM}'].configure(f"treeview{STYLE_NUM}.Heading", font=(FONT, FONT_SIZE,'bold'),background=BG_COLOR)
 	globals()[f'treeview{STYLE_NUM}'].tag_configure('gray', background=BG_COLOR)
-	globals()[f'treeview{STYLE_NUM}'].bind_all('<<TreeviewSelect>>', selectItem)
+
+#########################################################################################
+
+def selectItem2(a):
+	curItem = treeview2.focus()
+	# print(curItem)
+	LIST = view_selected_rate('__main2.db',str(treeview2.item(curItem)['text']))
+	# print(LIST)
+	groove_entry35.delete(0,'end')
+	groove_entry35.insert(0, LIST[0][2])
+	#update name:
+	groove_entry36.delete(0,'end')
+	groove_entry36.insert(0, LIST[0][3])
+	#update type:
+	# groove_entry3.current(room_types.index(LIST[0][2]))
+	#update side
+	groove_entry37.delete(0,'end')
+	groove_entry37.insert(0, LIST[0][4])
+	# #update beds
+	groove_entry38.delete(0,'end')
+	groove_entry38.insert(0, LIST[0][0])
+	#update details:
+	groove_entry34.delete(0,'end')
+	groove_entry34.insert(0, LIST[0][1])
+
 
 def selectItem(a):
-    curItem = treeview1.focus()
-    LIST = view_selected_data('__main2.db','All','All',int(treeview1.item(curItem)['text']))
-    #print(LIST)
-    groove_entry1.delete(0,'end')
-    groove_entry1.insert(0, LIST[0][0])
-    #update name:
-    groove_entry2.delete(0,'end')
-    groove_entry2.insert(0, LIST[0][1])
-    #update type:
-    groove_entry3.current(room_types.index(LIST[0][2]))
-    #update side
-    groove_entry5.delete(0,'end')
-    groove_entry5.insert(0, LIST[0][4])
-    #update beds
-    groove_entry6.delete(0,'end')
-    groove_entry6.insert(0, LIST[0][6])
-    #update details:
-    groove_entry4.delete(0,'end')
-    groove_entry4.insert(0, LIST[0][5])
-    if LIST[0][3] == 'Free':
-    	room_status.configure(text="       Free         ",background="pale green",relief="solid")
-    elif LIST[0][3] == 'IN USE':
-    	room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
-    else:
-    	print('error')
-    #update chickins:
-    #update room number:
-    groove_entry7F2.delete(0,'end')
-    groove_entry7F2.insert(0,LIST[0][0])
-    #update Room Type:
-    Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
+	curItem = treeview1.focus()
+	print(curItem)
+	LIST = view_selected_data('__main2.db','All','All',int(treeview1.item(curItem)['text']))
+	#print(LIST)
+	groove_entry1.delete(0,'end')
+	groove_entry1.insert(0, LIST[0][0])
+	#update name:
+	groove_entry2.delete(0,'end')
+	groove_entry2.insert(0, LIST[0][1])
+	#update type:
+	groove_entry3.current(room_types.index(LIST[0][2]))
+	#update side
+	groove_entry5.delete(0,'end')
+	groove_entry5.insert(0, LIST[0][4])
+	#update beds
+	groove_entry6.delete(0,'end')
+	groove_entry6.insert(0, LIST[0][6])
+	#update details:
+	groove_entry4.delete(0,'end')
+	groove_entry4.insert(0, LIST[0][5])
+	if LIST[0][3] == 'Free':
+		room_status.configure(text="       Free         ",background="pale green",relief="solid")
+	elif LIST[0][3] == 'IN USE':
+		room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
+	else:
+		print('error')
+	#update room number:
+	groove_entry7F2.delete(0,'end')
+	groove_entry7F2.insert(0,LIST[0][0])
+	#update Room Type:
+	Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
 
-    # DateIn,DateOut
+
 
 def Room_View_Options():
 	#globals:
@@ -751,29 +862,30 @@ def room_view_callback(event):
 	NUM     =	R_number.get()
 	first_table_show_options(STATUS,TYPE,NUM)
 
-
 def clock_date():
 	global clock
 	global DATE
+	def live_time_change():
+		timenow =  datetime.now().time().strftime('%H:%M:%S')
+		datenow = datetime.now().strftime('%A,%d %B %Y')
+		clock.config(text=timenow)
+		DATE.config(text=datenow,width=23)
+		fen.after(200, live_time_change)
 	datenow = datetime.now().strftime('%A,%d %B %Y')
 	timenow =  datetime.now().time().strftime('%H:%M:%S')
 	Time = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
 	Time.place(relx=0.74, rely=0.108, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Time',bg="light gray").place(relx=.77, rely=0.108,anchor=tkinter.W)
-	clock = tkinter.Label(Time, text=f'            {timenow}          ',font=("Helvetica", 24),bg="light gray")
+	clock = tkinter.Label(Time, text=f'{timenow}',font=("Helvetica", 24),bg="light gray")
 	clock.pack(side=tkinter.TOP, anchor=tkinter.N)
-	DATE = tkinter.Label(Time, text=f'          {datenow}              ',bg="light gray")
+	DATE = tkinter.Label(Time, text=f'{datenow}',bg="light gray")
 	DATE.pack(side=tkinter.TOP, anchor=tkinter.W)
 	live_time_change()
 
-def live_time_change():
-	timenow =  datetime.now().time().strftime('%H:%M:%S')
-	datenow = datetime.now().strftime('%A,%d %B %Y')
-	clock.config(text=timenow)
-	DATE.config(text=f'      {datenow}    ')
-	fen.after(200, live_time_change)
+
 
 def main():
+	date_list()
 	clock_date()
 	Room_View_Options()
 	create_main_database("__main2.db")
