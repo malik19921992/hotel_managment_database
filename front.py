@@ -103,7 +103,6 @@ def check_if_room_in_database(NUM):
 		my_list.append(int(row[0]))
 	return int(NUM) in my_list
 
-
 def check_if_rate_in_database(Rate_Type):
 	my_list = []
 	conn =None;
@@ -180,6 +179,19 @@ def view_selected_rate(DATABESE_NAME,RATE_TYPE):
 		my_list.append(row)
 	return my_list
 
+def select_types(DATABESE_NAME):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' SELECT Rate_Type FROM rate_table ORDER BY id''' )
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
+
+
+
+
 ##date list:#########################################################
 
 def date_list():
@@ -220,21 +232,18 @@ def treeview_rate_options_table(MASTER):
 	secound_list_Scorll_X = 569+50
 	secound_list_Scorll_Y = 75
 	item2 = {}
-	# item2[0] = treeview2.insert("" , "end" , text = "Standard", values = ('1,458.00','2','351.00','0.00'))
-	# item2[0] = treeview2.insert("" , "end" , text = "Deluxe", values = ('1,458.00','2','351.00','0.00'),tag='bb')
 	secound_table_show_options('All')
-	#treeview_inserts(f4,2,ITEMS_NO,ITEMS_LIST)
-	#Table_Height(f4,secound_list_Scorll_X,secound_list_Scorll_Y)
 	treeview2.tag_configure('gray', background='#cccccc')
 	treeview2.tag_configure('bb', background='light gray')
 
 def secound_table_show_options(RATE_TYPE):
-	print('func works')
+	# print('func works')
 	ITEMS_NO = len(view_selected_rate('__main2.db',RATE_TYPE))
-	COLUMN_NO = len(view_selected_rate('__main2.db',RATE_TYPE)[0])
-	ITEMS_LIST = view_selected_rate('__main2.db',RATE_TYPE)
-	# print(f'function items: {ITEMS_LIST}')
-	# print(f'secound table: {ITEMS_NO}')
+	COLUMN_NO = 5
+	if ITEMS_NO > 0:
+		ITEMS_LIST = view_selected_rate('__main2.db',RATE_TYPE)
+	elif ITEMS_NO <= 0:
+		ITEMS_LIST = None
 	treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
 
 def Cashier_operations():
@@ -277,13 +286,18 @@ def clear_rate_fields():
 	groove_entry37.insert(0,'')
 
 def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rate=0,Extra_Childrens_Rate=0):
+	global Rate_Type_CHECKIN,groove_entry3,R_Type
 	try:
    		if OPTION == 'new':
-   			print('new')
+   			# print('new')
    			if check_if_rate_in_database(Rate_Type) == False:
-   				print(False)
+   				# print(False)
    				insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate)
    				clear_rate_fields()
+   				Rate_Type_CHECKIN.config(values=select_types("__main2.db"))
+   				groove_entry3.config(values=select_types("__main2.db"))
+   				R_Type.config(values=['All']+select_types("__main2.db"))
+   				Rate_Type_List.config(values=['All']+select_types("__main2.db"))
    			elif check_if_rate_in_database(Rate_Type) == True:
    				tkinter.messagebox.showinfo(message="Editing Error Rate is exists ,add new Rate or use update current one .")
    		elif OPTION == 'update':	
@@ -307,21 +321,28 @@ def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rat
    				tkinter.messagebox.showinfo(message="Update Error Rate  is not exists ,add new Rate or use update current Rate .")
    		elif OPTION == 'delete':
    			if check_if_rate_in_database(Rate_Type) == True:
-   				print('delete')
+   				# print('delete')
    				database_rate_delete(Rate_Type)
    				clear_rate_fields()
+   				Rate_Type_CHECKIN.config(values=select_types("__main2.db"))
+   				groove_entry3.config(values=select_types("__main2.db"))
+   				R_Type.config(values=['All']+select_types("__main2.db"))
+   				Rate_Type_List.config(values=['All']+select_types("__main2.db"))
    			elif check_if_rate_in_database(Rate_Type) == False:
    				tkinter.messagebox.showinfo(message="Delete Error , \n room  is not exists .")
    		else:
-   			print('rate option is wrong')
-   		# secound not firrst:
-   		# first_table_show_options(Status.get(),R_Type.get(),R_number.get())
+   			# print('rate option is wrong')
+   			pass
+   		secound_table_show_options(rate_type_choose_trigger())
 	except ValueError:
 		pass
 
+def rate_type_choose_trigger(*args):
+	RATE_TYPE_LIST = Rate_Type_List.get()
+	return RATE_TYPE_LIST
 
 def room_price_options(MASTER):
-	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38
+	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38,Rate_Type_List
 	f4 = MASTER
 	#BUTTONS:
 	tkinter.Button(f4,text='New Type',background="light gray",command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
@@ -352,9 +373,10 @@ def room_price_options(MASTER):
 	groove_entry37.insert(0, "")
 	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=3,column=5,columnspan=7,sticky='w')
 	#LISTS:
-	Rate_Type = ttk.Combobox(f4,values=['All','Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
-	Rate_Type.grid(row=2,column=0,sticky='w')
-	Rate_Type.current(0)
+	Rate_Type_List = ttk.Combobox(f4,values=['All']+select_types("__main2.db"),width=11)
+	Rate_Type_List.grid(row=2,column=0,sticky='w')
+	Rate_Type_List.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
+	Rate_Type_List.current(0)
 
 def CHECK_OUT(MASTER):
 	f3 = MASTER
@@ -541,7 +563,7 @@ def CHECK_IN(MASTER):
 	DateOut.grid(row=5,column=3,columnspan=5,sticky='w')
 	DateOut.bind('<<ComboboxSelected>>', date_choose_checkin_trigger)
 	
-	Rate_Type_CHECKIN = ttk.Combobox(f2,values=['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
+	Rate_Type_CHECKIN = ttk.Combobox(f2,values=select_types("__main2.db"),width=11)
 	Rate_Type_CHECKIN.grid(row=1,column=7,columnspan=8,sticky='w')
 	#ENTRIES:
 	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
@@ -652,7 +674,7 @@ def rooms_options(MASTER):
 	room_status = tkinter.Label(f1, text="       Free         ",background="pale green",relief="solid")
 	room_status.grid(row=1,column=4,sticky='w')
 	#LIST:
-	groove_entry3 = ttk.Combobox(f1,values=room_types,width=11)
+	groove_entry3 = ttk.Combobox(f1,values=select_types("__main2.db"),width=11)
 	groove_entry3.grid(row=3,column=1,columnspan=2,sticky='nw')
 	groove_entry3.current(0)
 	#ENTRIES:
@@ -677,8 +699,10 @@ def rooms_options(MASTER):
 
 def first_table_show_options(STATUS,TYPE,NUM):
 	ITEMS_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM))
+	# print(ITEMS_NO)
 	ITEMS_LIST = view_selected_data('__main2.db',STATUS,TYPE,NUM)
-	COLUMN_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM)[0])
+	if ITEMS_NO > 0: 
+		COLUMN_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM)[0])
 	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)
 		
 ##############################################################################
@@ -687,20 +711,17 @@ def treeview_inserts(MASTER,TABLE_NUM,ITEMS_NO,ITEMS_LIST,MAX_ROWS,COLUMN_NO):
 	COLOR_CHOICE = 0
 	globals()[f'treeview{TABLE_NUM}'].delete(*globals()[f'treeview{TABLE_NUM}'].get_children())
 	database_Table_view_Height(MASTER,first_list_Scorll_X,first_list_Scorll_Y,ITEMS_NO,TABLE_NUM,MAX_ROWS)
-	for TABLE in ITEMS_LIST:
-		if COLOR_CHOICE == 0:
-			COLOR_CHOICE = COLOR_CHOICE + 1
-		elif COLOR_CHOICE == 1:
-			COLOR_CHOICE = COLOR_CHOICE - 1
-		else:
-			print('error')
-			print(f'COLOR_CHOICE: {COLOR_CHOICE}')
-		# if COUNT == 'OK':
-		globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:COLUMN_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
-		# if COUNT == 'NO':
-		# 	print(ITEMS_NO)
-		# 	globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:ITEMS_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
-
+	if ITEMS_NO > 0:
+		for TABLE in ITEMS_LIST:
+			if COLOR_CHOICE == 0:
+				COLOR_CHOICE = COLOR_CHOICE + 1
+			elif COLOR_CHOICE == 1:
+				COLOR_CHOICE = COLOR_CHOICE - 1
+			else:
+				pass
+				# print('error')
+				# print(f'COLOR_CHOICE: {COLOR_CHOICE}')
+			globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:COLUMN_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
 
 
 def database_Table_view_Height(master,X,Y,ITEMS_NO,TABLE_NUM,MAX_ROWS):
@@ -793,7 +814,7 @@ def selectItem2(a):
 
 def selectItem(a):
 	curItem = treeview1.focus()
-	print(curItem)
+	# print(curItem)
 	LIST = view_selected_data('__main2.db','All','All',int(treeview1.item(curItem)['text']))
 	#print(LIST)
 	groove_entry1.delete(0,'end')
@@ -817,7 +838,8 @@ def selectItem(a):
 	elif LIST[0][3] == 'IN USE':
 		room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
 	else:
-		print('error')
+		pass
+		# print('error')
 	#update room number:
 	groove_entry7F2.delete(0,'end')
 	groove_entry7F2.insert(0,LIST[0][0])
@@ -841,7 +863,7 @@ def Room_View_Options():
 	tkinter.Label(Room_View,text=" ",background="light gray").grid(row=5,column=0,sticky='w')
 	#lists:
 	Status = ttk.Combobox(Room_View,values=['All','Free','In Use'],width=5)
-	R_Type = ttk.Combobox(Room_View,values=['All','Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package'],width=11)
+	R_Type = ttk.Combobox(Room_View,values=['All']+select_types("__main2.db"),width=11)
 	R_number = ttk.Combobox(Room_View,values=['All',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],width=3)
 	#geometry:
 	Status.grid(row=2,column=1,sticky='w')
@@ -883,7 +905,6 @@ def clock_date():
 	live_time_change()
 
 
-
 def main():
 	date_list()
 	clock_date()
@@ -895,6 +916,7 @@ def main():
 	view_selected_data('__main2.db','All','All','All')
 	table1()
 	Cashier_operations()
+	# print(f'types: {select_types("__main2.db")}')
 
 
 
