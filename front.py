@@ -33,8 +33,6 @@ room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','P
 date_list = []
 
 #database functions:########################################################################
-
-
 def create_main_database(DATABESE_NAME):
     conn = sqlite3.connect(DATABESE_NAME)
     c = conn.cursor()
@@ -62,6 +60,36 @@ def create_rate_table(DATABESE_NAME):
                 Extra_Childrens_Rate TEXT NOT NULL) ''')
 	conn.commit()
 	conn.close()
+
+
+def create_serial_table(DATABESE_NAME):
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS serial_table(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+                serial_num INT NOT NULL) ''')
+	conn.commit()
+	conn.close()
+
+
+def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute("INSERT OR IGNORE INTO serial_table VALUES (?)",(SERIAL_NUM,))
+	conn.commit()
+	c.close()
+
+
+def check_if_serial_in_database(SERIAL_NUM):
+	my_list = []
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute(''' SELECT serial_num FROM serial_table ''')
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(int(row[0]))
+	return int(SERIAL_NUM) in my_list
 
 
 def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
@@ -103,6 +131,7 @@ def check_if_room_in_database(NUM):
 		my_list.append(int(row[0]))
 	return int(NUM) in my_list
 
+
 def check_if_rate_in_database(Rate_Type):
 	my_list = []
 	conn =None;
@@ -123,6 +152,7 @@ def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 	conn.commit()
 	c.close()
 
+
 def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -130,6 +160,7 @@ def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_C
 	c.execute('UPDATE rate_table SET  Room_Rate = ? , Person_No = ? , Extra_Adults_Rate = ? , Extra_Childrens_Rate = ? WHERE Rate_Type = ? ',(float(Room_Rate),int(float(Person_No)),float(Extra_Adults_Rate),float(Extra_Childrens_Rate),str(Rate_Type),))
 	conn.commit()
 	c.close()
+
 
 def database_room_delete(NUM):
 	conn =None;
@@ -139,6 +170,7 @@ def database_room_delete(NUM):
 	conn.commit()
 	c.close()
 
+
 def database_rate_delete(Rate_Type):
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -146,6 +178,7 @@ def database_rate_delete(Rate_Type):
 	c.execute("DELETE from rate_table where Rate_Type = ?",(Rate_Type,))
 	conn.commit()
 	c.close()
+
 
 def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 	my_list = []
@@ -166,6 +199,7 @@ def view_selected_data(DATABESE_NAME,STATUS,TYPE,NUM):
 		my_list.append(row)
 	return my_list
 
+
 def view_selected_rate(DATABESE_NAME,RATE_TYPE):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -179,6 +213,7 @@ def view_selected_rate(DATABESE_NAME,RATE_TYPE):
 		my_list.append(row)
 	return my_list
 
+
 def select_types(DATABESE_NAME):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -190,8 +225,15 @@ def select_types(DATABESE_NAME):
 	return my_list
 
 
-
-
+def select_room_numbers(DATABESE_NAME):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' SELECT Room_No FROM table_name ORDER BY Room_No''' )
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
 ##date list:#########################################################
 
 def date_list():
@@ -632,18 +674,20 @@ def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=No
    		if OPTION == 'new':
    			if check_if_room_in_database(ROOM_NO) == False:
    				insert_to_database(ROOM_NO,NAME,TYPE,'Free',SIDE,DETAILS,BEDS)
+   				R_number.config(values=['All']+select_room_numbers('__main2.db'))
    			elif check_if_room_in_database(ROOM_NO) == True:
-   				messagebox.showinfo("Editing Error", "room  is exists ,add new number or use update current room .")
+   				tkinter.messagebox.showinfo("Editing Error", "room  is exists ,add new number or use update current room .")
    		elif OPTION == 'update':	
    			if check_if_room_in_database(ROOM_NO) == True:
    				database_room_update(ROOM_NO,NAME,TYPE,SIDE,DETAILS,BEDS)
    			elif check_if_room_in_database(ROOM_NO) == False:
-   				messagebox.showinfo("Update Error", "room  is not exists ,add new number or use update current room .")
+   				tkinter.messagebox.showinfo("Update Error", "room  is not exists ,add new number or use update current room .")
    		elif OPTION == 'delete':
    			if check_if_room_in_database(ROOM_NO) == True:
    				database_room_delete(ROOM_NO)
+   				R_number.config(values=['All']+select_room_numbers('__main2.db'))
    			elif check_if_room_in_database(ROOM_NO) == False:
-   				messagebox.showinfo("Update Error", "room  is not exists .")
+   				tkinter.messagebox.showinfo("Update Error", "room  is not exists .")
    		else:
    			print('room option is wrong')
 
@@ -864,7 +908,7 @@ def Room_View_Options():
 	#lists:
 	Status = ttk.Combobox(Room_View,values=['All','Free','In Use'],width=5)
 	R_Type = ttk.Combobox(Room_View,values=['All']+select_types("__main2.db"),width=11)
-	R_number = ttk.Combobox(Room_View,values=['All',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],width=3)
+	R_number = ttk.Combobox(Room_View,values=['All']+select_room_numbers('__main2.db'),width=3)
 	#geometry:
 	Status.grid(row=2,column=1,sticky='w')
 	R_Type.grid(row=3,column=1,sticky='w')
@@ -911,14 +955,13 @@ def main():
 	Room_View_Options()
 	create_main_database("__main2.db")
 	create_rate_table("__main2.db")
+	create_serial_table("__main2.db")
 	# create_type_table("__main2.db")
 	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
 	view_selected_data('__main2.db','All','All','All')
 	table1()
 	Cashier_operations()
 	# print(f'types: {select_types("__main2.db")}')
-
-
 
 #widget:
 fen = tkinter.Tk()
