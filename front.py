@@ -223,7 +223,6 @@ def view_selected_rate(DATABESE_NAME,RATE_TYPE):
 		my_list.append(row)
 	return my_list
 
-
 def select_types(DATABESE_NAME):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -507,19 +506,109 @@ def CHECK_OUT(MASTER):
 	groove_entry33.insert(0, "2,916.00")
 
 
+def modify_paymen_numbers_2(*args):
+	# print(args)
+	def Extract(lst,NUM):
+		return list(list(zip(*lst))[NUM])
+	my_list = []
+	rate = view_selected_rate('__main2.db',Rate_Type_CHECKIN.get())
+	my_list.append(rate)
+	for ROOM_RATE in Extract(rate,1):
+		RATE_PERIOD = ROOM_RATE
+	NO_OF_DAYS = groove_entry8F2.get()
+
+	for MAX_PERSONS in Extract(rate,2): 
+		MAX_PERSONS  = int(MAX_PERSONS)
+
+	NO_OF_ADULTS = groove_entry9F2.get()
+
+	if NO_OF_ADULTS == '':
+		NO_OF_ADULTS = 0
+	
+	if int(NO_OF_ADULTS) > int(MAX_PERSONS):
+		EXTRA_ADULTS = int(NO_OF_ADULTS) - int(MAX_PERSONS)
+	else:
+		EXTRA_ADULTS = 0
+
+	if NO_OF_DAYS == 0 or NO_OF_DAYS == None or NO_OF_DAYS == '0' or  NO_OF_DAYS == '':
+		  EXTRA_ADULTS = 0
+
+	EXTRA_CHILDREN  =  groove_entry10F2.get()
+	if EXTRA_CHILDREN == '' or EXTRA_CHILDREN == None or NO_OF_DAYS == '0' or NO_OF_DAYS == None or NO_OF_DAYS == 0 or NO_OF_DAYS == '':
+		EXTRA_CHILDREN = 0
+
+	for EXTRA_ADULTS_RATE in Extract(rate,3):
+		EXTRA_ADULTS_RATE = float(EXTRA_ADULTS_RATE)
+	for EXTRA_CHILDREN_RATE in Extract(rate,4):
+		EXTRA_CHILDREN_RATE = float(EXTRA_CHILDREN_RATE)
+
+	if NO_OF_DAYS == 0 or NO_OF_DAYS == '':
+		NO_OF_DAYS = 0.00
+	TOTAL_CHARGES = (RATE_PERIOD * float(int(NO_OF_DAYS))) + ( float(int(EXTRA_ADULTS)) * EXTRA_ADULTS_RATE ) +  ( float(int(EXTRA_CHILDREN)) * EXTRA_CHILDREN_RATE)
+
+	DISCOUNT = float(groove_entry15F2.get())
+	OTHER_CHAGES = groove_entry14F2.get()
+	if DISCOUNT > 0:
+		TOTAL = (float(TOTAL_CHARGES) + float(OTHER_CHAGES)) - (float(TOTAL_CHARGES) * (1/DISCOUNT)) 
+	elif DISCOUNT == 0:
+		TOTAL = float(TOTAL_CHARGES)
+	else:
+		pass
+
+	AMOUNT_PAIED = float(groove_entry17F2.get())
+	BALANCE = (TOTAL - AMOUNT_PAIED) * -1
+	if BALANCE == -0.0:
+		BALANCE = 0.00
+
+	groove_entry11F2.delete(0,'end') # rate/period
+	groove_entry12F2.delete(0,'end') # total charges
+	# # groove_entry14F2.delete() # other charges
+	# # # groove_entry15F2.delete() # discount you change this 
+	groove_entry16F2.delete(0,'end') # total 
+	# # groove_entry17F2.delete() # amount paied
+	groove_entry18F2.delete(0,'end') # balance
+
+	groove_entry11F2.insert(0,RATE_PERIOD)#rate/period
+	groove_entry12F2.insert(0,TOTAL_CHARGES) # total charges
+	# groove_entry14F2.insert(0, "4,233.22") # other charges
+	# # groove_entry15F2.insert(0, "0.0000") # discount you change this
+	groove_entry16F2.insert(0, TOTAL) # total 
+	# groove_entry17F2.insert(0, "0.00") # amount paied
+	groove_entry18F2.insert(0, BALANCE) # balance
+
+
 def CHECK_IN(MASTER):
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2
 	global Rate_Type_CHECKIN,DateIn,DateOut
 	f2 = MASTER
-	def trace_entry():
-		def callback(sv,name):
-			print(sv.get(),name)
-		global sv
-		sv = tkinter.StringVar()
-		sv.trace("w", lambda name, index, mode, sv=sv: callback(sv,name)) 
-	trace_entry()
+
+	def trace_entry(ENTRY_VAR):
+		# print(ENTRY_VAR)
+		def callback(sv):
+			# print(sv)
+			if Rate_Type_CHECKIN.get() != "":
+				modify_paymen_numbers_2()
+				
+		globals()[f'{ENTRY_VAR}_trace'] = tkinter.StringVar()
+		globals()[f'{ENTRY_VAR}_trace'].trace("w", lambda name, index, mode, sv=globals()[f'{ENTRY_VAR}_trace']: callback(globals()[f'{ENTRY_VAR}_trace'])) 
+
+	trace_entry('groove_entry8F2')
+	trace_entry('groove_entry9F2')
+	trace_entry('groove_entry10F2')
+
+	# def callback2(sv):
+	# 	print(sv)
+	# 	if Rate_Type_CHECKIN.get() != "":
+	# 		modify_paymen_numbers_2()
+
+	# global groove_entry9F2_trace 
+	# groove_entry9F2_trace = tkinter.StringVar()
+	# groove_entry9F2_trace.trace("w", lambda name, index, mode, sv=groove_entry9F2_trace: callback2('groove_entry9F2_trace'))
+
+
+
 	#BUTTONS:
 	tkinter.Button(f2, text='Book it',background="light gray").grid(row=0, column=0,sticky='we')
 	tkinter.Button(f2, text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
@@ -627,6 +716,7 @@ def CHECK_IN(MASTER):
 	DateOut.bind('<<ComboboxSelected>>', date_choose_checkin_trigger)
 	Rate_Type_CHECKIN = ttk.Combobox(f2,values=select_types("__main2.db"),width=11)
 	Rate_Type_CHECKIN.grid(row=1,column=7,columnspan=8,sticky='w')
+	Rate_Type_CHECKIN.bind("<<ComboboxSelected>>",lambda event:modify_paymen_numbers_2(event))
 	#ENTRIES:
 	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry0F2.grid(row=1,column=1,columnspan=2,sticky='nsw')
@@ -643,66 +733,40 @@ def CHECK_IN(MASTER):
 	groove_entry7F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
 	groove_entry7F2.grid(row=3,column=3,sticky='nsw')
 	groove_entry7F2.insert(0, "") # room number
-	groove_entry8F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=sv)
+	groove_entry8F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry8F2_trace)
 	groove_entry8F2.grid(row=6,column=3,sticky='nsw')
 	groove_entry8F2.insert(0, "1") # no of days
-	groove_entry9F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry9F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry9F2_trace)
 	groove_entry9F2.grid(row=7,column=3,sticky='nsw')
 	groove_entry9F2.insert(0, "0")	# no of adults
-	groove_entry10F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	groove_entry10F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry10F2_trace)
 	groove_entry10F2.grid(row=8,column=3,sticky='nsw')
 	groove_entry10F2.insert(0, "0") # no of childs
 	groove_entry11F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry11F2.grid(row=2,column=7,columnspan=8,sticky='nsw')
-	groove_entry11F2.insert(0, "998.00") # rate/period
+	groove_entry11F2.insert(0, "0.00") # rate/period
 	groove_entry12F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry12F2.grid(row=3,column=7,columnspan=8,sticky='nsw')
-	groove_entry12F2.insert(0, "4,233.66") # total charge
+	groove_entry12F2.insert(0, "0.00") # total charge
 	# groove_entry13F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	# groove_entry13F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
 	# groove_entry13F2.insert(0, "1.11") 
 	groove_entry14F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry14F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
-	groove_entry14F2.insert(0, "4,233.22") # other charges
+	groove_entry14F2.insert(0, "0.00") # other charges
 	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8)
 	groove_entry15F2.grid(row=5,column=7,sticky='nsw')
 	groove_entry15F2.insert(0, "0.0000") # discount
 	groove_entry16F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry16F2.grid(row=6,column=7,columnspan=8,sticky='nsw')
-	groove_entry16F2.insert(0, "4,233.33") # total 
+	groove_entry16F2.insert(0, "0.00") # total 
 	groove_entry17F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry17F2.grid(row=7,column=7,columnspan=8,sticky='nsw')
 	groove_entry17F2.insert(0, "0.00") # amount paied
 	groove_entry18F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry18F2.grid(row=8,column=7,columnspan=8,sticky='nsw')
-	groove_entry18F2.insert(0, "4,233.00") # balance
+	groove_entry18F2.insert(0, "0.00") # balance
 
-
-def modify_paymen_numbers():
-	pass
-	# if RATE_TYPE != None:
-	# 	RATE_PERIOD =  ROOM_RATE
-	# 	TOTAL_CHARGE = (ROOM_RATE * NO_OF_DAYS) + MAX_PERSONS + MAX CHILDRENS
-	# 	OTHER_CHARGE = 0.00
-	# 	TOTAL = TOTAL_CHARGE * (1/DISCOUNT)
-	# 	AMOUNT_PAIED = None
-	# 	BALANCE = None
-
-	# 	groove_entry11F2.delete() # rate/period
-	# 	groove_entry12F2.delete() # total charge
-	# 	groove_entry14F2.delete() # other charges
-	# 	# groove_entry15F2.delete() # discount you change this 
-	# 	groove_entry16F2.delete() # total 
-	# 	groove_entry17F2.delete() # amount paied
-	# 	groove_entry18F2.delete() # balance
-
-	# 	groove_entry11F2.insert(0, "998.00") # rate/period
-	# 	groove_entry12F2.insert(0, "4,233.66") # total charge
-	# 	groove_entry14F2.insert(0, "4,233.22") # other charges
-	# 	# groove_entry15F2.insert(0, "0.0000") # discount you change this
-	# 	groove_entry16F2.insert(0, "4,233.33") # total 
-	# 	groove_entry17F2.insert(0, "0.00") # amount paied
-	# 	groove_entry18F2.insert(0, "4,233.00") # balance
 
 
 
@@ -907,6 +971,7 @@ def selectItem2(a):
 	groove_entry34.insert(0, LIST[0][1])
 
 
+
 def selectItem(a):
 	curItem = treeview1.focus()
 	# print(curItem)
@@ -940,7 +1005,7 @@ def selectItem(a):
 	groove_entry7F2.insert(0,LIST[0][0])
 	#update Room Type:
 	Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
-
+	modify_paymen_numbers_2()
 
 
 def Room_View_Options():
@@ -973,11 +1038,13 @@ def Room_View_Options():
 	R_Type.bind('<<ComboboxSelected>>', room_view_callback)
 	R_number.bind('<<ComboboxSelected>>', room_view_callback)
 
+
 def room_view_callback(event):
 	STATUS  =   Status.get()
 	TYPE    =   R_Type.get()
 	NUM     =	R_number.get()
 	first_table_show_options(STATUS,TYPE,NUM)
+
 
 def clock_date():
 	global clock
