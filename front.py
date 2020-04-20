@@ -9,7 +9,10 @@ from dateutil.relativedelta import relativedelta
 import sqlite3
 import tkinter.messagebox
 
-
+'''
+from line 112-135
+adding to rate table and getting from rate table
+'''
 #VARS:
 TABLE_HEIGHT=0
 COLOR_TAG = {}
@@ -62,14 +65,71 @@ def create_rate_table(DATABESE_NAME):
 	conn.close()
 
 
-def create_serial_table(DATABESE_NAME):
-	conn = sqlite3.connect(DATABESE_NAME)
+def create_serial_table(DATABASE_NAME):
+	conn = sqlite3.connect(DATABASE_NAME)
 	c = conn.cursor()
 	c.execute(''' CREATE TABLE IF NOT EXISTS serial_table(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
                 serial_num INT NOT NULL) ''')
 	conn.commit()
 	conn.close()
+
+def create_booking_table(DATABASE_NAME):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS booking_table(
+				Room_No INT PRIMARY KEY NOT NULL,
+				serial_num INT NOT NULL,
+				First_name TEXT NOT NULL,
+				Last_name TEXT NOT NULL,
+				R_CARD_No TEXT NOT NULL,
+				Country TEXT NOT NULL,
+				Adress TEXT NOT NULL,
+				ID_Type TEXT NOT NULL,
+				ID_No TEXT NOT NULL,
+				Car TEXT NOT NULL,
+				Plate_No NOT NULL,
+				Date_In TEXT NOT NULL,
+				TIME_IN TEXT NOT NULL,
+				Date_Out TEXT NOT NULL,
+				NO_OF_DAYS INT NOT NULL,
+				NO_OF_ADULTS INT NOT NULL,
+				NO_OF_CHILDS INT NOT NULL,
+				Rate_Type TEXT NOT NULL,
+				RATE_PERIOD REAL NOT NULL,
+				TOTAL_CHARGE REAL NOT NULL,
+				OTHER_CHARGES REAL NOT NULL,
+				DISCOUNT REAL NOT NULL,
+				TOTAL REAL NOT NULL,
+				AMOUNT_PAID REAL NOT NULL,
+				BALANCE REAL NOT NULL) ''')
+
+	conn.commit()
+	conn.close()
+
+################################################
+def create_new_booking_room(DATABASE_NAME,Room_No):
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute("INSERT OR IGNORE INTO booking_table(Room_No) VALUES (?)",(Room_No,))
+	conn.commit()
+	c.close()
+
+#####################################################
+
+def insert_to_booking_table(DATABASE_NAME,Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	#change vars:
+	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
+	conn.commit()
+	c.close()
+
+#important:tomorrow
+def book_it():
+	insert_to_booking_table()
+	change_table_name_room_status()
+	add_folio_no_to_serial_table()
 
 
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
@@ -243,6 +303,8 @@ def select_room_numbers(DATABESE_NAME):
 	for row in rows:
 		my_list.append(row)
 	return my_list
+
+
 ##date list:#########################################################
 
 def date_list():
@@ -326,8 +388,7 @@ def Cashier_operations():
 	CHECK_OUT(f3)
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
-####################################################################################
-####################################################################################
+
 ####################################################################################
 def clear_rate_fields():
 	groove_entry38.delete(0, 'end')
@@ -507,77 +568,91 @@ def CHECK_OUT(MASTER):
 
 
 def modify_paymen_numbers_2(*args):
-	# print(args)
-	def Extract(lst,NUM):
-		return list(list(zip(*lst))[NUM])
-	my_list = []
-	rate = view_selected_rate('__main2.db',Rate_Type_CHECKIN.get())
-	my_list.append(rate)
-	for ROOM_RATE in Extract(rate,1):
-		RATE_PERIOD = ROOM_RATE
-	NO_OF_DAYS = groove_entry8F2.get()
+	try:
+		# print(args)
+		def Extract(lst,NUM):
+			return list(list(zip(*lst))[NUM])
+		my_list = []
+		rate = view_selected_rate('__main2.db',Rate_Type_CHECKIN.get())
+		my_list.append(rate)
+		for ROOM_RATE in Extract(rate,1):
+			RATE_PERIOD = ROOM_RATE
+		NO_OF_DAYS = groove_entry8F2.get()
 
-	for MAX_PERSONS in Extract(rate,2): 
-		MAX_PERSONS  = int(MAX_PERSONS)
+		for MAX_PERSONS in Extract(rate,2): 
+			MAX_PERSONS  = int(MAX_PERSONS)
 
-	NO_OF_ADULTS = groove_entry9F2.get()
+		NO_OF_ADULTS = groove_entry9F2.get()
 
-	if NO_OF_ADULTS == '':
-		NO_OF_ADULTS = 0
-	
-	if int(NO_OF_ADULTS) > int(MAX_PERSONS):
-		EXTRA_ADULTS = int(NO_OF_ADULTS) - int(MAX_PERSONS)
-	else:
-		EXTRA_ADULTS = 0
+		if NO_OF_ADULTS == '':
+			NO_OF_ADULTS = 0
+		
+		if int(NO_OF_ADULTS) > int(MAX_PERSONS):
+			EXTRA_ADULTS = int(NO_OF_ADULTS) - int(MAX_PERSONS)
+		else:
+			EXTRA_ADULTS = 0
 
-	if NO_OF_DAYS == 0 or NO_OF_DAYS == None or NO_OF_DAYS == '0' or  NO_OF_DAYS == '':
-		  EXTRA_ADULTS = 0
+		if NO_OF_DAYS == 0 or NO_OF_DAYS == None or NO_OF_DAYS == '0' or  NO_OF_DAYS == '':
+			  EXTRA_ADULTS = 0
 
-	EXTRA_CHILDREN  =  groove_entry10F2.get()
-	if EXTRA_CHILDREN == '' or EXTRA_CHILDREN == None or NO_OF_DAYS == '0' or NO_OF_DAYS == None or NO_OF_DAYS == 0 or NO_OF_DAYS == '':
-		EXTRA_CHILDREN = 0
+		EXTRA_CHILDREN  =  groove_entry10F2.get()
+		if EXTRA_CHILDREN == '' or EXTRA_CHILDREN == None or NO_OF_DAYS == '0' or NO_OF_DAYS == None or NO_OF_DAYS == 0 or NO_OF_DAYS == '':
+			EXTRA_CHILDREN = 0
 
-	for EXTRA_ADULTS_RATE in Extract(rate,3):
-		EXTRA_ADULTS_RATE = float(EXTRA_ADULTS_RATE)
-	for EXTRA_CHILDREN_RATE in Extract(rate,4):
-		EXTRA_CHILDREN_RATE = float(EXTRA_CHILDREN_RATE)
+		for EXTRA_ADULTS_RATE in Extract(rate,3):
+			EXTRA_ADULTS_RATE = float(EXTRA_ADULTS_RATE)
+		for EXTRA_CHILDREN_RATE in Extract(rate,4):
+			EXTRA_CHILDREN_RATE = float(EXTRA_CHILDREN_RATE)
 
-	if NO_OF_DAYS == 0 or NO_OF_DAYS == '':
-		NO_OF_DAYS = 0.00
-	TOTAL_CHARGES = (RATE_PERIOD * float(int(NO_OF_DAYS))) + ( float(int(EXTRA_ADULTS)) * EXTRA_ADULTS_RATE ) +  ( float(int(EXTRA_CHILDREN)) * EXTRA_CHILDREN_RATE)
+		if NO_OF_DAYS == 0 or NO_OF_DAYS == '':
+			NO_OF_DAYS = 0.00
+		TOTAL_CHARGES = (RATE_PERIOD * float(int(NO_OF_DAYS))) + ( float(int(EXTRA_ADULTS)) * EXTRA_ADULTS_RATE ) +  ( float(int(EXTRA_CHILDREN)) * EXTRA_CHILDREN_RATE)
 
-	DISCOUNT = float(groove_entry15F2.get())
-	OTHER_CHAGES = groove_entry14F2.get()
-	if DISCOUNT > 0:
-		TOTAL = (float(TOTAL_CHARGES) + float(OTHER_CHAGES)) - (float(TOTAL_CHARGES) * (1/DISCOUNT)) 
-	elif DISCOUNT == 0:
-		TOTAL = float(TOTAL_CHARGES)
-	else:
-		pass
+		DISCOUNT = groove_entry15F2.get()
+		if DISCOUNT == '':
+			DISCOUNT = 0
 
-	AMOUNT_PAIED = float(groove_entry17F2.get())
-	BALANCE = (TOTAL - AMOUNT_PAIED) * -1
-	if BALANCE == -0.0:
-		BALANCE = 0.00
+		OTHER_CHAGES = groove_entry14F2.get()
 
-	groove_entry11F2.delete(0,'end') # rate/period
-	groove_entry12F2.delete(0,'end') # total charges
-	# # groove_entry14F2.delete() # other charges
-	# # # groove_entry15F2.delete() # discount you change this 
-	groove_entry16F2.delete(0,'end') # total 
-	# # groove_entry17F2.delete() # amount paied
-	groove_entry18F2.delete(0,'end') # balance
+		if OTHER_CHAGES == '':
+			OTHER_CHAGES = 0.00
 
-	groove_entry11F2.insert(0,RATE_PERIOD)#rate/period
-	groove_entry12F2.insert(0,TOTAL_CHARGES) # total charges
-	# groove_entry14F2.insert(0, "4,233.22") # other charges
-	# # groove_entry15F2.insert(0, "0.0000") # discount you change this
-	groove_entry16F2.insert(0, TOTAL) # total 
-	# groove_entry17F2.insert(0, "0.00") # amount paied
-	groove_entry18F2.insert(0, BALANCE) # balance
+		if int(float(DISCOUNT)) > 0:
+			TOTAL = (((float(TOTAL_CHARGES) + float(OTHER_CHAGES))) - ((float(TOTAL_CHARGES) + float(OTHER_CHAGES)))  * (float(str(DISCOUNT))/100)) 
+		elif int(float(DISCOUNT)) == 0:
+			TOTAL = float(TOTAL_CHARGES) + float(OTHER_CHAGES)
+		else:
+			pass
+
+		AMOUNT_PAIED = groove_entry17F2.get()
+		if AMOUNT_PAIED == '':
+			AMOUNT_PAIED = 0
+		BALANCE = (TOTAL - float(str(AMOUNT_PAIED))) * -1
+		if BALANCE == -0.0:
+			BALANCE = 0.00
+
+		groove_entry11F2.delete(0,'end') # rate/period
+		groove_entry12F2.delete(0,'end') # total charges
+		# # groove_entry14F2.delete() # other charges
+		# # # groove_entry15F2.delete() # discount you change this 
+		groove_entry16F2.delete(0,'end') # total 
+		# # groove_entry17F2.delete() # amount paied
+		groove_entry18F2.delete(0,'end') # balance
+
+		groove_entry11F2.insert(0,RATE_PERIOD)#rate/period
+		groove_entry12F2.insert(0,TOTAL_CHARGES) # total charges
+		# groove_entry14F2.insert(0, "4,233.22") # other charges
+		# # groove_entry15F2.insert(0, "0.0000") # discount you change this
+		groove_entry16F2.insert(0, TOTAL) # total 
+		# groove_entry17F2.insert(0, "0.00") # amount paied
+		groove_entry18F2.insert(0, BALANCE) # balance
+	except ValueError:
+		#print('error')
+		tkinter.messagebox.showinfo(message="Value Error,\nyou added wrong value , \nonly numbers please..")
 
 
 def CHECK_IN(MASTER):
+
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2
@@ -597,17 +672,9 @@ def CHECK_IN(MASTER):
 	trace_entry('groove_entry8F2')
 	trace_entry('groove_entry9F2')
 	trace_entry('groove_entry10F2')
-
-	# def callback2(sv):
-	# 	print(sv)
-	# 	if Rate_Type_CHECKIN.get() != "":
-	# 		modify_paymen_numbers_2()
-
-	# global groove_entry9F2_trace 
-	# groove_entry9F2_trace = tkinter.StringVar()
-	# groove_entry9F2_trace.trace("w", lambda name, index, mode, sv=groove_entry9F2_trace: callback2('groove_entry9F2_trace'))
-
-
+	trace_entry('groove_entry14F2')
+	trace_entry('groove_entry15F2')
+	trace_entry('groove_entry17F2')
 
 	#BUTTONS:
 	tkinter.Button(f2, text='Book it',background="light gray").grid(row=0, column=0,sticky='we')
@@ -751,16 +818,16 @@ def CHECK_IN(MASTER):
 	# groove_entry13F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	# groove_entry13F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
 	# groove_entry13F2.insert(0, "1.11") 
-	groove_entry14F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry14F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry14F2_trace)
 	groove_entry14F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
 	groove_entry14F2.insert(0, "0.00") # other charges
-	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8)
+	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8,textvariable=groove_entry15F2_trace)
 	groove_entry15F2.grid(row=5,column=7,sticky='nsw')
-	groove_entry15F2.insert(0, "0.0000") # discount
+	groove_entry15F2.insert(0, "0") # discount
 	groove_entry16F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry16F2.grid(row=6,column=7,columnspan=8,sticky='nsw')
 	groove_entry16F2.insert(0, "0.00") # total 
-	groove_entry17F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry17F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry17F2_trace)
 	groove_entry17F2.grid(row=7,column=7,columnspan=8,sticky='nsw')
 	groove_entry17F2.insert(0, "0.00") # amount paied
 	groove_entry18F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
@@ -1080,7 +1147,8 @@ def main():
 	table1()
 	Cashier_operations()
 	# print(f'types: {select_types("__main2.db")}')
-	date_one_day_after("2020-04-14",1)
+	# date_one_day_after("2020-04-14",1)
+	create_booking_table('__main2.db')
 
 #widget:
 fen = tkinter.Tk()
