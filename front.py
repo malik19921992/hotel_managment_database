@@ -79,58 +79,104 @@ def create_booking_table(DATABASE_NAME):
 	c = conn.cursor()
 	c.execute(''' CREATE TABLE IF NOT EXISTS booking_table(
 				Room_No INT PRIMARY KEY NOT NULL,
-				serial_num INT NOT NULL,
-				First_name TEXT NOT NULL,
-				Last_name TEXT NOT NULL,
-				R_CARD_No TEXT NOT NULL,
-				Country TEXT NOT NULL,
-				Adress TEXT NOT NULL,
-				ID_Type TEXT NOT NULL,
-				ID_No TEXT NOT NULL,
-				Car TEXT NOT NULL,
-				Plate_No NOT NULL,
-				Date_In TEXT NOT NULL,
-				TIME_IN TEXT NOT NULL,
-				Date_Out TEXT NOT NULL,
-				NO_OF_DAYS INT NOT NULL,
-				NO_OF_ADULTS INT NOT NULL,
-				NO_OF_CHILDS INT NOT NULL,
-				Rate_Type TEXT NOT NULL,
-				RATE_PERIOD REAL NOT NULL,
-				TOTAL_CHARGE REAL NOT NULL,
-				OTHER_CHARGES REAL NOT NULL,
-				DISCOUNT REAL NOT NULL,
-				TOTAL REAL NOT NULL,
-				AMOUNT_PAID REAL NOT NULL,
-				BALANCE REAL NOT NULL) ''')
+				serial_num INT,
+				First_name TEXT,
+				Last_name TEXT,
+				R_CARD_No TEXT,
+				Country TEXT,
+				Adress TEXT ,
+				ID_Type TEXT,
+				ID_No TEXT,
+				Car TEXT,
+				Plate_No TEXT,
+				Date_In TEXT,
+				TIME_IN TEXT,
+				Date_Out TEXT,
+				NO_OF_DAYS INT,
+				NO_OF_ADULTS INT,
+				NO_OF_CHILDS INT,
+				Rate_Type TEXT,
+				RATE_PERIOD REAL,
+				TOTAL_CHARGE REAL,
+				OTHER_CHARGES REAL,
+				DISCOUNT REAL,
+				TOTAL REAL,
+				AMOUNT_PAID REAL,
+				BALANCE REAL) ''')
 
 	conn.commit()
 	conn.close()
 
 ################################################
+
 def create_new_booking_room(DATABASE_NAME,Room_No):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(DATABASE_NAME)
 	c = conn.cursor()
 	c.execute("INSERT OR IGNORE INTO booking_table(Room_No) VALUES (?)",(Room_No,))
 	conn.commit()
 	c.close()
 
-#####################################################
 
 def insert_to_booking_table(DATABASE_NAME,Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(DATABASE_NAME)
 	c = conn.cursor()
 	#change vars:
-	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
+	c.execute('UPDATE booking_table SET serial_num = ? , First_name = ? , Last_name = ? , R_CARD_No = ? , Country = ? ,Adress = ? , ID_Type = ? , ID_No = ? , Car = ? , Plate_No = ? , Date_In = ? , TIME_IN = ? , Date_Out = ? , NO_OF_DAYS = ? , NO_OF_ADULTS = ? , NO_OF_CHILDS = ? , Rate_Type = ? , RATE_PERIOD = ? , TOTAL_CHARGE = ? ,OTHER_CHARGES = ? , DISCOUNT = ?  , TOTAL = ? , AMOUNT_PAID = ? ,  BALANCE = ?  WHERE Room_No = ? ',
+			(serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE,Room_No,))
 	conn.commit()
 	c.close()
 
 #important:tomorrow
-def book_it():
-	insert_to_booking_table()
-	change_table_name_room_status()
-	add_folio_no_to_serial_table()
+def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
+	print('1) booking .')
+	if check_inputs_all_right(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE) == True:
+		print(True)
+	else:
+		print(False)
+	# 	if check_room_is_free(Room_No) == True:
+	# 		insert_to_booking_table()
+	# 		change_table_name_room_status()
+	# 		add_folio_no_to_serial_table()
+	# 		update_booking_table()
+	# 	else:
+	# 		#message: room is in USE 
+	# else:
+	# 	collect_wrong_input_fields()
+	# 	#message: inputs not right or empty
+	# 	#find wrong inputs or empty inputs and cross it with red line borders 
 
+def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,R_CARD_No,Adress,ID_No,NO_OF_DAYS,Rate_Type):
+	print('1a) checking inputs all right .')
+	#inputs variables:
+	if Room_No in select_from_booking_table('__main2.db','Room_No') and Room_No in  select_room_numbers('__main2.db') and serial_num not in view_serial_table('__main2.db') and serial_num not in select_from_booking_table('__main2.db','serial_num') and First_name != None and First_name != '' and Last_name != None and Last_name != '' and Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0' and NO_OF_DAYS != '' and Rate_Type != None and Rate_Type != '' :
+		return True
+	else:
+		retrn False
+
+
+def select_from_booking_table(DATABESE_NAME,column_name):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(' SELECT ? FROM booking_table ORDER BY Room_No',(column_name,) )
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
+
+
+def check_room_status():
+	#loop check if used room is freed or renting time is finished or almust
+	#message: room <num> is almust to finish renting time every 5 secounds
+	#when it fineshess , mark its raw in table1 with red color blinking
+	#message: room <num> renting time is finished , 5 times , every 2 secounds 
+	#move checkout details to unfinished checkouts_table in database , and in gui 
+	#free the room , delete checkout fields , delete checkin fields
+	#change room in table1 and database table_name to be free
+	#change row color in table1 from red to gray or whigth
+	#update table view 
+	pass
+####################################################################
 
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
 	conn = sqlite3.connect("__main2.db")
@@ -283,6 +329,7 @@ def view_selected_rate(DATABESE_NAME,RATE_TYPE):
 		my_list.append(row)
 	return my_list
 
+
 def select_types(DATABESE_NAME):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -375,10 +422,14 @@ def Cashier_operations():
 	f2 = tkinter.Frame(nb,background="light gray")	
 	f3 = tkinter.Frame(nb,background="light gray")
 	f4 = tkinter.Frame(nb,background="light gray")
+	f5 = tkinter.Frame(nb,background="light gray")
+	f6 = tkinter.Frame(nb,background="light gray")
 	nb.add(f1, text=" Room Settings ")
 	nb.add(f2, text=" CheckIn ")
 	nb.add(f3, text=" CheckOut ")
 	nb.add(f4, text=" Room Price OPtions ")
+	nb.add(f5, text=" User's Settings ")
+	nb.add(f6, text=" Database Settings ")
 	nb.select(f2)
 	nb.select(f3)
 	nb.select(f4)
@@ -677,7 +728,7 @@ def CHECK_IN(MASTER):
 	trace_entry('groove_entry17F2')
 
 	#BUTTONS:
-	tkinter.Button(f2, text='Book it',background="light gray").grid(row=0, column=0,sticky='we')
+	tkinter.Button(f2, text='Book it',background="light gray",command=book_it).grid(row=0, column=0,sticky='we')
 	tkinter.Button(f2, text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
 	tkinter.Button(f2,text='Update',background="light gray").grid(row=0, column=2,sticky='we')
 	tkinter.Button(f2,text='Change Room',background="light gray").grid(row=0, column=3,columnspan=5,sticky='w')
@@ -1149,6 +1200,8 @@ def main():
 	# print(f'types: {select_types("__main2.db")}')
 	# date_one_day_after("2020-04-14",1)
 	create_booking_table('__main2.db')
+	create_new_booking_room('__main2.db',1)
+	create_new_booking_room('__main2.db',2)
 
 #widget:
 fen = tkinter.Tk()
