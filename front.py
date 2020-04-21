@@ -10,8 +10,19 @@ import sqlite3
 import tkinter.messagebox
 
 '''
-from line 112-135
-adding to rate table and getting from rate table
+adding no_car choice to car list in check_in window
+adding check_in detals to booking_table
+adding serial "folio number" to serial_table
+get check_in details when click on table1 by choosing room number then getting details from booking_table by number
+def update_state_function():
+	every num of seccounds check date and time of finish booking
+	if  one of rooms near end date and time:
+		yellow blinking on row of room in table1
+		message: room <num> is almost free try to tell guest
+	if one of rooms pass end date and time:
+		red blinking red  room row in table1 3 times
+		message: room <num> is free , you can use it , take key from guest
+		move room details from booking to unfinishing checkouts
 '''
 #VARS:
 TABLE_HEIGHT=0
@@ -126,13 +137,24 @@ def insert_to_booking_table(DATABASE_NAME,Room_No,serial_num,First_name,Last_nam
 	conn.commit()
 	c.close()
 
+
 #important:tomorrow
 def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
+	print(Rate_Type)
+	global trace_checkin_inputs
 	print('1) booking .')
-	if check_inputs_all_right(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE) == True:
-		print(True)
+	# print(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
+	if check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type) == True:
+		print(f'check_inputs_all_right is: {True}')
+		print('all inputs are right')
+		trace_checkin_inputs = 0
 	else:
-		print(False)
+		trace_checkin_inputs = 1
+		print(f'check_inputs_all_right is: {False}')
+		print('some inputs are wrong change this inputs or fill it  if its empty')
+		find_and_mark_wrong_fields(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type)
+		#tkinter.message: some inputs are wrong change this inputs or fill it  if its empty:
+
 	# 	if check_room_is_free(Room_No) == True:
 	# 		insert_to_booking_table()
 	# 		change_table_name_room_status()
@@ -145,20 +167,131 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 	# 	#message: inputs not right or empty
 	# 	#find wrong inputs or empty inputs and cross it with red line borders 
 
-def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,R_CARD_No,Adress,ID_No,NO_OF_DAYS,Rate_Type):
+
+def red_warning_entry_borders(ENTRY,COLOR,WIDGET):
+	if WIDGET == 'ENTRY':
+		if COLOR == 'RED':
+			globals()[ENTRY].configure(highlightbackground="red",highlightcolor="red")
+			can.after(10)
+			can.update()
+		elif COLOR  == 'NORMAL':
+			globals()[ENTRY].configure(highlightbackground="light gray",highlightcolor="black")
+			can.after(10)
+			can.update()
+	elif WIDGET == 'LIST':
+		if COLOR == 'RED':
+			globals()[ENTRY].configure(highlightbackground="red",highlightcolor="red")
+			can.after(10)
+			can.update()
+		elif COLOR  == 'NORMAL':
+			globals()[ENTRY].configure(highlightbackground="light gray",highlightcolor="black")
+			can.after(10)
+			can.update()
+
+
+def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name=None,Adress=None,ID_No=None,NO_OF_DAYS=None,Rate_Type=None):
+	global check_in_input_error_messages,groove_entry7F2
+	check_in_input_error_messages = []
+	#room_number:
+	if Room_No == '' or Room_No == None:
+		red_warning_entry_borders('groove_entry7F2','RED','ENTRY')
+		check_in_input_error_messages.append("room number field is empty .!")
+	elif int(Room_No) not in BOOKING_TABLE_ROOM_NUMS or int(Room_No) not in  TABLE_NAME_ROOM_NUMS:
+		red_warning_entry_borders('groove_entry7F2','RED','ENTRY')
+		if int(Room_No) not in BOOKING_TABLE_ROOM_NUMS:
+			check_in_input_error_messages.append("room number not in booking table , choose defferant room .!")
+		if int(Room_No) not in  TABLE_NAME_ROOM_NUMS:
+			check_in_input_error_messages.append("room is not exist in table_name .!")
+	elif Room_No != '':
+		if int(Room_No) in BOOKING_TABLE_ROOM_NUMS and  int(Room_No) in  TABLE_NAME_ROOM_NUMS:
+			print('its right')
+			red_warning_entry_borders('groove_entry7F2','NORMAL','ENTRY')
+			#############################
+			Rate_Type_CHECKIN.current()
+	#############################################################################################
+	#serial_num: groove_entry0F2
+	if serial_num == '' or serial_num == None:
+		red_warning_entry_borders('groove_entry0F2','RED','ENTRY')
+		check_in_input_error_messages.append("folio number field is empty  .!")
+		#generate_new_folio_numbeer(last_serial_number_in_serial_table+1)
+		#pass
+	elif int(serial_num) in SERIAL_TABLE or int(serial_num) in BOOKING_TABLE_SERIAL_NUMS:
+		red_warning_entry_borders('groove_entry0F2','RED','ENTRY')
+		if int(serial_num) in SERIAL_TABLE:
+			check_in_input_error_messages.append("folio number is actually existed in serial table  .!")
+			#generate_new_folio_numbeer(last_serial_number_in_serial_table+1)
+		if int(serial_num) in BOOKING_TABLE_SERIAL_NUMS:
+			check_in_input_error_messages.append("folio is really still active yet, you can use update!")
+			#generate_new_folio_number(last_serial_number_in_serial_table+1)
+			# pass
+	elif serial_num != '' and serial_num != None:
+		if int(serial_num) not in SERIAL_TABLE and int(serial_num) not in BOOKING_TABLE_SERIAL_NUMS:
+			# print('its right')
+			red_warning_entry_borders('groove_entry0F2','NORMAL','ENTRY')
+	#####################################################################################################
+	#First_name:
+	if First_name == '' or First_name == None:
+		red_warning_entry_borders('groove_entry1F2','RED','ENTRY')
+		check_in_input_error_messages.append("first name field is empty  .!")
+	else:
+		red_warning_entry_borders('groove_entry1F2','NORMAL','ENTRY')
+	#####################################################################################################
+	#Last_name:
+	if Last_name == '' or Last_name == None:
+		red_warning_entry_borders('groove_entry2F2','RED','ENTRY')
+		check_in_input_error_messages.append("last name field is empty  .!")
+	else:
+		red_warning_entry_borders('groove_entry2F2','NORMAL','ENTRY')
+	#####################################################################################################
+	#Adress: groove_entry4F2
+	if Adress == '' or Adress == None:
+		red_warning_entry_borders('groove_entry4F2','RED','ENTRY')
+		check_in_input_error_messages.append("adress field is empty  .!")
+	else:
+		red_warning_entry_borders('groove_entry4F2','NORMAL','ENTRY')
+	#####################################################################################################
+	#ID_No:
+	if ID_No == '' or ID_No == None:
+		red_warning_entry_borders('groove_entry5F2','RED','ENTRY')
+		check_in_input_error_messages.append("id number field is empty  .!")
+	else:
+		red_warning_entry_borders('groove_entry5F2','NORMAL','ENTRY')
+	#NO_OF_DAYS:
+	if NO_OF_DAYS == '' or NO_OF_DAYS== None or NO_OF_DAYS == 0 or NO_OF_DAYS == '0':
+		red_warning_entry_borders('groove_entry8F2','RED','ENTRY')
+		check_in_input_error_messages.append("number of days , field is empty or 0 days .!")
+	else:
+		red_warning_entry_borders('groove_entry8F2','NORMAL','ENTRY')
+	#################################################################
+	# #Rate_Type:
+	# if Rate_Type == '' or Rate_Type == None or Rate_Type == 0 or Rate_Type == '0':
+	# 	red_warning_entry_borders('Rate_Type_CHECKIN','RED','LIST')
+	# 	check_in_input_error_messages.append("number of days , field is empty or 0 days .!")
+	# else:
+	# 	red_warning_entry_borders('Rate_Type_CHECKIN','NORMAL','LIST')
+	#print(error_messages)
+def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
 	print('1a) checking inputs all right .')
 	#inputs variables:
-	if Room_No in select_from_booking_table('__main2.db','Room_No') and Room_No in  select_room_numbers('__main2.db') and serial_num not in view_serial_table('__main2.db') and serial_num not in select_from_booking_table('__main2.db','serial_num') and First_name != None and First_name != '' and Last_name != None and Last_name != '' and Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0' and NO_OF_DAYS != '' and Rate_Type != None and Rate_Type != '' :
-		return True
+	global SERIAL_TABLE,BOOKING_TABLE_ROOM_NUMS,BOOKING_TABLE_SERIAL_NUMS,TABLE_NAME_ROOM_NUMS
+	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
+	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table('__main2.db','Room_No')))[0]
+	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table('__main2.db','serial_num')))[0]
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None:
+		if int(Room_No) in BOOKING_TABLE_ROOM_NUMS and int(Room_No) in  TABLE_NAME_ROOM_NUMS and int(serial_num) not in SERIAL_TABLE and int(serial_num) not in BOOKING_TABLE_SERIAL_NUMS:
+ 			if First_name != None and First_name != '' and Last_name != None and Last_name != '' and  Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0':
+ 				if NO_OF_DAYS != '' and Rate_Type != None and Rate_Type != '':
+ 					return True
 	else:
-		retrn False
+		return False
 
 
-def select_from_booking_table(DATABESE_NAME,column_name):
+def select_from_booking_table(DATABESE_NAME,column):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
 	c = conn.cursor()
-	c.execute(' SELECT ? FROM booking_table ORDER BY Room_No',(column_name,) )
+	c.execute("SELECT "+column+" FROM booking_table")
 	rows = c.fetchall()
 	for row in rows:
 		my_list.append(row)
@@ -707,28 +840,58 @@ def CHECK_IN(MASTER):
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2
-	global Rate_Type_CHECKIN,DateIn,DateOut
+	global Rate_Type_CHECKIN,DateIn,DateOut,trace_checkin_inputs
 	f2 = MASTER
+	trace_checkin_inputs = 0
 
 	def trace_entry(ENTRY_VAR):
-		# print(ENTRY_VAR)
+
 		def callback(sv):
-			# print(sv)
+			print(sv)
+			print(trace_checkin_inputs)
+			if groove_entry7F2.get() != '' and groove_entry7F2.get() != None:
+				existed_room_numbers_list = []
+				for i in view_selected_data('__main2.db','All','All','All'):
+					existed_room_numbers_list.append(i[0])
+				if int(groove_entry7F2.get()) in existed_room_numbers_list:
+					LIST = view_selected_data('__main2.db','All','All',int(groove_entry7F2.get()))
+					Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
+				else:
+					print('the number is not in existedd rooms list')
+					# print(f'{int(groove_entry7F2.get())} in the list ....')
+				# print(view_selected_data('__main2.db','All','All','All'))
 			if Rate_Type_CHECKIN.get() != "":
 				modify_paymen_numbers_2()
+			if trace_checkin_inputs == 1:
+				#print('its time to find it')				   
+				find_and_mark_wrong_fields(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry4F2.get(),groove_entry5F2.get(),groove_entry8F2.get(),Rate_Type_CHECKIN.get())
+				#serial_num
+				print('its tracing....')
 				
 		globals()[f'{ENTRY_VAR}_trace'] = tkinter.StringVar()
 		globals()[f'{ENTRY_VAR}_trace'].trace("w", lambda name, index, mode, sv=globals()[f'{ENTRY_VAR}_trace']: callback(globals()[f'{ENTRY_VAR}_trace'])) 
 
+	trace_entry('groove_entry7F2')
 	trace_entry('groove_entry8F2')
 	trace_entry('groove_entry9F2')
 	trace_entry('groove_entry10F2')
 	trace_entry('groove_entry14F2')
 	trace_entry('groove_entry15F2')
 	trace_entry('groove_entry17F2')
+	trace_entry('groove_entry0F2')
+	trace_entry('groove_entry1F2')
+	trace_entry('groove_entry2F2')
+	trace_entry('groove_entry5F2')
+	trace_entry('groove_entry4F2')
 
 	#BUTTONS:
-	tkinter.Button(f2, text='Book it',background="light gray",command=book_it).grid(row=0, column=0,sticky='we')
+
+	def TIME_NOW():
+		timenow =  datetime.now().time().strftime('%H:%M:%S')
+		return timenow
+																					 # NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE
+																					 # groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get().countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get()
+	tkinter.Button(f2, text='Book it',background="light gray",command=lambda:book_it(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=0,sticky='we')
 	tkinter.Button(f2, text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
 	tkinter.Button(f2,text='Update',background="light gray").grid(row=0, column=2,sticky='we')
 	tkinter.Button(f2,text='Change Room',background="light gray").grid(row=0, column=3,columnspan=5,sticky='w')
@@ -836,36 +999,40 @@ def CHECK_IN(MASTER):
 	Rate_Type_CHECKIN.grid(row=1,column=7,columnspan=8,sticky='w')
 	Rate_Type_CHECKIN.bind("<<ComboboxSelected>>",lambda event:modify_paymen_numbers_2(event))
 	#ENTRIES:
-	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry0F2_trace) # serial folio no
 	groove_entry0F2.grid(row=1,column=1,columnspan=2,sticky='nsw')
 	groove_entry0F2.insert(0,f"{str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6)}")
-	# print(str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6))
-	groove_entry1F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=2,column=1,columnspan=2,sticky='nsw')
-	groove_entry2F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=3,column=1,columnspan=2,sticky='nsw')
-	groove_entry3F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=4,column=1,columnspan=2,sticky='nsw')
-	groove_entry4F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=6,column=1,columnspan=2,sticky='nsw')
-	groove_entry5F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10).grid(row=8,column=1,columnspan=2,sticky='nsw')
-	groove_entry6F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry1F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry1F2_trace) # first name
+	groove_entry1F2.grid(row=2,column=1,columnspan=2,sticky='nsw')
+	groove_entry2F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry2F2_trace) # last name
+	groove_entry2F2.grid(row=3,column=1,columnspan=2,sticky='nsw')
+	groove_entry3F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10) # Rcad_no
+	groove_entry3F2.grid(row=4,column=1,columnspan=2,sticky='nsw')
+	groove_entry4F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry4F2_trace) # adress
+	groove_entry4F2.grid(row=6,column=1,columnspan=2,sticky='nsw')
+	groove_entry5F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry5F2_trace)  # id_no
+	groove_entry5F2.grid(row=8,column=1,columnspan=2,sticky='nsw')
+	groove_entry6F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10) # plate no
 	groove_entry6F2.grid(row=2,column=3,columnspan=5,sticky='nsw')
-	groove_entry6F2.insert(0,"") # plate no
-	groove_entry7F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3)
+	# groove_entry6F2.insert(0,"") 
+	groove_entry7F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry7F2_trace) # room number
 	groove_entry7F2.grid(row=3,column=3,sticky='nsw')
-	groove_entry7F2.insert(0, "") # room number
-	groove_entry8F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry8F2_trace)
+	# groove_entry7F2.insert(0, "") 
+	groove_entry8F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry8F2_trace)  # no of days
 	groove_entry8F2.grid(row=6,column=3,sticky='nsw')
-	groove_entry8F2.insert(0, "1") # no of days
-	groove_entry9F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry9F2_trace)
+	groove_entry8F2.insert(0, "1")
+	groove_entry9F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry9F2_trace) # no of adults
 	groove_entry9F2.grid(row=7,column=3,sticky='nsw')
-	groove_entry9F2.insert(0, "0")	# no of adults
-	groove_entry10F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry10F2_trace)
+	groove_entry9F2.insert(0, "0")	
+	groove_entry10F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=3,textvariable=groove_entry10F2_trace) # no of childs
 	groove_entry10F2.grid(row=8,column=3,sticky='nsw')
-	groove_entry10F2.insert(0, "0") # no of childs
-	groove_entry11F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry10F2.insert(0, "0") 
+	groove_entry11F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10) # rate/period
 	groove_entry11F2.grid(row=2,column=7,columnspan=8,sticky='nsw')
-	groove_entry11F2.insert(0, "0.00") # rate/period
-	groove_entry12F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
+	groove_entry11F2.insert(0, "0.00") 
+	groove_entry12F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10) # total charge
 	groove_entry12F2.grid(row=3,column=7,columnspan=8,sticky='nsw')
-	groove_entry12F2.insert(0, "0.00") # total charge
+	groove_entry12F2.insert(0, "0.00") 
 	# groove_entry13F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	# groove_entry13F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
 	# groove_entry13F2.insert(0, "1.11") 
@@ -1215,5 +1382,11 @@ can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
 main()
 can.pack()
 fen.mainloop()
+
+
+
+
+
+
 
 
