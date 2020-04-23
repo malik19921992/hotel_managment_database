@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+#use control+b to execute code
 import tkinter
 import tkinter.ttk as ttk
 import tkinter.font as tkfont
@@ -10,7 +10,9 @@ import sqlite3
 import tkinter.messagebox
 
 '''
-adding no_car choice to car list in check_in window
+
+line: 1298...
+
 adding check_in detals to booking_table
 adding serial "folio number" to serial_table
 get check_in details when click on table1 by choosing room number then getting details from booking_table by number
@@ -42,8 +44,10 @@ PINK1         =    "pink1"
 BROWN1        =    "brown1"
 first_list_Scorll_X = 562
 first_list_Scorll_Y = 80
-cars = ["Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
+cars = ["","Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
+
 room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package']
+ID_TYPES = ["(SSN)Social Security Number","Passport number","Driver license","taxpayer ID number","patient ID number"]
 date_list = []
 
 #database functions:########################################################################
@@ -137,6 +141,30 @@ def insert_to_booking_table(DATABASE_NAME,Room_No,serial_num,First_name,Last_nam
 	conn.commit()
 	c.close()
 
+def database_booking_update(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute('UPDATE booking_table SET serial_num = ? , First_name = ? , Last_name = ? , R_CARD_No = ? , Country = ? , Adress = ? , ID_Type = ? , ID_No = ? , Car = ? , Plate_No = ? , Date_In = ? , TIME_IN = ? , Date_Out = ? , NO_OF_DAYS = ? , NO_OF_ADULTS = ? , NO_OF_CHILDS = ? , Rate_Type = ? , RATE_PERIOD = ? , TOTAL_CHARGE = ? , OTHER_CHARGES = ? , DISCOUNT = ? , TOTAL = ? , AMOUNT_PAID = ? , BALANCE = ? WHERE Room_No = ? ',(serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE,Room_No,))
+	conn.commit()
+	c.close()
+
+def change_in_table_name_status(Room_No,STATUS):
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute('UPDATE table_name SET Room_Status = ? WHERE Room_No = ? ',(STATUS,Room_No,))
+	conn.commit()
+	c.close()
+
+def room_is_free(Room_No):
+	conn =None;
+	conn = sqlite3.connect("__main2.db")
+	c = conn.cursor()
+	c.execute("SELECT Room_Status FROM table_name WHERE Room_No = ?",(Room_No,))
+	rows = c.fetchall()
+	for row in rows:
+		return row[0] == 'Free'
 
 #important:tomorrow
 def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
@@ -147,6 +175,20 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 	if check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type) == True:
 		print(f'check_inputs_all_right is: {True}')
 		print('all inputs are right')
+		if check_if_room_in_database(Room_No) == True:
+			#print(room_is_free(Room_No))
+			if room_is_free(Room_No):
+				print('room is free')
+				database_booking_update(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
+				change_in_table_name_status(Room_No,"IN USE")
+				insert_to_serial_table('__main2.db',serial_num)
+				first_table_show_options(Status.get(),R_Type.get(),R_number.get())
+				print('room is rented secsassfully')
+			elif not room_is_free(Room_No):
+				print('room is not free')
+		elif not check_if_room_in_database(Room_No):
+			print('room not in database')
+			pass
 		trace_checkin_inputs = 0
 	else:
 		trace_checkin_inputs = 1
@@ -156,7 +198,7 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 		#tkinter.message: some inputs are wrong change this inputs or fill it  if its empty:
 
 	# 	if check_room_is_free(Room_No) == True:
-	# 		insert_to_booking_table()
+	# 		
 	# 		change_table_name_room_status()
 	# 		add_folio_no_to_serial_table()
 	# 		update_booking_table()
@@ -206,9 +248,7 @@ def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name
 		if int(Room_No) in BOOKING_TABLE_ROOM_NUMS and  int(Room_No) in  TABLE_NAME_ROOM_NUMS:
 			print('its right')
 			red_warning_entry_borders('groove_entry7F2','NORMAL','ENTRY')
-			#############################
 			Rate_Type_CHECKIN.current()
-	#############################################################################################
 	#serial_num: groove_entry0F2
 	if serial_num == '' or serial_num == None:
 		red_warning_entry_borders('groove_entry0F2','RED','ENTRY')
@@ -228,28 +268,24 @@ def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name
 		if int(serial_num) not in SERIAL_TABLE and int(serial_num) not in BOOKING_TABLE_SERIAL_NUMS:
 			# print('its right')
 			red_warning_entry_borders('groove_entry0F2','NORMAL','ENTRY')
-	#####################################################################################################
 	#First_name:
 	if First_name == '' or First_name == None:
 		red_warning_entry_borders('groove_entry1F2','RED','ENTRY')
 		check_in_input_error_messages.append("first name field is empty  .!")
 	else:
 		red_warning_entry_borders('groove_entry1F2','NORMAL','ENTRY')
-	#####################################################################################################
 	#Last_name:
 	if Last_name == '' or Last_name == None:
 		red_warning_entry_borders('groove_entry2F2','RED','ENTRY')
 		check_in_input_error_messages.append("last name field is empty  .!")
 	else:
 		red_warning_entry_borders('groove_entry2F2','NORMAL','ENTRY')
-	#####################################################################################################
 	#Adress: groove_entry4F2
 	if Adress == '' or Adress == None:
 		red_warning_entry_borders('groove_entry4F2','RED','ENTRY')
 		check_in_input_error_messages.append("adress field is empty  .!")
 	else:
 		red_warning_entry_borders('groove_entry4F2','NORMAL','ENTRY')
-	#####################################################################################################
 	#ID_No:
 	if ID_No == '' or ID_No == None:
 		red_warning_entry_borders('groove_entry5F2','RED','ENTRY')
@@ -262,14 +298,10 @@ def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name
 		check_in_input_error_messages.append("number of days , field is empty or 0 days .!")
 	else:
 		red_warning_entry_borders('groove_entry8F2','NORMAL','ENTRY')
-	#################################################################
-	# #Rate_Type:
-	# if Rate_Type == '' or Rate_Type == None or Rate_Type == 0 or Rate_Type == '0':
-	# 	red_warning_entry_borders('Rate_Type_CHECKIN','RED','LIST')
-	# 	check_in_input_error_messages.append("number of days , field is empty or 0 days .!")
-	# else:
-	# 	red_warning_entry_borders('Rate_Type_CHECKIN','NORMAL','LIST')
+
 	#print(error_messages)
+
+
 def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
 	print('1a) checking inputs all right .')
 	#inputs variables:
@@ -283,8 +315,10 @@ def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,
  			if First_name != None and First_name != '' and Last_name != None and Last_name != '' and  Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0':
  				if NO_OF_DAYS != '' and Rate_Type != None and Rate_Type != '':
  					return True
+
 	else:
 		return False
+
 
 
 def select_from_booking_table(DATABESE_NAME,column):
@@ -297,6 +331,15 @@ def select_from_booking_table(DATABESE_NAME,column):
 		my_list.append(row)
 	return my_list
 
+def select_from_booking_table_where_num(DATABESE_NAME,num):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute("SELECT * FROM booking_table WHERE Room_No = "+str(num)+" ")
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
 
 def check_room_status():
 	#loop check if used room is freed or renting time is finished or almust
@@ -308,13 +351,14 @@ def check_room_status():
 	#change room in table1 and database table_name to be free
 	#change row color in table1 from red to gray or whigth
 	#update table view 
+	can.after(100,check_room_status)
 	pass
 ####################################################################
 
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
-	c.execute("INSERT OR IGNORE INTO serial_table VALUES (?)",(SERIAL_NUM,))
+	c.execute("INSERT OR IGNORE INTO serial_table(serial_num) VALUES (?)",(SERIAL_NUM,))
 	conn.commit()
 	c.close()
 
@@ -840,7 +884,7 @@ def CHECK_IN(MASTER):
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2
-	global Rate_Type_CHECKIN,DateIn,DateOut,trace_checkin_inputs
+	global Rate_Type_CHECKIN,DateIn,DateOut,trace_checkin_inputs,countrylist,lineList,ID_TYPE_LIST,carlist
 	f2 = MASTER
 	trace_checkin_inputs = 0
 
@@ -889,8 +933,7 @@ def CHECK_IN(MASTER):
 	def TIME_NOW():
 		timenow =  datetime.now().time().strftime('%H:%M:%S')
 		return timenow
-																					 # NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE
-																					 # groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get().countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get()
+
 	tkinter.Button(f2, text='Book it',background="light gray",command=lambda:book_it(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=0,sticky='we')
 	tkinter.Button(f2, text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
 	tkinter.Button(f2,text='Update',background="light gray").grid(row=0, column=2,sticky='we')
@@ -981,7 +1024,7 @@ def CHECK_IN(MASTER):
 	countrylist = ttk.Combobox(f2,values=list(map(lambda x:x.strip(),lineList)),width=10)
 	countrylist.grid(row=5,column=1,sticky='w')
 	countrylist.current(1)
-	ID_TYPE_LIST = ttk.Combobox(f2,values=["(SSN)Social Security Number","Passport number","Driver license","taxpayer ID number","patient ID number"],width=10)
+	ID_TYPE_LIST = ttk.Combobox(f2,values=ID_TYPES,width=10)
 	ID_TYPE_LIST.grid(row=7,column=1,sticky='w')
 	ID_TYPE_LIST.current(0)
 	carlist = ttk.Combobox(f2,values=cars,width=10)
@@ -1051,8 +1094,6 @@ def CHECK_IN(MASTER):
 	groove_entry18F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
 	groove_entry18F2.grid(row=8,column=7,columnspan=8,sticky='nsw')
 	groove_entry18F2.insert(0, "0.00") # balance
-
-
 
 
 def date_choose_checkin_trigger(even):
@@ -1255,7 +1296,54 @@ def selectItem2(a):
 	groove_entry34.delete(0,'end')
 	groove_entry34.insert(0, LIST[0][1])
 
+def update_all_check_in(num):
+	# if room_num == 'IN USE':
+	groove_entry0F2.delete(0,'end')     #   serial folio no
+	groove_entry0F2.insert(0,str(select_from_booking_table_where_num('__main2.db',num)[0][1]).zfill(6))     #   serial folio no
+	groove_entry1F2.delete(0,'end')     #   first name
+	groove_entry1F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][2])     #   first name
+	groove_entry2F2.delete(0,'end')     #   last name
+	groove_entry2F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][3])     #   last name
+	groove_entry3F2.delete(0,'end')     #   Rcad_no 
+	groove_entry3F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][4])     #   Rcad_no 
+	countrylist.current(list(map(lambda x:x.strip(),lineList)).index(str(select_from_booking_table_where_num('__main2.db',num)[0][5])))         #   country  "LIST"
+	groove_entry4F2.delete(0,'end')     #   adress
+	groove_entry4F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][6])          #   adress
+	ID_TYPE_LIST.current(ID_TYPES.index(str(select_from_booking_table_where_num('__main2.db',num)[0][7])))        #   id type "LIST"
+	groove_entry5F2.delete(0,'end')     #   id_no 
+	groove_entry5F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][8])     #   id_no 
+	carlist.current(cars.index(str(select_from_booking_table_where_num('__main2.db',num)[0][9])))             #   "LIST"
+	groove_entry6F2.delete(0,'end')     #   plate no
+	groove_entry6F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][10])     #   plate no
+	groove_entry7F2.delete(0,'end')     #   room number
+	groove_entry7F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][0])     #   room number
+	DateIn.current(date_list.index(str(select_from_booking_table_where_num('__main2.db',num)[0][11])))              #   "list"
+	DateOut.current(date_list.index(str(select_from_booking_table_where_num('__main2.db',num)[0][13])))             #   "LIST"
+	groove_entry8F2.delete(0,'end')     #   no of days
+	groove_entry8F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][14])     #   no of days
+	groove_entry9F2.delete(0,'end')     #   no of adults
+	groove_entry9F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][15])     #   no of adults
+	groove_entry10F2.delete(0,'end')    #   no of childs
+	groove_entry10F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][16])    #   no of childs
+	groove_entry11F2.delete(0,'end')    #   rate/period
+	groove_entry11F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][18])    #   rate/period
+	groove_entry12F2.delete(0,'end')    #   total/charge
+	groove_entry12F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][19])    #   total/charge
+	groove_entry14F2.delete(0,'end')    #   other charges
+	groove_entry14F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][20])    #   other charges
+	groove_entry15F2.delete(0,'end')    #   discount
+	groove_entry15F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][21])    #   discount
+	groove_entry16F2.delete(0,'end')    #   total
+	groove_entry16F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][22])    #   total
+	groove_entry17F2.delete(0,'end')    #   amount paied
+	groove_entry17F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][23])    #   amount paied
+	groove_entry18F2.delete(0,'end')    #   balance
+	groove_entry18F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][24])    #   balance
 
+
+	# elif room_num == 'Free':
+	# 	delete all inputs
+	# 	folio = last_serial + 1
 
 def selectItem(a):
 	curItem = treeview1.focus()
@@ -1291,6 +1379,10 @@ def selectItem(a):
 	#update Room Type:
 	Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
 	modify_paymen_numbers_2()
+	if LIST[0][3] == "IN USE":
+		update_all_check_in(LIST[0][0])
+	# print(LIST[0][3])
+	
 
 
 def Room_View_Options():
@@ -1369,6 +1461,7 @@ def main():
 	create_booking_table('__main2.db')
 	create_new_booking_room('__main2.db',1)
 	create_new_booking_room('__main2.db',2)
+	# update_all_check_in()
 
 #widget:
 fen = tkinter.Tk()
