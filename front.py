@@ -10,6 +10,7 @@ import sqlite3
 import tkinter.messagebox
 
 '''
+line: 887 update function
 adding check_in detals to booking_table
 adding serial "folio number" to serial_table
 get check_in details when click on table1 by choosing room number then getting details from booking_table by number
@@ -294,8 +295,6 @@ def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name
 		check_in_input_error_messages.append("number of days , field is empty or 0 days .!")
 	else:
 		red_warning_entry_borders('groove_entry8F2','NORMAL')
-
-	#print(error_messages)
 
 
 def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
@@ -877,12 +876,47 @@ def modify_paymen_numbers_2(*args):
 		#print('error')
 		tkinter.messagebox.showinfo(message="Value Error,\nyou added wrong value , \nonly numbers please..")
 
-def Update_CHECK_IN_DETAILS(Room_No):
-	print(f'room number: {Room_No}')
-	print('updating.....')
 
+def check_if_update_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
+	#cosutomize it for check_in updateing:
+	print('1a) checking inputs all right .')
+	#inputs variables:
+	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
+	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table('__main2.db','Room_No')))[0]
+	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table('__main2.db','serial_num')))[0]
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	#alogarithm:
+	#make it real:
+	if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None and int(serial_num) == (srial_num in booking_table where Room_No):
+	####################	
+		if int(Room_No) in BOOKING_TABLE_ROOM_NUMS and int(Room_No) in  TABLE_NAME_ROOM_NUMS and int(serial_num) in SERIAL_TABLE and int(serial_num)  in BOOKING_TABLE_SERIAL_NUMS:
+			if First_name != None and First_name != '' and Last_name != None and Last_name != '' and  Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0':
+ 				if Rate_Type != None and Rate_Type != '':
+ 					return True
+	else:
+		tkinter.messagebox.showinfo(message="there is some problem")
+		return False
 
-	pass
+			
+
+def Update_CHECK_IN_DETAILS(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
+	my_list = []
+	# print(view_selected_data('__main2.db','All','All','All'))
+	for num in view_selected_data('__main2.db','All','All','All'):
+		my_list.append(num[0])
+	# print(my_list)
+	if Room_No != '':
+		if int(Room_No) in  my_list:
+			if view_selected_data('__main2.db','All','All',Room_No)[0][3] == 'IN USE':
+				if check_if_updaye_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type):
+					print(f'room number: {Room_No}')
+					print('updating.....')
+				# book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
+				# book_it(Room_No,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
+				# update_booking_table_same_serial_deferent_inputs
+	else:
+		print('room is free')
+		pass
 
 def CHECK_IN(MASTER):
 
@@ -1286,7 +1320,6 @@ def Style_generator(STYLE_NUM,FONT,FONT_SIZE,BG_COLOR):
 	globals()[f'style{STYLE_NUM}'].configure(f"treeview{STYLE_NUM}.Heading", font=(FONT, FONT_SIZE,'bold'),background=BG_COLOR)
 	globals()[f'treeview{STYLE_NUM}'].tag_configure('gray', background=BG_COLOR)
 
-#########################################################################################
 
 def selectItem2(a):
 	curItem = treeview2.focus()
@@ -1309,6 +1342,7 @@ def selectItem2(a):
 	#update details:
 	groove_entry34.delete(0,'end')
 	groove_entry34.insert(0, LIST[0][1])
+
 
 def update_all_check_in(num,STATUS):
 	# global trace_checkin_inputs
@@ -1524,11 +1558,6 @@ can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
 main()
 can.pack()
 fen.mainloop()
-
-
-
-
-
 
 
 
