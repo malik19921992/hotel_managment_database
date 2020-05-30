@@ -12,6 +12,8 @@ import tkinter.messagebox
 
 
 '''
+line: 869: free checkout field
+line 783 : time substract date and time
 line: 1740
 line: 1185 cancel function()
 adding check_in detals to booking_table
@@ -412,6 +414,7 @@ def check_if_serial_in_database(SERIAL_NUM):
 		my_list.append(int(row[0]))
 	return int(SERIAL_NUM) in my_list
 
+
 def view_serial_table(DATABESE_NAME):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -423,6 +426,7 @@ def view_serial_table(DATABESE_NAME):
 	return my_list
 
 
+
 def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
@@ -430,6 +434,7 @@ def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS
 			,(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS))
 	conn.commit()
 	c.close()
+
 
 
 def insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
@@ -441,6 +446,7 @@ def insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extr
 	c.close()
 
 
+
 def database_items_count():
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -449,6 +455,7 @@ def database_items_count():
 	result=c.fetchone()
 	return result[0]
 	c.close()
+
 
 
 def check_if_room_in_database(NUM):
@@ -463,6 +470,7 @@ def check_if_room_in_database(NUM):
 	return int(NUM) in my_list
 
 
+
 def check_if_rate_in_database(Rate_Type):
 	my_list = []
 	conn =None;
@@ -475,6 +483,7 @@ def check_if_rate_in_database(Rate_Type):
 	return Rate_Type.casefold() in my_list
 
 
+
 def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -482,6 +491,7 @@ def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
 	conn.commit()
 	c.close()
+
 
 
 def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
@@ -493,6 +503,7 @@ def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_C
 	c.close()
 
 
+
 def database_room_delete(NUM):
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -500,6 +511,7 @@ def database_room_delete(NUM):
 	c.execute("DELETE from table_name where Room_No = ?",(NUM,))
 	conn.commit()
 	c.close()
+
 
 
 def database_rate_delete(Rate_Type):
@@ -592,11 +604,9 @@ def date_one_day_after(MAIN_DATE,DAYS_AFTER):
 	year,month,day = MAIN_DATE.split("-")
 	DATE = date(int(year),int(month),int(day))
 	return DATE + timedelta(days=DAYS_AFTER)
-
 ################################################################################
 ####:OTHER functions:###########################################################
 ################################################################################
-
 def treeview_rate_options_table(MASTER):
 	f4 = MASTER
 	global treeview2
@@ -617,6 +627,7 @@ def treeview_rate_options_table(MASTER):
 	treeview2.tag_configure('gray', background='#cccccc')
 	treeview2.tag_configure('bb', background='light gray')
 
+
 def secound_table_show_options(RATE_TYPE):
 	# print('func works')
 	ITEMS_NO = len(view_selected_rate('__main2.db',RATE_TYPE))
@@ -626,6 +637,7 @@ def secound_table_show_options(RATE_TYPE):
 	elif ITEMS_NO <= 0:
 		ITEMS_LIST = None
 	treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
+
 
 def Cashier_operations():
 	# global f1
@@ -655,6 +667,7 @@ def Cashier_operations():
 	CHECK_OUT(f3)
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
+
 
 ####################################################################################
 def clear_rate_fields():
@@ -773,33 +786,101 @@ def insert_to_past_checkouts(DATABASE_NAME,Room_No):
 	c.close()
 
 
-def boolian_remain_time(Room_No):
-	select_from_booking_table_where_num('__main2.db',Room_No)[0][12]
+def boolian_remain_time(s1,s2):
+	import datetime
+	format = '%d-%m-%Y %H:%M:%S'
+	remain_time = datetime.datetime.strptime(str(s1),format) - datetime.datetime.strptime(str(s2),format)
+	if int(remain_time.total_seconds()) > 0:
+		return True
+	elif int(remain_time.total_seconds()) <= 0:
+		return False
+
+
+def now_datetime():
+	from datetime import datetime
+	now = datetime.now()
+	timenow = now.strftime("%d-%m-%Y %H:%M:%S")
+	return timenow
+
+
+def booking_end_datetime(Room_No):
+	year,month,day = select_from_booking_table_where_num("__main2.db",Room_No)[0][13].split("-")
+	time = select_from_booking_table_where_num("__main2.db",Room_No)[0][12]
+	last_timedate = f"{day}-{month}-{year} {time}"
+	return last_timedate
+
+
+def create_auto_free_table(DATABASE_NAME):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS auto_free_table(
+		Room_No INT PRIMARY KEY NOT NULL,
+		Status TEXT NOT NULL) ''')
+	conn.commit()
+	conn.close()
+
+
+def insert_auto_free_room(DATABASE_NAME,Room_No,STATUS):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute("INSERT OR IGNORE INTO auto_free_table(Room_No,Status) VALUES (?,?)"
+		,(Room_No,STATUS))
+	conn.commit()
+	conn.close()
+
+
+def auto_create_list_of_auto_free_rooms():
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	for room in TABLE_NAME_ROOM_NUMS:
+		insert_auto_free_room('__main2.db',room,'Free')
+
+
+
+def get_auto_free_status(DATABASE_NAME,Room_No,STATUS):
 	pass
 
 
-def checkout_order(Room_No):
-	if boolian_room_status(Room_No,'IN USE'):
-		s1 = f'{select_from_booking_table_where_num("__main2.db",Room_No)[0][12]}'
-		s2 = f'{TIME_NOW()}' #for example
-		format = '%H:%M:%S'
-		time = datetime.strptime(s1,format) - datetime.strptime(s2,format)
-		print(time)
-		insert_to_past_checkouts('__main2.db',Room_No)
-		#if not boolian_remain_time():
-			#free the room
-			#refresh list1
-			#free checkout field
-			#free checkin field
-		#elif remain time:
-			#make room ready to be auto_free mode
-			#free checkout field
+
+def auto_free_room(Room_No):
+	pass
+
 
 
 def checkout_print():
 	pass
 
 
+def auto_checking_free_rooms():
+	pass
+	#for room in table_name rooms:
+		#if check_if_auto-free mode:
+			#if remain time <= 0:
+				#free the room
+				#blinking mark room with green color in list1 for 30 min or until booking again if less
+		#elif not check_if_auto_free_mode:
+			#if remain time <= 0:
+				#blinking red until checkout order
+		#if remain time closer to 0:
+			#keep blinking yellow until 0 time
+	#change: room status in Room settings
+	#change: remain time in Room settings
+	#fen.after(200, live_time_change)
+
+
+def checkout_order(Room_No):
+	if boolian_room_status(Room_No,'IN USE'):
+		insert_to_past_checkouts('__main2.db',Room_No)
+		if boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
+			insert_auto_free_room('__main2.db',Room_No,'autoFree')
+			# free checkout fields 
+		elif not boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
+			delete_feilds_in_booking_table(Room_No)
+			change_table_name_room_status(Room_No,'Free')
+			free_checkout_fields()
+			clear_check_in_fields()
+			first_table_show_options('All','All','All')
+
+		
 def CHECK_OUT(MASTER):
 	global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b,groove_entry19c
 	global groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27,groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
@@ -831,14 +912,12 @@ def CHECK_OUT(MASTER):
 	groove_entry20 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=32)
 	groove_entry20.grid(row=1,column=1,columnspan=5,sticky='nsw')
 	groove_entry20.insert(0, "guest name")
-##########################################################################################
 	groove_entry19b = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19b.grid(row=2,column=1,sticky='nsw')
 	groove_entry19b.insert(0,ID_TYPE_LIST.get())
 	groove_entry19c = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19c.grid(row=3,column=1,sticky='nsw')
 	groove_entry19c.insert(0,groove_entry5F2.get())
-##########################################################################################
 	groove_entry19 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19.grid(row=4,column=1,sticky='nsw')
 	groove_entry19.insert(0, "serial number folio")
@@ -1075,11 +1154,11 @@ def check_wrong_fields_and_show_them(Room_No,serial_num):
 			change_room_wrong_messages_list.append("this serial not for that number....!")
 	if not boolian_room_status(Room_No,'Free'):
 		change_room_wrong_messages_list.append("Room you want to change to is not Free....!")
-
 	MESSAGE = ""
 	for message in change_room_wrong_messages_list:
 			MESSAGE = MESSAGE + f'\n{message}'
 	tkinter.messagebox.showinfo(message=MESSAGE)
+
 
 def CHANGE_ROOM_CHECK_IN(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
 	global CHECKIN_CHOICE
@@ -1259,12 +1338,12 @@ def delete_feilds_in_booking_table(Room_No):
 	c.close()
 
 
-def change_table_name_room_status(Room_No):
+def change_table_name_room_status(Room_No,STATUS):
 	#change statuses in tabele_name:
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
-	c.execute("UPDATE table_name SET Room_Status = 'Free' WHERE Room_No = ?",(Room_No,))
+	c.execute("UPDATE table_name SET Room_Status = ? WHERE Room_No = ?",(STATUS,Room_No,))
 	conn.commit()
 	c.close()
 
@@ -1303,7 +1382,7 @@ def CANCEL_CHECK_IN_BOOING(Room_No,serial_num):
 					if CANCEL_CHECK_MESSAGE == 'yes':
 						print('cancel')
 						delete_feilds_in_booking_table(Room_No)
-						change_table_name_room_status(Room_No)
+						change_table_name_room_status(Room_No,'Free')
 						clear_check_in_fields()
 						first_table_show_options('All','All','All')
 					elif CANCEL_CHECK_MESSAGE == 'no':
@@ -1861,7 +1940,9 @@ def update_check_out_fields(Room_No):
 		groove_entry33.delete(0,'end')
 		groove_entry33.insert(0,groove_entry18F2.get())
 	elif boolian_room_status(Room_No,'Free'):
-		print('room is free')
+		free_checkout_fields(Room_No)
+
+def free_checkout_fields(Room_No):
 		groove_entry20.delete(0,'end')
 		groove_entry19.delete(0,'end')
 		groove_entry19.insert(0,groove_entry0F2.get())
@@ -1891,6 +1972,7 @@ def update_check_out_fields(Room_No):
 		groove_entry32.insert(0,groove_entry17F2.get())
 		groove_entry33.delete(0,'end')
 		groove_entry33.insert(0,groove_entry18F2.get())
+
 
 def selectItem(a):
 	global trace_checkin_inputs,update_trace_checkin_inputs,CHECKIN_CHOICE
@@ -2016,6 +2098,10 @@ def main():
 	create_booking_table('__main2.db')
 	create_new_booking_room('__main2.db',1)
 	create_new_booking_room('__main2.db',2)
+	create_auto_free_table('__main2.db')
+	insert_auto_free_room('__main2.db',2,'Free')
+	auto_create_list_of_auto_free_rooms()
+	# create_list_of_auto_free_rooms()
 	# update_all_check_in()
 
 #widget:
@@ -2030,6 +2116,9 @@ can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
 main()
 can.pack()
 fen.mainloop()
+
+
+
 
 
 
