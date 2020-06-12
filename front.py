@@ -12,13 +12,6 @@ import tkinter.messagebox
 
 
 '''
-line: 869: free checkout field
-line 783 : time substract date and time
-line: 1740
-line: 1185 cancel function()
-adding check_in detals to booking_table
-adding serial "folio number" to serial_table
-get check_in details when click on table1 by choosing room number then getting details from booking_table by number
 def update_state_function():
 	every num of seccounds check date and time of finish booking
 	if  one of rooms near end date and time:
@@ -221,7 +214,8 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 					change_in_table_name_status(Room_No,"IN USE")
 					insert_to_serial_table('__main2.db',serial_num)
 					first_table_show_options(Status.get(),R_Type.get(),R_number.get())
-					# print('room is rented secsassfully')
+					update_auto_free_room('__main2.db',Room_No,'IN USE')
+					#print('room is rented secsassfully')
 				else:
 					pass
 			elif not room_is_free(Room_No):
@@ -732,11 +726,11 @@ def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rat
 		secound_table_show_options(rate_type_choose_trigger())
 	except ValueError:
 		pass
+	secound_table_show_options('All')
 
 
 def rate_type_choose_trigger(*args):
-	RATE_TYPE_LIST = Rate_Type_List.get()
-	return RATE_TYPE_LIST
+	secound_table_show_options(Rate_Type_List.get())
 
 
 def room_price_options(MASTER):
@@ -829,21 +823,26 @@ def insert_auto_free_room(DATABASE_NAME,Room_No,STATUS):
 	conn.close()
 
 
+def update_auto_free_room(DATABASE_NAME,Room_No,STATUS):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute("UPDATE auto_free_table SET Status = ? WHERE Room_No =  ? ",(STATUS,Room_No,))
+	conn.commit()
+	conn.close()
+
+
 def auto_create_list_of_auto_free_rooms():
 	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
 	for room in TABLE_NAME_ROOM_NUMS:
 		insert_auto_free_room('__main2.db',room,'Free')
 
 
-
 def get_auto_free_status(DATABASE_NAME,Room_No,STATUS):
 	pass
 
 
-
 def auto_free_room(Room_No):
 	pass
-
 
 
 def checkout_print():
@@ -867,28 +866,36 @@ def auto_checking_free_rooms():
 	#fen.after(200, live_time_change)
 
 
+
 def checkout_order(Room_No):
+	global checkout_status
 	if boolian_room_status(Room_No,'IN USE'):
 		insert_to_past_checkouts('__main2.db',Room_No)
+		print('room is in use...!!')
 		if boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
-			insert_auto_free_room('__main2.db',Room_No,'autoFree')
-			# free checkout fields 
+			update_auto_free_room('__main2.db',Room_No,'autoFree')
+			free_checkout_fields(Room_No)
+			checkout_status.config(text="Amount Paid",background="sky blue")
 		elif not boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
 			delete_feilds_in_booking_table(Room_No)
 			change_table_name_room_status(Room_No,'Free')
-			free_checkout_fields()
+			free_checkout_fields(Room_No)
 			clear_check_in_fields()
+			checkout_status.config(text="Amount closed",background="yellow")
 			first_table_show_options('All','All','All')
 
 		
 def CHECK_OUT(MASTER):
-	global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b,groove_entry19c
-	global groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27,groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
+	global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b,groove_entry19c,checkout_status
+	global CHECKOUT_BUTTON,groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27,groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
 	f3 = MASTER
 	#BUTTONS:
-	tkinter.Button(f3, text='CheckOut',background="light gray",command=lambda:checkout_order(groove_entry21.get())).grid(row=0, column=0,sticky='we')
+	CHECKOUT_BUTTON = tkinter.Button(f3, text='CheckOut',background="light gray",command=lambda:checkout_order(groove_entry21.get()))
+	CHECKOUT_BUTTON.grid(row=0, column=0,sticky='we')
 	tkinter.Button(f3,text='Print',background="light gray",command=lambda:checkout_print()).grid(row=0, column=1,sticky='we')
 	#LABELS:
+	checkout_status = tkinter.Label(f3, text="Amount Free",background="pale green",relief="solid",width=13,height=1)
+	checkout_status.grid(row=0,column=2,sticky='w')
 	tkinter.Label(f3,text="Guest Name ",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f3,text="ID_Type",background="light gray").grid(row=2,column=0,sticky='w')
 	tkinter.Label(f3,text="ID_No",background="light gray").grid(row=3,column=0,sticky='w')
@@ -1347,7 +1354,7 @@ def change_table_name_room_status(Room_No,STATUS):
 	conn.commit()
 	c.close()
 
-###########################################################################
+
 def clear_check_in_fields():
 	groove_entry0F2.config(state="normal",readonlybackground="white")
 	groove_entry0F2.delete(0,'end')     #   serial folio no
@@ -1384,6 +1391,7 @@ def CANCEL_CHECK_IN_BOOING(Room_No,serial_num):
 						delete_feilds_in_booking_table(Room_No)
 						change_table_name_room_status(Room_No,'Free')
 						clear_check_in_fields()
+						update_auto_free_room('__main2.db',Room_No,'Free')
 						first_table_show_options('All','All','All')
 					elif CANCEL_CHECK_MESSAGE == 'no':
 						print('there is wrong thing....!')
@@ -1396,7 +1404,7 @@ def CANCEL_CHECK_IN_BOOING(Room_No,serial_num):
 	else:
 		print('room number is empty')
 
-################################################################################################################
+
 def TIME_NOW():
 	timenow =  datetime.now().time().strftime('%H:%M:%S')
 	return timenow
@@ -1709,7 +1717,7 @@ def first_table_show_options(STATUS,TYPE,NUM):
 	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
 
 
-##############################################################################
+
 def treeview_inserts(MASTER,TABLE_NUM,ITEMS_NO,ITEMS_LIST,MAX_ROWS,COLUMN_NO):
 	global COLOR_CHOICE
 	COLOR_CHOICE = 0
@@ -1771,7 +1779,6 @@ def treeview_table_generator(MASTER,TREE_NUM,COLUMNS,WIDTHS,X,Y,TABLE_HEIGHT,geo
 		globals()[f'treeview{TREE_NUM}'].heading("#{}".format(COLUMN_NUM), text=TEXT, anchor = "w")
 		globals()[f'treeview{TREE_NUM}'].column("#{}".format(COLUMN_NUM), width = WIDTHS[COLUMN_NUM], anchor = "w")
 		COLUMN_NUM = COLUMN_NUM + 1
-	
 	if 'pack' in geometry:
 		globals()[f'treeview{TREE_NUM}'].pack(fill=geometry['pack']['fill'],expand=geometry['pack']['expand'])
 	if 'grid' in geometry:
@@ -1786,6 +1793,7 @@ def table1():
 	Style_generator(1,None,9,'light gray')
 	globals()['treeview1'].bind('<<TreeviewSelect>>',selectItem)
 	first_table_show_options('All','All','All')
+
 
 def Style_generator(STYLE_NUM,FONT,FONT_SIZE,BG_COLOR):
 	globals()[f'style{STYLE_NUM}'] = ttk.Style()
@@ -1869,23 +1877,23 @@ def update_all_check_in(num,STATUS):
 		groove_entry0F2.delete(0,'end')     #   serial folio no
 		groove_entry0F2.insert(0,f"{str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6)}")     #   serial folio no
 		groove_entry0F2.config(state="readonly",readonlybackground="white")
-		groove_entry1F2.delete(0,'end')     #   first name
-		groove_entry2F2.delete(0,'end')     #   last name
-		groove_entry3F2.delete(0,'end')     #   Rcad_no 
-		countrylist.current(0)              #   country  "LIST"
-		groove_entry4F2.delete(0,'end')     #   adress
-		ID_TYPE_LIST.current(0)             #   id type "LIST"
-		groove_entry5F2.delete(0,'end')     #   id_no 
-		carlist.current(0)                  #   "LIST"
-		groove_entry6F2.delete(0,'end')     #   plate no
+		groove_entry1F2.delete(0,'end')                                             #   first name
+		groove_entry2F2.delete(0,'end')                                             #   last name
+		groove_entry3F2.delete(0,'end')                                             #   Rcad_no 
+		countrylist.current(0)                                                      #   country  "LIST"
+		groove_entry4F2.delete(0,'end')                                             #   adress
+		ID_TYPE_LIST.current(0)                                                     #   id type "LIST"
+		groove_entry5F2.delete(0,'end')                                             #   id_no 
+		carlist.current(0)                                                          #   "LIST"
+		groove_entry6F2.delete(0,'end')                                             #   plate no
 		DateIn.current(date_list.index(date.today().strftime("%Y-%m-%d")))          #   "list"
-		DateOut.current(date_list.index(date.today().strftime("%Y-%m-%d")))             #   "LIST"
-		groove_entry8F2.delete(0,'end')     #   no of days
-		groove_entry8F2.insert(0,0)         #   no of days
-		groove_entry9F2.delete(0,'end')     #   no of adults
-		groove_entry9F2.insert(0,0)         #   no of adults
-		groove_entry10F2.delete(0,'end')    #   no of childs
-		groove_entry10F2.insert(0,0)        #   no of childs
+		DateOut.current(date_list.index(date.today().strftime("%Y-%m-%d")))         #   "LIST"
+		groove_entry8F2.delete(0,'end')                                             #   no of days
+		groove_entry8F2.insert(0,0)                                                 #   no of days
+		groove_entry9F2.delete(0,'end')                                             #   no of adults
+		groove_entry9F2.insert(0,0)                                                 #   no of adults
+		groove_entry10F2.delete(0,'end')                                            #   no of childs
+		groove_entry10F2.insert(0,0)                                                #   no of childs
 
 
 def normalize_checkin_fileds():
@@ -1897,81 +1905,115 @@ def normalize_checkin_fileds():
 	red_warning_entry_borders('groove_entry5F2','NORMAL')
 	red_warning_entry_borders('groove_entry8F2','NORMAL')
 
+
+def select_from_auto_free_table_where_num(DATABESE_NAME,Room_No):
+	my_list = []
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute("SELECT * FROM auto_free_table WHERE Room_No = "+str(Room_No)+" ")
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
+
+
+def switch_checkout_button(STATUS):
+	#lock/unlock checkout putton
+	global CHECKOUT_BUTTON
+	CHECKOUT_BUTTON.configure(state=STATUS)
+
+
 def update_check_out_fields(Room_No):
+	global checkout_status
 	print('update checkout fields ......!')
+	# print(select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1])
 	if boolian_room_status(Room_No,'IN USE'):
-		print(str(select_from_booking_table_where_num('__main2.db',Room_No)[0][1]).zfill(6))
-		first_name = select_from_booking_table_where_num('__main2.db',Room_No)[0][2]
-		last_name  = select_from_booking_table_where_num('__main2.db',Room_No)[0][3]
-		groove_entry20.delete(0,'end')
-		groove_entry20.insert(0,f"{first_name} {last_name}")
-		groove_entry19.delete(0,'end')
-		groove_entry19.insert(0,groove_entry0F2.get())
-		groove_entry19b.delete(0,'end')
-		groove_entry19b.insert(0,ID_TYPE_LIST.get()) #id type:
-		groove_entry19c.delete(0,'end')
-		groove_entry19c.insert(0,groove_entry5F2.get()) #id number:
-		groove_entry21.delete(0,'end')
-		groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
-		groove_entry22.delete(0,'end')
-		groove_entry22.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][11])
-		groove_entry22b.delete(0,'end')
-		groove_entry22b.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][13])
-		groove_entry23.delete(0,'end')
-		groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
-		groove_entry24.delete(0,'end')
-		groove_entry24.insert(0,groove_entry11F2.get())
-		groove_entry25.delete(0,'end')
-		groove_entry25.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][14])
-		groove_entry26.delete(0,'end')
-		groove_entry26.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][15])
-		groove_entry27.delete(0,'end')
-		groove_entry27.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][16])
-		groove_entry28.delete(0,'end')
-		groove_entry28.insert(0,groove_entry14F2.get()) #other charges.
-		groove_entry29.delete(0,'end')
-		groove_entry29.insert(0,groove_entry12F2.get())
-		groove_entry30.delete(0,'end')
-		groove_entry30.insert(0,groove_entry15F2.get())
-		groove_entry31.delete(0,'end')
-		groove_entry31.insert(0,groove_entry16F2.get())
-		groove_entry32.delete(0,'end')
-		groove_entry32.insert(0,groove_entry17F2.get())
-		groove_entry33.delete(0,'end')
-		groove_entry33.insert(0,groove_entry18F2.get())
+		if select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1] != 'autoFree':
+			checkout_full_in_use_mode(Room_No)
+			checkout_status.config(text="Amount open",background="pale green")
+			switch_checkout_button('normal')
+		elif select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1] == 'autoFree':
+			free_checkout_fields(Room_No)
+			checkout_status.config(text="Amount Paid",background="sky blue")
+			switch_checkout_button('disabled')
 	elif boolian_room_status(Room_No,'Free'):
 		free_checkout_fields(Room_No)
+		checkout_status.config(text="Amount closed",background="yellow")
+		switch_checkout_button('disabled')
+
+
+def checkout_full_in_use_mode(Room_No):
+	#print(str(select_from_booking_table_where_num('__main2.db',Room_No)[0][1]).zfill(6))
+	first_name = select_from_booking_table_where_num('__main2.db',Room_No)[0][2]
+	last_name  = select_from_booking_table_where_num('__main2.db',Room_No)[0][3]
+	groove_entry20.delete(0,'end')
+	groove_entry20.insert(0,f"{first_name} {last_name}")
+	groove_entry19.delete(0,'end')
+	groove_entry19.insert(0,groove_entry0F2.get())
+	groove_entry19b.delete(0,'end')
+	groove_entry19b.insert(0,ID_TYPE_LIST.get()) #id type:
+	groove_entry19c.delete(0,'end')
+	groove_entry19c.insert(0,groove_entry5F2.get()) #id number:
+	groove_entry21.delete(0,'end')
+	groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
+	groove_entry22.delete(0,'end')
+	groove_entry22.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][11])
+	groove_entry22b.delete(0,'end')
+	groove_entry22b.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][13])
+	groove_entry23.delete(0,'end')
+	groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
+	groove_entry24.delete(0,'end')
+	groove_entry24.insert(0,groove_entry11F2.get())
+	groove_entry25.delete(0,'end')
+	groove_entry25.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][14])
+	groove_entry26.delete(0,'end')
+	groove_entry26.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][15])
+	groove_entry27.delete(0,'end')
+	groove_entry27.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][16])
+	groove_entry28.delete(0,'end')
+	groove_entry28.insert(0,groove_entry14F2.get()) #other charges.
+	groove_entry29.delete(0,'end')
+	groove_entry29.insert(0,groove_entry12F2.get())
+	groove_entry30.delete(0,'end')
+	groove_entry30.insert(0,groove_entry15F2.get())
+	groove_entry31.delete(0,'end')
+	groove_entry31.insert(0,groove_entry16F2.get())
+	groove_entry32.delete(0,'end')
+	groove_entry32.insert(0,groove_entry17F2.get())
+	groove_entry33.delete(0,'end')
+	groove_entry33.insert(0,groove_entry18F2.get())
 
 def free_checkout_fields(Room_No):
-		groove_entry20.delete(0,'end')
-		groove_entry19.delete(0,'end')
-		groove_entry19.insert(0,groove_entry0F2.get())
-		groove_entry21.delete(0,'end')
-		groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
-		groove_entry22.delete(0,'end')
-		groove_entry22b.delete(0,'end')
-		groove_entry23.delete(0,'end')
-		groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
-		groove_entry24.delete(0,'end')
-		groove_entry24.insert(0,groove_entry11F2.get())
-		groove_entry25.delete(0,'end')
-		groove_entry25.insert(0,'0')
-		groove_entry26.delete(0,'end')
-		groove_entry26.insert(0,'0')
-		groove_entry27.delete(0,'end')
-		groove_entry27.insert(0,'0')
-		groove_entry28.delete(0,'end')
-		groove_entry28.insert(0,groove_entry14F2.get()) #other charges.
-		groove_entry29.delete(0,'end')
-		groove_entry29.insert(0,groove_entry12F2.get())
-		groove_entry30.delete(0,'end')
-		groove_entry30.insert(0,groove_entry15F2.get())
-		groove_entry31.delete(0,'end')
-		groove_entry31.insert(0,groove_entry16F2.get())
-		groove_entry32.delete(0,'end')
-		groove_entry32.insert(0,groove_entry17F2.get())
-		groove_entry33.delete(0,'end')
-		groove_entry33.insert(0,groove_entry18F2.get())
+	groove_entry19b.delete(0,'end')
+	groove_entry19c.delete(0,'end')
+	groove_entry20.delete(0,'end')
+	groove_entry19.delete(0,'end')
+	groove_entry21.delete(0,'end')
+	groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
+	groove_entry22.delete(0,'end')
+	groove_entry22b.delete(0,'end')
+	groove_entry23.delete(0,'end')#rate type
+	groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
+	groove_entry24.delete(0,'end')
+	groove_entry24.insert(0,groove_entry11F2.get())
+	groove_entry25.delete(0,'end')
+	groove_entry25.insert(0,'0')
+	groove_entry26.delete(0,'end')
+	groove_entry26.insert(0,'0')
+	groove_entry27.delete(0,'end')
+	groove_entry27.insert(0,'0')
+	groove_entry28.delete(0,'end')
+	groove_entry28.insert(0,groove_entry14F2.get()) #other charges.
+	groove_entry29.delete(0,'end')
+	groove_entry29.insert(0,'0.0') # sub total
+	groove_entry30.delete(0,'end')
+	groove_entry30.insert(0,'0.0') # discount
+	groove_entry31.delete(0,'end')
+	groove_entry31.insert(0,'0.0')
+	groove_entry32.delete(0,'end')
+	groove_entry32.insert(0,'0.0')
+	groove_entry33.delete(0,'end')
+	groove_entry33.insert(0,'0.0')
 
 
 def selectItem(a):
@@ -2006,7 +2048,7 @@ def selectItem(a):
 		room_status.configure(text="      IN USE      ",background="tomato",relief="solid")
 	else:
 		pass
-		# print('error')
+	# print('error')
 	#update room number:
 	groove_entry7F2.delete(0,'end')
 	groove_entry7F2.insert(0,LIST[0][0])
@@ -2017,7 +2059,6 @@ def selectItem(a):
 		update_all_check_in(LIST[0][0],"IN USE")
 	elif LIST[0][3] == "Free":
 		update_all_check_in(LIST[0][0],"Free")
-
 	update_check_out_fields(LIST[0][0])
 
 
@@ -2093,16 +2134,16 @@ def main():
 	view_selected_data('__main2.db','All','All','All')
 	table1()
 	Cashier_operations()
-	# print(f'types: {select_types("__main2.db")}')
-	# date_one_day_after("2020-04-14",1)
+	#print(f'types: {select_types("__main2.db")}')
+	#date_one_day_after("2020-04-14",1)
 	create_booking_table('__main2.db')
 	create_new_booking_room('__main2.db',1)
 	create_new_booking_room('__main2.db',2)
 	create_auto_free_table('__main2.db')
-	insert_auto_free_room('__main2.db',2,'Free')
+	# insert_auto_free_room('__main2.db',2,'Free')
 	auto_create_list_of_auto_free_rooms()
-	# create_list_of_auto_free_rooms()
-	# update_all_check_in()
+	#create_list_of_auto_free_rooms()
+	#update_all_check_in()
 
 #widget:
 fen = tkinter.Tk()
