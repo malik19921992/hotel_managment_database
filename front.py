@@ -12,6 +12,8 @@ import tkinter.messagebox
 
 
 '''
+user's settings window
+auto_checking_free_rooms(): 852
 def update_state_function():
 	every num of seccounds check date and time of finish booking
 	if  one of rooms near end date and time:
@@ -650,7 +652,7 @@ def Cashier_operations():
 	nb.add(f2, text=" CheckIn ")
 	nb.add(f3, text=" CheckOut ")
 	nb.add(f4, text=" Room Price OPtions ")
-	nb.add(f5, text=" User's Settings ")
+	nb.add(f5, text=" User Settings ")
 	nb.add(f6, text=" Database Settings ")
 	nb.select(f2)
 	nb.select(f3)
@@ -661,9 +663,80 @@ def Cashier_operations():
 	CHECK_OUT(f3)
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
+	USER_SETTINGS(f5)
 
 
-####################################################################################
+def USER_SETTINGS(MASTER):
+	f5 = MASTER
+	
+	#BUTTONS:
+	tkinter.Button(f5,text='new user ',background="light gray",command=print()).grid(row=0, column=2,sticky='we')
+	tkinter.Button(f5,text='update user ',background="light gray",command=print()).grid(row=0, column=3,sticky='we')
+	tkinter.Button(f5,text='delete user ',background="light gray",command=print()).grid(row=0, column=4,sticky='we')
+	#LABELS:
+	tkinter.Label(f5,text="username",background="light gray").grid(row=1,column=0,sticky='w')
+	tkinter.Label(f5,text="password",background="light gray").grid(row=1,column=2,sticky='w')
+	tkinter.Label(f5,text="confirm password",background="light gray").grid(row=1,column=4,sticky='w')
+	tkinter.Label(f5,text="list of users",background="light gray").grid(row=0,column=0,sticky='w')
+	# #ENTRIES:
+	groove_entry1d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
+	groove_entry1d.grid(row=1,column=1,sticky='nwe')
+	groove_entry1d.insert(0, "")
+	groove_entry2d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
+	groove_entry2d.grid(row=1,column=3,sticky='nwe')
+	groove_entry2d.insert(0, "")
+	groove_entry3d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
+	groove_entry3d.grid(row=1,column=5,sticky='nwe')
+	groove_entry3d.insert(0, "") 
+	# #LISTS:
+	#change users list and and function related to:
+	List_of_users = ttk.Combobox(f5,values=['All']+select_types("__main2.db"),width=13)
+	List_of_users.grid(row=0,column=1,sticky='w')
+	List_of_users.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
+	List_of_users.current(0) # list of users
+	#frame:
+
+	prev = tkinter.Frame(f5, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
+	prev.place(relx=0.01, rely=0.250, anchor=tkinter.NW)
+	tkinter.Label(f5, text='User Privileges',background="light gray").place(relx=.09, rely=0.250,anchor=tkinter.W)
+	
+	tkinter.Label(prev,text=" "*25,background="light gray").grid(row=0,column=0,columnspan=7,sticky='w')
+	global buton
+	buton = []
+	def degis(event):
+		global buton
+		if(event == "1"):
+			buton["label"] = "On"
+		else:
+			buton["label"] = "Off"
+
+	tkinter.Label(prev,text=" "*25,background="light gray").grid(row=0,column=0,columnspan=7,sticky='w')
+	buton = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =degis)
+	buton.grid(row=1,column=1,sticky='nwe')
+
+	buton = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =degis)
+	buton.grid(row=2,column=1,sticky='nwe')
+	
+	tkinter.Label(prev,text="Read room settings",background="light gray").grid(row=1,column=0,sticky='ws')
+	tkinter.Label(prev,text="Write room settings",background="light gray").grid(row=2,column=0,sticky='ws')
+	tkinter.Label(prev,text="Disccount",background="light gray").grid(row=3,column=0,sticky='ws')
+
+
+	#add_new user
+	#change password
+	#change privilages what can open ,example: normal user cant open user's settings field and not allow to change discount 
+	#root user , unchangble only one user
+	#you change root password  
+	#admin user, you can gave admin privaligaes for more than one user
+	#privilages as radio buttons swtitch on/off 
+	#save settings button to save in database
+	#increpted passwords in database
+
+
+def DATABASE_SETTINGS(MASTER):
+	pass
+
+
 def clear_rate_fields():
 	groove_entry38.delete(0, 'end')
 	groove_entry38.insert(0,'')
@@ -736,6 +809,7 @@ def rate_type_choose_trigger(*args):
 def room_price_options(MASTER):
 	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38,Rate_Type_List
 	f4 = MASTER
+
 	#BUTTONS:
 	tkinter.Button(f4,text='New Type',background="light gray",command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
 	tkinter.Button(f4,text='Update',background="light gray",command=lambda:room_price_buttons('update',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=2,sticky='we')
