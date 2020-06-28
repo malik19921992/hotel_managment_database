@@ -12,6 +12,7 @@ import tkinter.messagebox
 
 
 '''
+line: 772 update_users_table(DATABASE_NAME)
 user's settings window
 auto_checking_free_rooms(): 852
 def update_state_function():
@@ -667,18 +668,70 @@ def Cashier_operations():
 
 
 def USER_SETTINGS(MASTER):
-	f5 = MASTER
+	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
 	
+	def column_from_users_table(column):
+		n = 0
+		LIST = []
+		for i in read_from_users_table('__main2.db','All'):
+			LIST.append(read_from_users_table('__main2.db','All')[n][column])
+			n += 1
+		return LIST
+
+	def create_new_user(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+		global List_of_users
+		if password != confirm_password:
+			print('password not the same as cinfirm password...')
+		if confirm_password.isspace():
+			print('confirm password is empty')
+		if password.isspace():
+			print('password is empty...')
+		if  user_name in read_column_from_users_table('__main2.db',"user_name"):
+			print('this user is exist , try to use new user')
+		if user_name.isspace():
+			print('user name is empty....')	
+		#check if username not empty field
+		if not user_name.isspace():
+			#check if username not in database
+			if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+				#check if password not empty
+				if not password.isspace():
+					#check if confirm password not empty
+					if not confirm_password.isspace():
+						#check if password == confirm_password
+						if password == confirm_password:
+							#if all right:
+							insert_to_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+							#free three fields
+							groove_entry1d.delete(0,'end')
+							groove_entry2d.delete(0,'end')
+							groove_entry3d.delete(0,'end')
+							#refresh list of users
+							List_of_users['values'] = ['All']+column_from_users_table(0)
+							for i in range(1,8):
+								butons[i]["label"] = "off"
+								butons[i].set(0)
+
+	
+	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+		if not user_name.isspace():
+			#check if username not in database
+			if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+				if not password.isspace():
+					if password == 
+
+
+	f5 = MASTER
 	#BUTTONS:
-	tkinter.Button(f5,text='new user ',background="light gray",command=print()).grid(row=0, column=2,sticky='we')
-	tkinter.Button(f5,text='update user ',background="light gray",command=print()).grid(row=0, column=3,sticky='we')
-	tkinter.Button(f5,text='delete user ',background="light gray",command=print()).grid(row=0, column=4,sticky='we')
+	tkinter.Button(f5,text='new user ',background="light gray",command=lambda:create_new_user(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=2,sticky='we')
+	tkinter.Button(f5,text='update user ',background="light gray",command=lambda:update_user_details(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=3,sticky='we')
+	tkinter.Button(f5,text='delete user ',background="light gray",command=lambda:print('delete user....!')).grid(row=0, column=4,sticky='we')
 	#LABELS:
 	tkinter.Label(f5,text="username",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f5,text="password",background="light gray").grid(row=1,column=2,sticky='w')
 	tkinter.Label(f5,text="confirm password",background="light gray").grid(row=1,column=4,sticky='w')
 	tkinter.Label(f5,text="list of users",background="light gray").grid(row=0,column=0,sticky='w')
-	# #ENTRIES:
+	#ENTRIES:
 	groove_entry1d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
 	groove_entry1d.grid(row=1,column=1,sticky='nwe')
 	groove_entry1d.insert(0, "")
@@ -688,40 +741,89 @@ def USER_SETTINGS(MASTER):
 	groove_entry3d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
 	groove_entry3d.grid(row=1,column=5,sticky='nwe')
 	groove_entry3d.insert(0, "") 
-	# #LISTS:
+	#LISTS:
 	#change users list and and function related to:
-	List_of_users = ttk.Combobox(f5,values=['All']+select_types("__main2.db"),width=13)
-	List_of_users.grid(row=0,column=1,sticky='w')
-	List_of_users.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
-	List_of_users.current(0) # list of users
-	#frame:
+	def users_choose_trigger(args):
+		if List_of_users.get() == 'All':
+			#free fields:
+			#free username
+			#free password
+			#free confirm password
+			groove_entry1d.delete(0,'end')
+			groove_entry2d.delete(0,'end')
+			groove_entry3d.delete(0,'end')
+			#off all user privilages
+			for i in range(1,8):
+				butons[i]["label"] = "off"
+				butons[i].set(0)
+				# butons[i]["state"] = "disabled"
+		else:
+			# print(read_from_users_table('__main2.db',List_of_users.get())[0])
+			#fill the fields:
+			#fill username
+			groove_entry1d.delete(0,'end')
+			groove_entry1d.insert(0,read_from_users_table('__main2.db',List_of_users.get())[0][0])
+			#fill password
+			groove_entry2d.delete(0,'end')
+			groove_entry2d.insert(0,read_from_users_table('__main2.db',List_of_users.get())[0][1])
+			#free confirm password
+			groove_entry3d.delete(0,'end')
+			#chnge user privilages:
+			for i in range(1,8):
+				butons[i]["label"] = read_from_users_table('__main2.db',List_of_users.get())[0][i+1]
+				if read_from_users_table('__main2.db',List_of_users.get())[0][i+1] == "Off":
+					# butons[i]["to"] = 0
+					butons[i].set(0)
+				elif read_from_users_table('__main2.db',List_of_users.get())[0][i+1] == "On":
+					# butons[i]["to"] = 1
+					butons[i].set(50)
 
-	prev = tkinter.Frame(f5, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
+				else:
+					print('something else.....!')
+					print(read_from_users_table('__main2.db',List_of_users.get())[0][i+1])
+
+	List_of_users = ttk.Combobox(f5,values=['All']+column_from_users_table(0),width=13)
+	List_of_users.grid(row=0,column=1,sticky='w')
+	List_of_users.bind('<<ComboboxSelected>>', users_choose_trigger)
+	List_of_users.current(0) # list of users
+	#Frame:
+	prev = tkinter.Frame(f5, relief=tkinter.GROOVE,borderwidth=2,background="light gray")
 	prev.place(relx=0.01, rely=0.250, anchor=tkinter.NW)
 	tkinter.Label(f5, text='User Privileges',background="light gray").place(relx=.09, rely=0.250,anchor=tkinter.W)
-	
 	tkinter.Label(prev,text=" "*25,background="light gray").grid(row=0,column=0,columnspan=7,sticky='w')
 	global buton
-	buton = []
-	def degis(event):
-		global buton
-		if(event == "1"):
-			buton["label"] = "On"
+	butons = {}
+	for i in range(1,8):
+		butons[i] = {}
+
+	def degis(*args):
+		if(args[0] == "1"):
+			butons[int(args[1])]["label"] = "On"
 		else:
-			buton["label"] = "Off"
+			butons[int(args[1])]["label"] = "Off"
 
 	tkinter.Label(prev,text=" "*25,background="light gray").grid(row=0,column=0,columnspan=7,sticky='w')
-	buton = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =degis)
-	buton.grid(row=1,column=1,sticky='nwe')
-
-	buton = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =degis)
-	buton.grid(row=2,column=1,sticky='nwe')
-	
+	butons[1] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "off" ,bg="light gray",command =lambda event:degis(event,'1'))
+	butons[1].grid(row=1,column=1,sticky='nwe')
+	butons[2] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'2'))
+	butons[2].grid(row=2,column=1,sticky='nwe')
+	butons[3] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'3'))
+	butons[3].grid(row=3,column=1,sticky='nwe')
+	butons[4] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'4'))
+	butons[4].grid(row=1,column=3,sticky='nwe')
+	butons[5] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'5'))
+	butons[5].grid(row=2,column=3,sticky='nwe')
+	butons[6] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'6'))
+	butons[6].grid(row=3,column=3,sticky='nwe')
+	butons[7] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'7'))
+	butons[7].grid(row=1,column=5,sticky='nwe')
 	tkinter.Label(prev,text="Read room settings",background="light gray").grid(row=1,column=0,sticky='ws')
 	tkinter.Label(prev,text="Write room settings",background="light gray").grid(row=2,column=0,sticky='ws')
 	tkinter.Label(prev,text="Disccount",background="light gray").grid(row=3,column=0,sticky='ws')
-
-
+	tkinter.Label(prev,text="read room prices",background="light gray").grid(row=1,column=2,sticky='ws')
+	tkinter.Label(prev,text="write room prices",background="light gray").grid(row=2,column=2,sticky='ws')
+	tkinter.Label(prev,text="allow user settings",background="light gray").grid(row=3,column=2,sticky='ws')
+	tkinter.Label(prev,text="allow database settings",background="light gray").grid(row=1,column=4,sticky='ws')
 	#add_new user
 	#change password
 	#change privilages what can open ,example: normal user cant open user's settings field and not allow to change discount 
@@ -731,6 +833,64 @@ def USER_SETTINGS(MASTER):
 	#privilages as radio buttons swtitch on/off 
 	#save settings button to save in database
 	#increpted passwords in database
+
+
+def create_users_table(DATABESE_NAME):
+	conn = sqlite3.connect(DATABESE_NAME)
+	c = conn.cursor()
+	c.execute(''' CREATE TABLE IF NOT EXISTS users_table(
+				user_name TEXT,
+				password TEXT,
+				read_room_settings INT,
+				write_room_settings INT,
+				Discount INT,
+				read_room_price INT,
+				write_room_price INT,
+				allow_user_settings INT,
+				allow_database_settings INT) ''')
+	conn.commit()
+	conn.close()
+
+
+def insert_to_users_table(DATABASE_NAME,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute("INSERT OR IGNORE INTO users_table(user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings) VALUES (?,?,?,?,?,?,?,?,?)",(user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,))
+	conn.commit()
+	c.close()
+
+
+def update_users_table(DATABASE_NAME,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute('UPDATE users_table SET password = ? , read_room_settings = ? , write_room_settings = ? , Discount = ? , read_room_price = ? , write_room_price = ? , allow_user_settings = ? , allow_database_settings = ?  WHERE user_name = ? ',
+			(user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,))
+	conn.commit()
+	c.close()
+
+
+def read_from_users_table(DATABASE_NAME,user_name):
+	my_list = []
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	if user_name == 'All':
+		c.execute("SELECT * FROM users_table")
+	else:
+		c.execute('SELECT * FROM users_table WHERE user_name = ? ',(user_name,))
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row)
+	return my_list
+
+def read_column_from_users_table(DATABASE_NAME,column_name):
+	my_list = []
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute("SELECT "+column_name+" FROM users_table")
+	rows = c.fetchall()
+	for row in rows:
+		my_list.append(row[0])
+	return my_list
 
 
 def DATABASE_SETTINGS(MASTER):
@@ -2218,6 +2378,8 @@ def main():
 	auto_create_list_of_auto_free_rooms()
 	#create_list_of_auto_free_rooms()
 	#update_all_check_in()
+	create_users_table('__main2.db')
+
 
 #widget:
 fen = tkinter.Tk()
