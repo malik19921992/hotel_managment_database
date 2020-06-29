@@ -668,6 +668,7 @@ def Cashier_operations():
 
 
 def USER_SETTINGS(MASTER):
+	#add admin  user , undeletble , update only password , no privliages update , no change name.
 	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
 	
 	def column_from_users_table(column):
@@ -714,18 +715,47 @@ def USER_SETTINGS(MASTER):
 
 	
 	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+		# print(read_from_users_table('__main2.db',user_name)[0][1])
+		if user_name.isspace():
+			print('user name is empty field , choose user')
+		if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+			print('user name not exists')
 		if not user_name.isspace():
 			#check if username not in database
-			if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+			if user_name in read_column_from_users_table('__main2.db',"user_name"):
 				if not password.isspace():
-					if password == 
-
-
+					if password == read_from_users_table('__main2.db',user_name)[0][1]:
+						update_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+					elif password != read_from_users_table('__main2.db',user_name)[0][1]:
+						if not confirm_password.isspace():
+							if confirm_password == password:
+								print('change password')
+								update_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+							elif confirm_password != password:
+								print('password not the same as confirm')
+						if confirm_password.isspace():
+							print('type confirm password.....!to change')
+				elif password.isspace():
+					print('password is empty field....!')
+	
+	def delete_user(user_name):
+		#if user_name exists in databas":
+		if user_name in read_column_from_users_table('__main2.db',"user_name"):
+			#if user_name != 'admin':
+			if user_name != 'admin':
+				#tkinter.ask question yes ? , no
+				#delete user from database
+				#free fields
+				#choose All
+			elif user_name == 'admin':
+				print('admin user is indeletable....!')
+		elif user_name not in read_column_from_users_table('__main2.db',"user_name"):
+			print('user name not exists...!')
 	f5 = MASTER
 	#BUTTONS:
 	tkinter.Button(f5,text='new user ',background="light gray",command=lambda:create_new_user(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=2,sticky='we')
 	tkinter.Button(f5,text='update user ',background="light gray",command=lambda:update_user_details(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=3,sticky='we')
-	tkinter.Button(f5,text='delete user ',background="light gray",command=lambda:print('delete user....!')).grid(row=0, column=4,sticky='we')
+	tkinter.Button(f5,text='delete user ',background="light gray",command=lambda:delete_user(groove_entry1d.get())).grid(row=0, column=4,sticky='we')
 	#LABELS:
 	tkinter.Label(f5,text="username",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f5,text="password",background="light gray").grid(row=1,column=2,sticky='w')
@@ -864,7 +894,7 @@ def update_users_table(DATABASE_NAME,user_name,password,read_room_settings,write
 	conn = sqlite3.connect(DATABASE_NAME)
 	c = conn.cursor()
 	c.execute('UPDATE users_table SET password = ? , read_room_settings = ? , write_room_settings = ? , Discount = ? , read_room_price = ? , write_room_price = ? , allow_user_settings = ? , allow_database_settings = ?  WHERE user_name = ? ',
-			(user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,))
+			(password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,user_name,))
 	conn.commit()
 	c.close()
 
@@ -881,6 +911,7 @@ def read_from_users_table(DATABASE_NAME,user_name):
 	for row in rows:
 		my_list.append(row)
 	return my_list
+
 
 def read_column_from_users_table(DATABASE_NAME,column_name):
 	my_list = []
@@ -969,7 +1000,6 @@ def rate_type_choose_trigger(*args):
 def room_price_options(MASTER):
 	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38,Rate_Type_List
 	f4 = MASTER
-
 	#BUTTONS:
 	tkinter.Button(f4,text='New Type',background="light gray",command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
 	tkinter.Button(f4,text='Update',background="light gray",command=lambda:room_price_buttons('update',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=2,sticky='we')
