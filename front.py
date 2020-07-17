@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 #use control+b to execute code
+
 import tkinter
 import tkinter.ttk as ttk
 import tkinter.font as tkfont
@@ -25,7 +26,6 @@ def update_state_function():
 		message: room <num> is free , you can use it , take key from guest
 		move room details from booking to unfinishing checkouts
 '''
-
 
 #VARS:
 TABLE_HEIGHT=0
@@ -52,6 +52,8 @@ ID_TYPES = ["(SSN)Social Security Number","Passport number","Driver license","ta
 date_list = []
 
 #database functions:########################################################################
+
+
 def create_past_checkouts_table(DATABESE_NAME):
 	conn = sqlite3.connect(DATABESE_NAME)
 	c = conn.cursor()
@@ -713,7 +715,6 @@ def USER_SETTINGS(MASTER):
 								butons[i]["label"] = "off"
 								butons[i].set(0)
 
-	
 	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
 		# print(read_from_users_table('__main2.db',user_name)[0][1])
 		if user_name.isspace():
@@ -743,10 +744,24 @@ def USER_SETTINGS(MASTER):
 		if user_name in read_column_from_users_table('__main2.db',"user_name"):
 			#if user_name != 'admin':
 			if user_name != 'admin':
-				#tkinter.ask question yes ? , no
-				#delete user from database
-				#free fields
-				#choose All
+				pass
+				# tkinter.ask question yes ? , no
+				DELETE_USER = tkinter.messagebox.askquestion(message="do you really want to delete this user?")
+				if DELETE_USER  == 'yes':
+					# choose All
+					List_of_users.current(0)
+					# delete user from database
+					delete_user_from_users_table('__main2.db',user_name)
+					# free fields
+					groove_entry1d.delete(0,'end')
+					groove_entry2d.delete(0,'end')
+					groove_entry3d.delete(0,'end')
+					for i in range(1,8):
+						butons[i]["label"] = "off"
+						butons[i].set(0)
+
+				elif DELETE_USER == 'no':
+					pass
 			elif user_name == 'admin':
 				print('admin user is indeletable....!')
 		elif user_name not in read_column_from_users_table('__main2.db',"user_name"):
@@ -911,6 +926,13 @@ def read_from_users_table(DATABASE_NAME,user_name):
 	for row in rows:
 		my_list.append(row)
 	return my_list
+
+def delete_user_from_users_table(DATABASE_NAME,user_name):
+	conn = sqlite3.connect(DATABASE_NAME)
+	c = conn.cursor()
+	c.execute("DELETE FROM users_table WHERE user_name = ?",(user_name,))
+	conn.commit()
+	c.close()
 
 
 def read_column_from_users_table(DATABASE_NAME,column_name):
