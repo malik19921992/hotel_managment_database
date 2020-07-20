@@ -204,9 +204,9 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 	global update_trace_checkin_inputs,trace_checkin_inputs,CHECKIN_CHOICE
 	CHECKIN_CHOICE = 'BOOKING'
 	update_trace_checkin_inputs = 0
-	# print(Rate_Type)
-	# print('1) booking .')
-	# print(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
+	#print(Rate_Type)
+	#print('1) booking .')
+	#print(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
 	if check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type) == True:
 		# print(f'check_inputs_all_right is: {True}')
 		# print('all inputs are right')
@@ -356,7 +356,6 @@ def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,
 		return False
 
 
-
 def select_from_booking_table(DATABESE_NAME,column):
 	my_list = []
 	conn = sqlite3.connect(DATABESE_NAME)
@@ -393,7 +392,7 @@ def check_room_status():
 	pass
 
 
-####################################################################
+
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
 	conn = sqlite3.connect("__main2.db")
 	c = conn.cursor()
@@ -639,7 +638,6 @@ def secound_table_show_options(RATE_TYPE):
 
 
 def Cashier_operations():
-	# global f1
 	Cashier = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
 	Cashier.place(relx=0.015, rely=0.48, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.48,anchor=tkinter.W)
@@ -657,9 +655,9 @@ def Cashier_operations():
 	nb.add(f4, text=" Room Price OPtions ")
 	nb.add(f5, text=" User Settings ")
 	nb.add(f6, text=" Database Settings ")
-	nb.select(f2)
-	nb.select(f3)
-	nb.select(f4)
+	# nb.select(f2)
+	# nb.select(f3)
+	# nb.select(f4)
 	nb.select(f1)
 	rooms_options(f1)
 	CHECK_IN(f2)
@@ -667,6 +665,18 @@ def Cashier_operations():
 	room_price_options(f4)
 	treeview_rate_options_table(f4)
 	USER_SETTINGS(f5)
+	DATABASE_SETTINGS(f6)
+
+
+
+def DATABASE_SETTINGS(MASTER):
+	f6 = MASTER
+	groove_entry1m = tkinter.Entry(f6,font=10,relief="groove",background="white",width=35)
+	groove_entry1m.grid(row=0,column=0,columnspan=4,sticky='nwe')
+	groove_entry1m.insert(0,"")
+	tkinter.Button(f6,text='open database ',background="light gray",command=print("nigit")).grid(row=0,column=6,sticky='we')
+	tkinter.Button(f6,text='new database ',background="light gray",command=print("nigit")).grid(row=0,column=7,sticky='we')
+
 
 
 def USER_SETTINGS(MASTER):
@@ -946,8 +956,8 @@ def read_column_from_users_table(DATABASE_NAME,column_name):
 	return my_list
 
 
-def DATABASE_SETTINGS(MASTER):
-	pass
+# def DATABASE_SETTINGS(MASTER):
+# 	pass
 
 
 def clear_rate_fields():
@@ -1350,6 +1360,7 @@ def database_booking_update_costumized_no_time_datein_serial(Room_No,serial_num,
 	conn.commit()
 	c.close()
 
+
 	
 def boolian_room_status(Room_No,STATUS):
 	conn =None;
@@ -1391,6 +1402,7 @@ def check_if_change_room_inputs_all_right(Room_No,serial_num,First_name,Last_nam
 		pass
 
 
+
 def copy_between_rooms_booking_table(serial_num):
 	conn =None;
 	conn = sqlite3.connect("__main2.db")
@@ -1412,6 +1424,7 @@ def paste_details_to_free_room(Room_No,First_name,Last_name,R_CARD_No,Country,Ad
 	conn.commit()
 	c.close()
 
+
 def change_in_room_tabe_status(First_Room_No,Secound_Room_No):
 	#change statuses in tabele_name:
 	conn =None;
@@ -1421,6 +1434,7 @@ def change_in_room_tabe_status(First_Room_No,Secound_Room_No):
 	c.execute("UPDATE table_name SET Room_Status = 'IN USE' WHERE Room_No = ?",(Secound_Room_No,))
 	conn.commit()
 	c.close()
+
 
 def room_changing(serial_num,Room_No):
 	details_list = copy_between_rooms_booking_table(serial_num)
