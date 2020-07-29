@@ -676,7 +676,7 @@ def DATABASE_SETTINGS(MASTER):
 	groove_entry1m.insert(0,"")
 	tkinter.Button(f6,text='open database ',background="light gray",command=print("nigit")).grid(row=0,column=6,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=print("nigit")).grid(row=0,column=7,sticky='we')
-
+	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=8,sticky='we')
 
 
 def USER_SETTINGS(MASTER):
