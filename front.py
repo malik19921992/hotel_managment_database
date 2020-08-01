@@ -668,15 +668,32 @@ def Cashier_operations():
 	DATABASE_SETTINGS(f6)
 
 
+def open_database_file():
+	global groove_entry1m
+	import os
+	from tkinter import filedialog
+	can.filename =  filedialog.askopenfilename(initialdir = f"{os.path.dirname(os.path.abspath(__file__))}",title = "Select file",filetypes = (("database file","*.db "),("all files","*.*")))
+	groove_entry1m.delete(0,"end")
+	groove_entry1m.insert(0,f"{can.filename}")
+
+def  create_new_database():
+	from tkinter.filedialog import asksaveasfile 
+	files = [('SQLite Database file', "*.db"),]
+	types = ['.db',]
+	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types ) 
+
 
 def DATABASE_SETTINGS(MASTER):
+	global groove_entry1m
 	f6 = MASTER
-	groove_entry1m = tkinter.Entry(f6,font=10,relief="groove",background="white",width=35)
-	groove_entry1m.grid(row=0,column=0,columnspan=4,sticky='nwe')
+	groove_entry1m = tkinter.Entry(f6,font=10,relief="groove",background="white",width=55)
+	groove_entry1m.grid(row=1,column=0,columnspan=7,sticky='we')
 	groove_entry1m.insert(0,"")
-	tkinter.Button(f6,text='open database ',background="light gray",command=print("nigit")).grid(row=0,column=6,sticky='we')
-	tkinter.Button(f6,text='new database ',background="light gray",command=print("nigit")).grid(row=0,column=7,sticky='we')
-	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=8,sticky='we')
+	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=0,column=0,sticky='we')
+	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=0,column=1,sticky='we')
+	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=2,sticky='we')
+	tkinter.Button(f6,text='save as',background="light gray",command=print("nigit")).grid(row=0,column=3,sticky='we')
+	
 
 
 def USER_SETTINGS(MASTER):
