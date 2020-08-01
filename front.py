@@ -682,6 +682,11 @@ def  create_new_database():
 	types = ['.db',]
 	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types ) 
 
+def save_database():
+	from tkinter.filedialog import asksaveasfile 
+	files = [('SQLite Database file', "*.db"),]
+	types = ['.db',]
+	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types )
 
 def DATABASE_SETTINGS(MASTER):
 	global groove_entry1m
@@ -692,9 +697,8 @@ def DATABASE_SETTINGS(MASTER):
 	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=0,column=0,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=0,column=1,sticky='we')
 	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=2,sticky='we')
-	tkinter.Button(f6,text='save as',background="light gray",command=print("nigit")).grid(row=0,column=3,sticky='we')
+	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=0,column=3,sticky='we')
 	
-
 
 def USER_SETTINGS(MASTER):
 	#add admin  user , undeletble , update only password , no privliages update , no change name.
@@ -2438,7 +2442,7 @@ def clock_date():
 	live_time_change()
 
 
-def main():
+def main_functions():
 	date_list()
 	clock_date()
 	Room_View_Options()
@@ -2464,18 +2468,85 @@ def main():
 	create_users_table('__main2.db')
 
 
+def login():
+    
+    # login_screen = Toplevel(main_screen)
+    login_screen.title("Login")
+    login_screen.geometry("300x250")
+    Label(login_screen, text="Please enter details below to login").pack()
+    Label(login_screen, text="").pack()
+
+    global username_verify
+    global password_verify
+
+    username_verify = StringVar()
+    password_verify = StringVar()
+
+   
+    Label(login_screen, text="Username * ").pack()
+    username_login_entry = Entry(login_screen, textvariable=username_verify)
+    username_login_entry.pack()
+    Label(login_screen, text="").pack()
+    Label(login_screen, text="Password * ").pack()
+    password__login_entry = Entry(login_screen, textvariable=password_verify, show= '*')
+    password__login_entry.pack()
+    Label(login_screen, text="").pack()
+    Button(login_screen, text="Login", width=10, height=1, command=login_verification).pack()
+
+
+def login_verification():
+    print("working...")
+
+
+def login2():
+	global fen1,can1
+	fen1 = tkinter.Tk()
+	fen1.title("User's Login")
+	can1 = tkinter.Canvas(fen1 , height=150,width=300,bg="light gray")
+	#labels:
+	tkinter.Label(can1,text="User Name",background="light gray",font="albattar 12 normal").grid(row=0,column=0,sticky='w')
+	tkinter.Label(can1,text="Password",background="light gray",font="albattar 12 normal").grid(row=1,column=0,sticky='w')
+	#entry:
+	groove_entry12F2 = tkinter.Entry(can1,font=10,relief="groove",background="white",width=14) # total charge
+	groove_entry12F2.grid(row=1,column=1,sticky='nsw')
+	groove_entry12F2.insert(0, "") 
+	#lists:
+	users_list = ttk.Combobox(can1,values=['','admin','a','b','fa'],width=15)
+	users_list.grid(row=0,column=1)
+	users_list.current(0)
+	#buttons:
+	tkinter.Button(can1,text='Login',background="light gray",command=main,width=10).grid(row=2, column=0,sticky='we')
+	tkinter.Button(can1,text='Cancel',background="light gray",command=print("cancel"),width=10).grid(row=2, column=1,sticky='we')
+	can1.grid()
+	fen1.mainloop()
+
+def prestart():
+	#check if username not empty
+	#check if password is coprrect
+	#login with user previlages
+	#fen1.destroy()
+	#main(prevs)
+	pass
+
+def main():
+	global fen
+	fen1.destroy()
+	fen = tkinter.Tk()
+	fen.title('Hotel')
+
+	can = tkinter.Canvas(fen , height=570,width=800,bg="light gray")
+	can.create_text(85,45,fill="black",font="albattar 20 bold",text="Hotel Name",tags="NAME")
+
+	can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
+	main_functions()
+	can.pack()
+	fen.mainloop()
+
 #widget:
-fen = tkinter.Tk()
+if __name__ == '__main__':
+	login2()
+	#main()
 
-fen.title('Hotel')
-
-can = tkinter.Canvas(fen , height=570,width=800,bg="light gray")
-can.create_text(85,45,fill="black",font="albattar 20 bold",text="Hotel Name",tags="NAME")
-
-can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
-main()
-can.pack()
-fen.mainloop()
 
 
 
