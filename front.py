@@ -13,6 +13,7 @@ import tkinter.messagebox
 
 
 '''
+make admin user undeletable , cant change privilages , only can change password for admin
 line: 772 update_users_table(DATABASE_NAME)
 user's settings window
 auto_checking_free_rooms(): 852
@@ -637,36 +638,77 @@ def secound_table_show_options(RATE_TYPE):
 	treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
 
 
-def Cashier_operations():
+def Cashier_operations(*args):
 	Cashier = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
 	Cashier.place(relx=0.015, rely=0.48, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.48,anchor=tkinter.W)
+	
 	nb = ttk.Notebook(Cashier,style="Treeview.Heading")
 	nb.pack(fill=tkinter.BOTH, expand=tkinter.Y, padx=2, pady=10)
-	f1 = tkinter.Frame(nb,background="light gray")
+	
+	if args[0][0] == 'On' and args[0][1] == 'Off':
+		f1 = tkinter.Frame(nb,background="light gray")
+		nb.add(f1, text=" Room Settings ")
+		rooms_options(f1,'read')
+	elif args[0][1] == 'On':
+		f1 = tkinter.Frame(nb,background="light gray")
+		nb.add(f1, text=" Room Settings ")
+		rooms_options(f1,'read|write')
+
+	if args[0][0] == 'Off' and args[0][1] == 'Off':
+		print('rooms_option dissabled......!')
+
+
 	f2 = tkinter.Frame(nb,background="light gray")	
-	f3 = tkinter.Frame(nb,background="light gray")
-	f4 = tkinter.Frame(nb,background="light gray")
-	f5 = tkinter.Frame(nb,background="light gray")
-	f6 = tkinter.Frame(nb,background="light gray")
-	nb.add(f1, text=" Room Settings ")
+	f3 = tkinter.Frame(nb,background="light gray")	
+	
+	
 	nb.add(f2, text=" CheckIn ")
 	nb.add(f3, text=" CheckOut ")
-	nb.add(f4, text=" Room Price OPtions ")
-	nb.add(f5, text=" User Settings ")
-	nb.add(f6, text=" Database Settings ")
-	# nb.select(f2)
-	# nb.select(f3)
-	# nb.select(f4)
+	
+
 	nb.select(f1)
-	rooms_options(f1)
+
+
 	CHECK_IN(f2)
 	CHECK_OUT(f3)
-	room_price_options(f4)
-	treeview_rate_options_table(f4)
-	USER_SETTINGS(f5)
-	DATABASE_SETTINGS(f6)
 
+	
+	if args[0][3] == 'On' and args[0][4] == 'Off':
+		f4 = tkinter.Frame(nb,background="light gray")
+		nb.add(f4, text=" Room Price OPtions ")
+		room_price_options(f4,'read')
+		treeview_rate_options_table(f4)
+	elif args[0][4] == 'On':
+		f4 = tkinter.Frame(nb,background="light gray")
+		nb.add(f4, text=" Room Price OPtions ")
+		room_price_options(f4,'read|write')
+		treeview_rate_options_table(f4)
+	if args[0][3] == 'Off' and args[0][4] == 'Off':
+		print('rooms_option dissabled......!')
+	
+
+	if args[0][5] == 'On': 
+		f5 = tkinter.Frame(nb,background="light gray")
+		nb.add(f5, text=" User Settings ")
+		USER_SETTINGS(f5)	
+	elif args[0][5] == 'Off': 
+		print('user settings is off for this user')
+
+	if args[0][6] == 'On': 
+		f6 = tkinter.Frame(nb,background="light gray")
+		nb.add(f6, text=" Database Settings ")
+		DATABASE_SETTINGS(f6)
+	elif args[0][6] == 'Off': 
+		print('database settings is off for this user')
+
+
+	# if args[0][2] == 'On': #discount On:
+	# 	checkin(Discount_on)
+	# 	checkout(Discount_on)
+	# elif args[0][2] == 'Off': #discount off:
+	# 	checkin(Discount_off)
+	# 	checkout(Discount_off)	
 
 def open_database_file():
 	global groove_entry1m
@@ -698,19 +740,19 @@ def DATABASE_SETTINGS(MASTER):
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=0,column=1,sticky='we')
 	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=2,sticky='we')
 	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=0,column=3,sticky='we')
-	
+
+def column_from_users_table(column):
+	n = 0
+	LIST = []
+	for i in read_from_users_table('__main2.db','All'):
+		LIST.append(read_from_users_table('__main2.db','All')[n][column])
+		n += 1
+	return LIST
 
 def USER_SETTINGS(MASTER):
 	#add admin  user , undeletble , update only password , no privliages update , no change name.
 	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
 	
-	def column_from_users_table(column):
-		n = 0
-		LIST = []
-		for i in read_from_users_table('__main2.db','All'):
-			LIST.append(read_from_users_table('__main2.db','All')[n][column])
-			n += 1
-		return LIST
 
 	def create_new_user(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
 		global List_of_users
@@ -1050,13 +1092,21 @@ def rate_type_choose_trigger(*args):
 	secound_table_show_options(Rate_Type_List.get())
 
 
-def room_price_options(MASTER):
+def room_price_options(MASTER,PRIV):
+
+	if PRIV == 'read':
+		print('buttons dissabled')
+		STATE = "disabled"
+	elif PRIV == 'read|write':
+		print('buttons open')
+		STATE = "normal"
+	
 	global groove_entry34,groove_entry35,groove_entry36,groove_entry37,groove_entry38,Rate_Type_List
 	f4 = MASTER
 	#BUTTONS:
-	tkinter.Button(f4,text='New Type',background="light gray",command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
-	tkinter.Button(f4,text='Update',background="light gray",command=lambda:room_price_buttons('update',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=2,sticky='we')
-	tkinter.Button(f4,text='Delete',background="light gray",command=lambda:room_price_buttons('delete',groove_entry38.get())).grid(row=1, column=3,sticky='we')
+	tkinter.Button(f4,text='New Type',background="light gray",state=STATE,command=lambda:room_price_buttons('new',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=1,sticky='we')
+	tkinter.Button(f4,text='Update',background="light gray",state=STATE,command=lambda:room_price_buttons('update',groove_entry38.get(),groove_entry34.get(),groove_entry35.get(),groove_entry36.get(),groove_entry37.get())).grid(row=1, column=2,sticky='we')
+	tkinter.Button(f4,text='Delete',background="light gray",state=STATE,command=lambda:room_price_buttons('delete',groove_entry38.get())).grid(row=1, column=3,sticky='we')
 	#LABELS:
 	tkinter.Label(f4,text="Rate Type",background="light gray").grid(row=1,column=0)
 	tkinter.Label(f4,text=" Room Rate",background="light gray").grid(row=2,column=1)
@@ -1984,15 +2034,34 @@ def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=No
 	except ValueError:
 		pass
 
+def switch_rooms_options_buttons(STATUS):
+	global add_new_room,update_room,delete_room
+	add_new_room["state"] == STATUS
+	update_room["state"] == STATUS
+	delete_room["state"] == STATUS
 
-def rooms_options(MASTER):
+def rooms_options(MASTER,PRIV):
 	global room_status
 	f1 = MASTER
-	global groove_entry1,groove_entry2,groove_entry3,groove_entry4,groove_entry5,groove_entry6
+	global groove_entry1,groove_entry2,groove_entry3,groove_entry4,groove_entry5,groove_entry6,add_new_room,update_room,delete_room
+	
+	if PRIV == 'read':
+		print('buttons dissabled')
+		# switch_rooms_options_buttons("disabled")
+		STATE = "disabled"
+	elif PRIV == 'read|write':
+		print('buttons open')
+		# switch_rooms_options_buttons("normal")
+		STATE = "normal"
+	
 	#BUTTONS:
-	tkinter.Button(f1, text='  add new     ',background="light gray",command=lambda:room_options_buttons('new',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get())).grid(row=0, column=0,sticky='sw')
-	tkinter.Button(f1,text='       update       ',background="light gray",command=lambda:room_options_buttons('update',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get())).grid(row=0, column=1,sticky='sw')
-	tkinter.Button(f1,text='delete   ',background="light gray",command=lambda:room_options_buttons('delete',groove_entry1.get())).grid(row=0, column=2,sticky='sw')
+	add_new_room  =  tkinter.Button(f1, text='  add new     ',background="light gray",state=STATE ,command=lambda:room_options_buttons('new',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get()))
+	add_new_room.grid(row=0, column=0,sticky='sw')
+	update_room   =  tkinter.Button(f1,text='       update       ',background="light gray",state=STATE ,command=lambda:room_options_buttons('update',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get()))
+	update_room.grid(row=0, column=1,sticky='sw')
+	delete_room   =  tkinter.Button(f1,text='delete   ',background="light gray",state=STATE,command=lambda:room_options_buttons('delete',groove_entry1.get()))
+	delete_room .grid(row=0, column=2,sticky='sw')
+	
 	#LABELS:
 	tkinter.Label(f1,text="Room Number ",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f1,text="Room Name ",background="light gray").grid(row=2,column=0,sticky='w')
@@ -2433,8 +2502,8 @@ def clock_date():
 	datenow = datetime.now().strftime('%A,%d %B %Y')
 	timenow =  datetime.now().time().strftime('%H:%M:%S')
 	Time = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
-	Time.place(relx=0.74, rely=0.108, anchor=tkinter.NW)
-	tkinter.Label(fen, text='Time',bg="light gray").place(relx=.77, rely=0.108,anchor=tkinter.W)
+	Time.place(relx=0.74, rely=0.13, anchor=tkinter.NW)
+	tkinter.Label(fen, text='Time',bg="light gray").place(relx=.77, rely=0.13,anchor=tkinter.W)
 	clock = tkinter.Label(Time, text=f'{timenow}',font=("Helvetica", 24),bg="light gray")
 	clock.pack(side=tkinter.TOP, anchor=tkinter.N)
 	DATE = tkinter.Label(Time, text=f'{datenow}',bg="light gray")
@@ -2442,110 +2511,140 @@ def clock_date():
 	live_time_change()
 
 
-def main_functions():
-	date_list()
-	clock_date()
-	Room_View_Options()
+def current_user(username):
+	Current_User = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
+	Current_User.place(relx=0.74, rely=0.04, anchor=tkinter.NW)
+	tkinter.Label(fen, text='Current User',bg="light gray").place(relx=.77, rely=0.04,anchor=tkinter.W)
+	tkinter.Label(Current_User, text=f' ',font=("Helvetica", 2),bg="light gray").pack(side=tkinter.TOP, anchor=tkinter.N)
+	user_name = tkinter.Label(Current_User, text=f'        {username}        ',font=("Helvetica", 15),bg="light gray")
+	user_name.pack(side=tkinter.TOP, anchor=tkinter.N)
+
+
+
+def main_functions(*args):
+	print(f'main functions: {args}')
 	create_main_database("__main2.db")
 	create_rate_table("__main2.db")
 	create_serial_table("__main2.db")
 	create_past_checkouts_table('__main2.db')
-	#create_type_table("__main2.db")
-	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
-	view_selected_data('__main2.db','All','All','All')
-	table1()
-	Cashier_operations()
-	#print(f'types: {select_types("__main2.db")}')
-	#date_one_day_after("2020-04-14",1)
 	create_booking_table('__main2.db')
 	create_new_booking_room('__main2.db',1)
 	create_new_booking_room('__main2.db',2)
 	create_auto_free_table('__main2.db')
-	# insert_auto_free_room('__main2.db',2,'Free')
 	auto_create_list_of_auto_free_rooms()
+	create_users_table('__main2.db')
+	#create_type_table("__main2.db")
+	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
+	clock_date()
+	date_list()
+	view_selected_data('__main2.db','All','All','All')
+	table1()
+	Room_View_Options()
+	current_user(args[0][0])
+	Cashier_operations(args[0][1])
+	#print(f'types: {select_types("__main2.db")}')
+	#date_one_day_after("2020-04-14",1)
+	# insert_auto_free_room('__main2.db',2,'Free')
 	#create_list_of_auto_free_rooms()
 	#update_all_check_in()
-	create_users_table('__main2.db')
+	
 
 
 def login():
-    
-    # login_screen = Toplevel(main_screen)
-    login_screen.title("Login")
-    login_screen.geometry("300x250")
-    Label(login_screen, text="Please enter details below to login").pack()
-    Label(login_screen, text="").pack()
-
-    global username_verify
-    global password_verify
-
-    username_verify = StringVar()
-    password_verify = StringVar()
-
-   
-    Label(login_screen, text="Username * ").pack()
-    username_login_entry = Entry(login_screen, textvariable=username_verify)
-    username_login_entry.pack()
-    Label(login_screen, text="").pack()
-    Label(login_screen, text="Password * ").pack()
-    password__login_entry = Entry(login_screen, textvariable=password_verify, show= '*')
-    password__login_entry.pack()
-    Label(login_screen, text="").pack()
-    Button(login_screen, text="Login", width=10, height=1, command=login_verification).pack()
-
-
-def login_verification():
-    print("working...")
-
-
-def login2():
+	
 	global fen1,can1
 	fen1 = tkinter.Tk()
 	fen1.title("User's Login")
-	can1 = tkinter.Canvas(fen1 , height=150,width=300,bg="light gray")
+
+	combostyle = ttk.Style()
+	combostyle.theme_create('combostyle', parent='alt',
+	                         settings = {'TCombobox':
+	                                     {'configure':
+	                                      {'selectbackground': 'blue',
+	                                       'fieldbackground': 'white',
+	                                       'background': 'green'
+	                                       }}})
+	combostyle.theme_use('combostyle') 
+
+	can1 = tkinter.Canvas(fen1 , height=150,width=300)
+	
 	#labels:
 	tkinter.Label(can1,text="User Name",background="light gray",font="albattar 12 normal").grid(row=0,column=0,sticky='w')
 	tkinter.Label(can1,text="Password",background="light gray",font="albattar 12 normal").grid(row=1,column=0,sticky='w')
+	
 	#entry:
-	groove_entry12F2 = tkinter.Entry(can1,font=10,relief="groove",background="white",width=14) # total charge
-	groove_entry12F2.grid(row=1,column=1,sticky='nsw')
-	groove_entry12F2.insert(0, "") 
+	password_entry = tkinter.Entry(can1,font=10,relief="groove",background="white",width=14) # password
+	password_entry.grid(row=1,column=1,sticky='nsw')
+	password_entry.insert(0, "")
+	
 	#lists:
-	users_list = ttk.Combobox(can1,values=['','admin','a','b','fa'],width=15)
+	users_list = ttk.Combobox(can1,values=[""]+column_from_users_table(0),width=15,state="readonly")
 	users_list.grid(row=0,column=1)
 	users_list.current(0)
+
 	#buttons:
-	tkinter.Button(can1,text='Login',background="light gray",command=main,width=10).grid(row=2, column=0,sticky='we')
-	tkinter.Button(can1,text='Cancel',background="light gray",command=print("cancel"),width=10).grid(row=2, column=1,sticky='we')
+	tkinter.Button(can1,text='Login',background="light gray",command=lambda:prestart(users_list,password_entry),width=10).grid(row=2, column=0,sticky='we')
+	tkinter.Button(can1,text='Cancel',background="light gray",command=lambda:print("cancel"),width=10).grid(row=2, column=1,sticky='we')
 	can1.grid()
 	fen1.mainloop()
 
-def prestart():
-	#check if username not empty
-	#check if password is coprrect
-	#login with user previlages
-	#fen1.destroy()
-	#main(prevs)
-	pass
 
-def main():
-	global fen
+def prestart(users_list,password_entry):
+
+	user_privs = read_from_users_table('__main2.db',users_list.get())[0][2:9]
+	print(read_from_users_table('__main2.db',users_list.get())[0][2:9])
+
+	if not users_list.get().isspace() and users_list.get() != None and users_list.get() != '':
+		print('user name is not empty')
+
+		#check if user_name exists in database:
+		if users_list.get() in column_from_users_table(0):
+			print('user name in list')
+			
+			if not password_entry.get().isspace() and password_entry.get() != None and password_entry.get() != '':
+				print('password is not empty')
+
+
+				if str(password_entry.get()) == str(read_from_users_table('__main2.db',users_list.get())[0][1]):
+					print('password is same password')
+					main(users_list.get(),user_privs)
+					fen1.destroy()
+					
+
+				elif str(password_entry.get()) != str(read_from_users_table('__main2.db',users_list.get())[0][1]):
+					print('password is not the same as password you entered .')
+
+			elif password_entry.get().isspace() or password_entry.get() == None or password_entry.get() == '':
+				print('password is empty')
+		
+		elif users_list.get() not in column_from_users_table(0):
+			print('user name not in list')
+			
+	elif users_list.get().isspace() or users_list.get() == None or users_list.get() == '':
+		print('username field is empty , choose user name')
+	
+
+def main(*args):
+
+	print(f'user name is: {args[0]}')
+	print(f'privilages are {args[1]}')
+
+	global fen,can
 	fen1.destroy()
 	fen = tkinter.Tk()
 	fen.title('Hotel')
-
 	can = tkinter.Canvas(fen , height=570,width=800,bg="light gray")
 	can.create_text(85,45,fill="black",font="albattar 20 bold",text="Hotel Name",tags="NAME")
-
 	can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
-	main_functions()
+	main_functions(args)
 	can.pack()
 	fen.mainloop()
 
+
 #widget:
 if __name__ == '__main__':
-	login2()
-	#main()
+	login()
+
 
 
 
