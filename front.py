@@ -13,6 +13,10 @@ import tkinter.messagebox
 
 
 '''
+sublime select multi-same word select-->"alt+f3"
+728: use the function to change variable and look for way in the web page which describe the way
+714: write this 
+	#LAST_DATABASE_LINK
 make admin user undeletable , cant change privilages , only can change password for admin
 line: 772 update_users_table(DATABASE_NAME)
 user's settings window
@@ -28,12 +32,23 @@ def update_state_function():
 		move room details from booking to unfinishing checkouts
 '''
 
+def read_from_config(file_path,section,key):
+	from configparser import ConfigParser
+	#Read config.ini file
+	config_object = ConfigParser()
+	config_object.read(file_path)
+	#Get valueconfig
+	SECTION = config_object[section]
+	return SECTION[key]
+
 #VARS:
+LAST_DATABASE_LINK = read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK")
 TABLE_HEIGHT=0
 COLOR_TAG = {}
 COLOR_CHOICE = 0
 COLOR_TAG[0] = 'gray'
 COLOR_TAG[1] = 'white'
+
 #COLORS:
 LGREEN        =    "light green"
 GREEN         =    "green"
@@ -47,14 +62,12 @@ BROWN1        =    "brown1"
 first_list_Scorll_X = 562
 first_list_Scorll_Y = 80
 cars = ["","Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
-
 room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package']
 ID_TYPES = ["(SSN)Social Security Number","Passport number","Driver license","taxpayer ID number","patient ID number"]
 date_list = []
 
+
 #database functions:########################################################################
-
-
 def create_past_checkouts_table(DATABESE_NAME):
 	conn = sqlite3.connect(DATABESE_NAME)
 	c = conn.cursor()
@@ -218,9 +231,9 @@ def book_it(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_
 				if BOOKING_CHOICE == 'yes':
 					database_booking_update(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE)
 					change_in_table_name_status(Room_No,"IN USE")
-					insert_to_serial_table('__main2.db',serial_num)
+					insert_to_serial_table(LAST_DATABASE_LINK,serial_num)
 					first_table_show_options(Status.get(),R_Type.get(),R_number.get())
-					update_auto_free_room('__main2.db',Room_No,'IN USE')
+					update_auto_free_room(LAST_DATABASE_LINK,Room_No,'IN USE')
 					#print('room is rented secsassfully')
 				else:
 					pass
@@ -268,7 +281,7 @@ def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name
 			check_in_input_error_messages.append("room number not in table name, its not exists, choose defferant room .!")
 		else:
 			pass
-	elif serial_num != '' and  Room_No != '' and str(serial_num) == str(select_from_booking_table_where_num('__main2.db',Room_No)[0][1]).zfill(6) and view_selected_data('__main2.db','All','All',Room_No)[0][3] == 'IN USE':
+	elif serial_num != '' and  Room_No != '' and str(serial_num) == str(select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1]).zfill(6) and view_selected_data(LAST_DATABASE_LINK,'All','All',Room_No)[0][3] == 'IN USE':
 		red_warning_entry_borders('groove_entry7F2','RED')
 		# print('problem is here here !!!!')
 		check_in_input_error_messages.append('Room with this number and this folio is still IN USE, you can use update or change room')
@@ -341,8 +354,8 @@ def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,
 	#inputs variables:
 	global SERIAL_TABLE,BOOKING_TABLE_ROOM_NUMS,BOOKING_TABLE_SERIAL_NUMS,TABLE_NAME_ROOM_NUMS
 	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
-	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table('__main2.db','Room_No')))[0]
-	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table('__main2.db','serial_num')))[0]
+	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
+	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
 	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
 
 	if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None:
@@ -391,7 +404,6 @@ def check_room_status():
 	#update table view 
 	can.after(100,check_room_status)
 	pass
-
 
 
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
@@ -629,20 +641,21 @@ def treeview_rate_options_table(MASTER):
 
 def secound_table_show_options(RATE_TYPE):
 	# print('func works')
-	ITEMS_NO = len(view_selected_rate('__main2.db',RATE_TYPE))
+	ITEMS_NO = len(view_selected_rate(LAST_DATABASE_LINK,RATE_TYPE))
 	COLUMN_NO = 5
 	if ITEMS_NO > 0:
-		ITEMS_LIST = view_selected_rate('__main2.db',RATE_TYPE)
+		ITEMS_LIST = view_selected_rate(LAST_DATABASE_LINK,RATE_TYPE)
 	elif ITEMS_NO <= 0:
 		ITEMS_LIST = None
 	treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
 
 
 def Cashier_operations(*args):
+	
 	Cashier = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
 	Cashier.place(relx=0.015, rely=0.48, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.48,anchor=tkinter.W)
-	
+
 	nb = ttk.Notebook(Cashier,style="Treeview.Heading")
 	nb.pack(fill=tkinter.BOTH, expand=tkinter.Y, padx=2, pady=10)
 	
@@ -661,18 +674,16 @@ def Cashier_operations(*args):
 
 	f2 = tkinter.Frame(nb,background="light gray")	
 	f3 = tkinter.Frame(nb,background="light gray")	
-	
-	
 	nb.add(f2, text=" CheckIn ")
 	nb.add(f3, text=" CheckOut ")
-	
-
 	nb.select(f1)
 
-
-	CHECK_IN(f2)
-	CHECK_OUT(f3)
-
+	if args[0][2] == 'On': #discount On:
+		CHECK_IN(f2,'On')
+		CHECK_OUT(f3,'On')
+	elif args[0][2] == 'Off': #discount off:
+		CHECK_IN(f2,'Off')
+		CHECK_OUT(f3,'Off')	
 	
 	if args[0][3] == 'On' and args[0][4] == 'Off':
 		f4 = tkinter.Frame(nb,background="light gray")
@@ -687,7 +698,6 @@ def Cashier_operations(*args):
 	if args[0][3] == 'Off' and args[0][4] == 'Off':
 		print('rooms_option dissabled......!')
 	
-
 	if args[0][5] == 'On': 
 		f5 = tkinter.Frame(nb,background="light gray")
 		nb.add(f5, text=" User Settings ")
@@ -703,12 +713,43 @@ def Cashier_operations(*args):
 		print('database settings is off for this user')
 
 
-	# if args[0][2] == 'On': #discount On:
-	# 	checkin(Discount_on)
-	# 	checkout(Discount_on)
-	# elif args[0][2] == 'Off': #discount off:
-	# 	checkin(Discount_off)
-	# 	checkout(Discount_off)	
+
+def set_value_in_property_file(file_path, section, key, value):
+	import configparser
+	config = configparser.RawConfigParser()
+	config.read(file_path)
+	config.set(section,key,value)                         
+	cfgfile = open(file_path,'w')
+	config.write(cfgfile, space_around_delimiters=False)  # use flag in case case you need to avoid white space.
+	cfgfile.close()
+
+
+def create_config_if_not_exists():
+	from configparser import ConfigParser
+	#Get the configparser object
+	config_object = ConfigParser()
+	#Assume we need 2 sections in the config file, let's call them USERINFO and SERVERCONFIG
+	config_object["DATABASE_INFO"] = {
+	    "LAST_DATABASE_LINK": "/home/mal/Templates/learnpy/projects/hotel_database/__main.db",
+	    "loginid": "chankeypathak",
+	    "password": "tutswiki"
+	}
+	config_object["SERVERCONFIG"] = {
+	    "host": "tutswiki.com",
+	    "port": "8080",
+	    "ipaddr": "8.8.8.8"
+	}
+	#Write the above sections to config.ini file
+	with open('config.ini', 'w') as conf:
+	    config_object.write(conf)
+
+
+
+
+
+def boolian_check_file_exists(path):
+	return os.path.isfile(path)
+
 
 def open_database_file():
 	global groove_entry1m
@@ -718,11 +759,22 @@ def open_database_file():
 	groove_entry1m.delete(0,"end")
 	groove_entry1m.insert(0,f"{can.filename}")
 
+	if boolian_check_file_exists("config.ini"):
+		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , can.filename)
+	elif not boolian_check_file_exists("config.ini"):
+		create_config_if_not_exists()
+
+	# write this on  first line of script
+	# LAST_DATABASE_LINK
+	# set_value_in_property_file(file_path, section, key, value)
+
+
 def  create_new_database():
 	from tkinter.filedialog import asksaveasfile 
 	files = [('SQLite Database file', "*.db"),]
 	types = ['.db',]
 	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types ) 
+
 
 def save_database():
 	from tkinter.filedialog import asksaveasfile 
@@ -730,24 +782,29 @@ def save_database():
 	types = ['.db',]
 	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types )
 
+
 def DATABASE_SETTINGS(MASTER):
 	global groove_entry1m
 	f6 = MASTER
 	groove_entry1m = tkinter.Entry(f6,font=10,relief="groove",background="white",width=55)
 	groove_entry1m.grid(row=1,column=0,columnspan=7,sticky='we')
 	groove_entry1m.insert(0,"")
+	if boolian_check_file_exists("config.ini"):
+		groove_entry1m.insert(0,read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK"))
 	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=0,column=0,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=0,column=1,sticky='we')
 	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=2,sticky='we')
 	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=0,column=3,sticky='we')
 
+
 def column_from_users_table(column):
 	n = 0
 	LIST = []
-	for i in read_from_users_table('__main2.db','All'):
-		LIST.append(read_from_users_table('__main2.db','All')[n][column])
+	for i in read_from_users_table(LAST_DATABASE_LINK,'All'):
+		LIST.append(read_from_users_table(LAST_DATABASE_LINK,'All')[n][column])
 		n += 1
 	return LIST
+
 
 def USER_SETTINGS(MASTER):
 	#add admin  user , undeletble , update only password , no privliages update , no change name.
@@ -762,14 +819,14 @@ def USER_SETTINGS(MASTER):
 			print('confirm password is empty')
 		if password.isspace():
 			print('password is empty...')
-		if  user_name in read_column_from_users_table('__main2.db',"user_name"):
+		if  user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 			print('this user is exist , try to use new user')
 		if user_name.isspace():
 			print('user name is empty....')	
 		#check if username not empty field
 		if not user_name.isspace():
 			#check if username not in database
-			if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+			if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 				#check if password not empty
 				if not password.isspace():
 					#check if confirm password not empty
@@ -777,7 +834,7 @@ def USER_SETTINGS(MASTER):
 						#check if password == confirm_password
 						if password == confirm_password:
 							#if all right:
-							insert_to_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+							insert_to_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
 							#free three fields
 							groove_entry1d.delete(0,'end')
 							groove_entry2d.delete(0,'end')
@@ -789,22 +846,22 @@ def USER_SETTINGS(MASTER):
 								butons[i].set(0)
 
 	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
-		# print(read_from_users_table('__main2.db',user_name)[0][1])
+		# print(read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1])
 		if user_name.isspace():
 			print('user name is empty field , choose user')
-		if user_name not in read_column_from_users_table('__main2.db',"user_name"):
+		if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 			print('user name not exists')
 		if not user_name.isspace():
 			#check if username not in database
-			if user_name in read_column_from_users_table('__main2.db',"user_name"):
+			if user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 				if not password.isspace():
-					if password == read_from_users_table('__main2.db',user_name)[0][1]:
-						update_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
-					elif password != read_from_users_table('__main2.db',user_name)[0][1]:
+					if password == read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1]:
+						update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+					elif password != read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1]:
 						if not confirm_password.isspace():
 							if confirm_password == password:
 								print('change password')
-								update_users_table('__main2.db',user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+								update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
 							elif confirm_password != password:
 								print('password not the same as confirm')
 						if confirm_password.isspace():
@@ -814,7 +871,7 @@ def USER_SETTINGS(MASTER):
 	
 	def delete_user(user_name):
 		#if user_name exists in databas":
-		if user_name in read_column_from_users_table('__main2.db',"user_name"):
+		if user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 			#if user_name != 'admin':
 			if user_name != 'admin':
 				pass
@@ -824,7 +881,7 @@ def USER_SETTINGS(MASTER):
 					# choose All
 					List_of_users.current(0)
 					# delete user from database
-					delete_user_from_users_table('__main2.db',user_name)
+					delete_user_from_users_table(LAST_DATABASE_LINK,user_name)
 					# free fields
 					groove_entry1d.delete(0,'end')
 					groove_entry2d.delete(0,'end')
@@ -837,7 +894,7 @@ def USER_SETTINGS(MASTER):
 					pass
 			elif user_name == 'admin':
 				print('admin user is indeletable....!')
-		elif user_name not in read_column_from_users_table('__main2.db',"user_name"):
+		elif user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 			print('user name not exists...!')
 	f5 = MASTER
 	#BUTTONS:
@@ -876,29 +933,29 @@ def USER_SETTINGS(MASTER):
 				butons[i].set(0)
 				# butons[i]["state"] = "disabled"
 		else:
-			# print(read_from_users_table('__main2.db',List_of_users.get())[0])
+			# print(read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0])
 			#fill the fields:
 			#fill username
 			groove_entry1d.delete(0,'end')
-			groove_entry1d.insert(0,read_from_users_table('__main2.db',List_of_users.get())[0][0])
+			groove_entry1d.insert(0,read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][0])
 			#fill password
 			groove_entry2d.delete(0,'end')
-			groove_entry2d.insert(0,read_from_users_table('__main2.db',List_of_users.get())[0][1])
+			groove_entry2d.insert(0,read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][1])
 			#free confirm password
 			groove_entry3d.delete(0,'end')
 			#chnge user privilages:
 			for i in range(1,8):
-				butons[i]["label"] = read_from_users_table('__main2.db',List_of_users.get())[0][i+1]
-				if read_from_users_table('__main2.db',List_of_users.get())[0][i+1] == "Off":
+				butons[i]["label"] = read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][i+1]
+				if read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][i+1] == "Off":
 					# butons[i]["to"] = 0
 					butons[i].set(0)
-				elif read_from_users_table('__main2.db',List_of_users.get())[0][i+1] == "On":
+				elif read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][i+1] == "On":
 					# butons[i]["to"] = 1
 					butons[i].set(50)
 
 				else:
 					print('something else.....!')
-					print(read_from_users_table('__main2.db',List_of_users.get())[0][i+1])
+					print(read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][i+1])
 
 	List_of_users = ttk.Combobox(f5,values=['All']+column_from_users_table(0),width=13)
 	List_of_users.grid(row=0,column=1,sticky='w')
@@ -1201,7 +1258,7 @@ def update_auto_free_room(DATABASE_NAME,Room_No,STATUS):
 def auto_create_list_of_auto_free_rooms():
 	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
 	for room in TABLE_NAME_ROOM_NUMS:
-		insert_auto_free_room('__main2.db',room,'Free')
+		insert_auto_free_room(LAST_DATABASE_LINK,room,'Free')
 
 
 def get_auto_free_status(DATABASE_NAME,Room_No,STATUS):
@@ -1237,10 +1294,10 @@ def auto_checking_free_rooms():
 def checkout_order(Room_No):
 	global checkout_status
 	if boolian_room_status(Room_No,'IN USE'):
-		insert_to_past_checkouts('__main2.db',Room_No)
+		insert_to_past_checkouts(LAST_DATABASE_LINK,Room_No)
 		print('room is in use...!!')
 		if boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
-			update_auto_free_room('__main2.db',Room_No,'autoFree')
+			update_auto_free_room(LAST_DATABASE_LINK,Room_No,'autoFree')
 			free_checkout_fields(Room_No)
 			checkout_status.config(text="Amount Paid",background="sky blue")
 		elif not boolian_remain_time(booking_end_datetime(Room_No),now_datetime()):
@@ -1252,7 +1309,13 @@ def checkout_order(Room_No):
 			first_table_show_options('All','All','All')
 
 		
-def CHECK_OUT(MASTER):
+def CHECK_OUT(MASTER,DISCOUNT):
+
+	if DISCOUNT == 'Off':
+		STATE = "disabled"
+	elif DISCOUNT == 'On':
+		STATE = "normal"
+
 	global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b,groove_entry19c,checkout_status
 	global CHECKOUT_BUTTON,groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27,groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
 	f3 = MASTER
@@ -1325,7 +1388,7 @@ def CHECK_OUT(MASTER):
 	groove_entry29 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=9)
 	groove_entry29.grid(row=7,column=3,columnspan=5,sticky='nsw')
 	groove_entry29.insert(0, "2,916.00")
-	groove_entry30 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=6)
+	groove_entry30 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=6,state=STATE,disabledbackground="red")
 	groove_entry30.grid(row=8,column=3,columnspan=4,sticky='nsw')
 	groove_entry30.insert(0, "0.00")
 	groove_entry31 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
@@ -1345,7 +1408,7 @@ def modify_paymen_numbers_2(*args):
 		def Extract(lst,NUM):
 			return list(list(zip(*lst))[NUM])
 		my_list = []
-		rate = view_selected_rate('__main2.db',Rate_Type_CHECKIN.get())
+		rate = view_selected_rate(LAST_DATABASE_LINK,Rate_Type_CHECKIN.get())
 		my_list.append(rate)
 		for ROOM_RATE in Extract(rate,1):
 			RATE_PERIOD = ROOM_RATE
@@ -1578,13 +1641,13 @@ def check_if_update_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adr
 	print('checking for updating.....!!!')
 	normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type)
 	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
-	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table('__main2.db','Room_No')))[0]
-	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table('__main2.db','serial_num')))[0]
+	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
+	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
 	#use check_if_room_in_database(Room_No) insted to:
 	#TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
 	if not Room_No.isspace():
 		if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None and check_if_room_in_database(Room_No):
-			if int(serial_num) == (list(zip(*select_from_booking_table_where_num('__main2.db',Room_No)))[1][0]):
+			if int(serial_num) == (list(zip(*select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)))[1][0]):
 				if int(Room_No) in BOOKING_TABLE_ROOM_NUMS  and int(serial_num) in SERIAL_TABLE and int(serial_num)  in BOOKING_TABLE_SERIAL_NUMS:
 					if First_name != None and First_name != '' and Last_name != None and Last_name != '' and  Adress != None and Adress != '' and ID_No != None and ID_No != ''and NO_OF_DAYS != '0':
 						if Rate_Type != None and Rate_Type != '':
@@ -1599,7 +1662,7 @@ def serial_is_serial_where_num(serial_num,Room_No):
 	Room_No = groove_entry7F2.get()
 	if Room_No != '' and not Room_No.isspace() and Room_No != None:
 		if check_if_room_in_database(int(Room_No)):
-			return str(serial_num) == str(select_from_booking_table_where_num('__main2.db',Room_No)[0][1]).zfill(6)
+			return str(serial_num) == str(select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1]).zfill(6)
 	else:
 		return False
 
@@ -1617,8 +1680,8 @@ def normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO
 def looking_for_wrong_fields_and_mark_them(Room_No,serial_num,First_name,Last_name=None,Adress=None,ID_No=None,NO_OF_DAYS=None,Rate_Type=None):
 	# normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS)
 	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
-	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table('__main2.db','Room_No')))[0]
-	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table('__main2.db','serial_num')))[0]
+	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
+	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
 	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
 	global check_in_input_error_messages,groove_entry7F2
 	check_in_input_error_messages = []
@@ -1729,7 +1792,7 @@ def change_table_name_room_status(Room_No,STATUS):
 def clear_check_in_fields():
 	groove_entry0F2.config(state="normal",readonlybackground="white")
 	groove_entry0F2.delete(0,'end')     #   serial folio no
-	groove_entry0F2.insert(0,f"{str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6)}")     #   serial folio no
+	groove_entry0F2.insert(0,f"{str(int(view_serial_table(LAST_DATABASE_LINK)[-1][0])+1).zfill(6)}")     #   serial folio no
 	groove_entry0F2.config(state="readonly",readonlybackground="white")
 	groove_entry1F2.delete(0,'end')     #   first name
 	groove_entry2F2.delete(0,'end')     #   last name
@@ -1762,7 +1825,7 @@ def CANCEL_CHECK_IN_BOOING(Room_No,serial_num):
 						delete_feilds_in_booking_table(Room_No)
 						change_table_name_room_status(Room_No,'Free')
 						clear_check_in_fields()
-						update_auto_free_room('__main2.db',Room_No,'Free')
+						update_auto_free_room(LAST_DATABASE_LINK,Room_No,'Free')
 						first_table_show_options('All','All','All')
 					elif CANCEL_CHECK_MESSAGE == 'no':
 						print('there is wrong thing....!')
@@ -1780,7 +1843,13 @@ def TIME_NOW():
 	timenow =  datetime.now().time().strftime('%H:%M:%S')
 	return timenow
 
-def CHECK_IN(MASTER):
+def CHECK_IN(MASTER,DISCOUNT):
+	
+	if DISCOUNT == 'Off':
+		STATE = "disabled"
+	elif DISCOUNT == 'On':
+		STATE = "normal"
+
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2,CHECKIN_CHOICE
@@ -1789,6 +1858,7 @@ def CHECK_IN(MASTER):
 	CHECKIN_CHOICE = None
 	trace_checkin_inputs = 0
 	update_trace_checkin_inputs = 0
+	
 	def trace_entry(ENTRY_VAR):
 		def callback(sv):
 			print(f'CHECKIN_CHOICE: {CHECKIN_CHOICE}')
@@ -1796,16 +1866,16 @@ def CHECK_IN(MASTER):
 			print(f'trace_checkin_inputs: {trace_checkin_inputs}')
 			if groove_entry7F2.get() != '' and groove_entry7F2.get() != None:
 				existed_room_numbers_list = []
-				for i in view_selected_data('__main2.db','All','All','All'):
+				for i in view_selected_data(LAST_DATABASE_LINK,'All','All','All'):
 					existed_room_numbers_list.append(i[0])
 				if int(groove_entry7F2.get()) in existed_room_numbers_list:
-					LIST = view_selected_data('__main2.db','All','All',int(groove_entry7F2.get()))
+					LIST = view_selected_data(LAST_DATABASE_LINK,'All','All',int(groove_entry7F2.get()))
 					Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
 				else:
 					pass
 					# print('the number is not in existedd rooms list')
 					# print(f'{int(groove_entry7F2.get())} in the list ....')
-				# print(view_selected_data('__main2.db','All','All','All'))
+				# print(view_selected_data(LAST_DATABASE_LINK,'All','All','All'))
 			if Rate_Type_CHECKIN.get() != "":
 				modify_paymen_numbers_2()
 			# if trace_checkin_inputs == 1:
@@ -1820,6 +1890,7 @@ def CHECK_IN(MASTER):
 				pass
 		globals()[f'{ENTRY_VAR}_trace'] = tkinter.StringVar()
 		globals()[f'{ENTRY_VAR}_trace'].trace("w", lambda name, index, mode, sv=globals()[f'{ENTRY_VAR}_trace']: callback(globals()[f'{ENTRY_VAR}_trace'])) 
+	
 	trace_entry('groove_entry7F2')
 	trace_entry('groove_entry8F2')
 	trace_entry('groove_entry9F2')
@@ -1832,12 +1903,14 @@ def CHECK_IN(MASTER):
 	trace_entry('groove_entry2F2')
 	trace_entry('groove_entry5F2')
 	trace_entry('groove_entry4F2')
+	
 	#BUTTONS:
-	tkinter.Button(f2, text='Book it',background="light gray",command=lambda:book_it(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=0,sticky='we')
-	tkinter.Button(f2, text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
+	tkinter.Button(f2,text='Book it',background="light gray",command=lambda:book_it(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=0,sticky='we')
+	tkinter.Button(f2,text='Print',background="light gray",width=11).grid(row=0, column=1,sticky='we')
 	tkinter.Button(f2,text='Update',background="light gray",command=lambda:Update_CHECK_IN_DETAILS(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=2,sticky='we')
 	tkinter.Button(f2,text='Change Room',background="light gray",command=lambda:CHANGE_ROOM_CHECK_IN(groove_entry7F2.get(),groove_entry0F2.get(),groove_entry1F2.get(),groove_entry2F2.get(),groove_entry3F2.get(),countrylist.get(),groove_entry4F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),carlist.get(),groove_entry6F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get())).grid(row=0, column=3,columnspan=5,sticky='w')
 	tkinter.Button(f2,text='Cancel',background="light gray",command=lambda:CANCEL_CHECK_IN_BOOING(groove_entry7F2.get(),groove_entry0F2.get())).grid(row=0,column=6,sticky='ew')
+	
 	def change_num(master,arithmetic,CHANGE_VARS):
 		# print(CHANGE_VARS)
 		for VAR in CHANGE_VARS:
@@ -1943,7 +2016,7 @@ def CHECK_IN(MASTER):
 	#ENTRIES:
 	groove_entry0F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry0F2_trace,text="00005") # serial folio no
 	groove_entry0F2.grid(row=1,column=1,columnspan=2,sticky='nsw')
-	groove_entry0F2.insert(0,f"{str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6)}")
+	groove_entry0F2.insert(0,f"{str(int(view_serial_table(LAST_DATABASE_LINK)[-1][0])+1).zfill(6)}")
 	groove_entry0F2.config(state="readonly",readonlybackground="white")
 	groove_entry1F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry1F2_trace) # first name
 	groove_entry1F2.grid(row=2,column=1,columnspan=2,sticky='nsw')
@@ -1979,7 +2052,7 @@ def CHECK_IN(MASTER):
 	groove_entry14F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10,textvariable=groove_entry14F2_trace)
 	groove_entry14F2.grid(row=4,column=7,columnspan=8,sticky='nsw')
 	groove_entry14F2.insert(0, "0.00") # other charges
-	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8,textvariable=groove_entry15F2_trace)
+	groove_entry15F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=8,textvariable=groove_entry15F2_trace,state=STATE,disabledbackground="red")
 	groove_entry15F2.grid(row=5,column=7,sticky='nsw')
 	groove_entry15F2.insert(0, "0") # discount
 	groove_entry16F2 = tkinter.Entry(f2,font=10,relief="groove",background="white",width=10)
@@ -2012,8 +2085,8 @@ def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=No
 		if OPTION == 'new':
 			if check_if_room_in_database(ROOM_NO) == False:
 				insert_to_database(ROOM_NO,NAME,TYPE,'Free',SIDE,DETAILS,BEDS)
-				R_number.config(values=['All']+select_room_numbers('__main2.db'))
-				create_new_booking_room('__main2.db',ROOM_NO)
+				R_number.config(values=['All']+select_room_numbers(LAST_DATABASE_LINK))
+				create_new_booking_room(LAST_DATABASE_LINK,ROOM_NO)
 			elif check_if_room_in_database(ROOM_NO) == True:
 				tkinter.messagebox.showinfo("Editing Error", "room  is exists ,add new number or use update current room .")
 		elif OPTION == 'update':	
@@ -2024,7 +2097,7 @@ def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=No
 		elif OPTION == 'delete':
 			if check_if_room_in_database(ROOM_NO) == True:
 				database_room_delete(ROOM_NO)
-				R_number.config(values=['All']+select_room_numbers('__main2.db'))
+				R_number.config(values=['All']+select_room_numbers(LAST_DATABASE_LINK))
 			elif check_if_room_in_database(ROOM_NO) == False:
 				tkinter.messagebox.showinfo("Update Error", "room  is not exists .")
 		else:
@@ -2099,11 +2172,11 @@ def rooms_options(MASTER,PRIV):
 
 
 def first_table_show_options(STATUS,TYPE,NUM):
-	ITEMS_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM))
+	ITEMS_NO = len(view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM))
 	# print(ITEMS_NO)
-	ITEMS_LIST = view_selected_data('__main2.db',STATUS,TYPE,NUM)
+	ITEMS_LIST = view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM)
 	if ITEMS_NO > 0: 
-		COLUMN_NO = len(view_selected_data('__main2.db',STATUS,TYPE,NUM)[0])
+		COLUMN_NO = len(view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM)[0])
 	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
 
 
@@ -2121,14 +2194,10 @@ def treeview_inserts(MASTER,TABLE_NUM,ITEMS_NO,ITEMS_LIST,MAX_ROWS,COLUMN_NO):
 				COLOR_CHOICE = COLOR_CHOICE - 1
 			else:
 				pass
-				# print('error')
-				# print(f'COLOR_CHOICE: {COLOR_CHOICE}')
 			globals()[f'treeview{TABLE_NUM}'].insert("" , "end" , text = f"{TABLE[0]}", values = TABLE[1:COLUMN_NO] ,tag=f"{COLOR_TAG[COLOR_CHOICE]}")
 
 
 def database_Table_view_Height(master,X,Y,ITEMS_NO,TABLE_NUM,MAX_ROWS):
-	# global vsb
-	# global TABLE_HEIGHT
 	if ITEMS_NO <= MAX_ROWS :
 		globals()['TABLE{TABLE_NUM}_HEIGHT'] =  ITEMS_NO
 	elif ITEMS_NO >= MAX_ROWS:
@@ -2194,7 +2263,7 @@ def Style_generator(STYLE_NUM,FONT,FONT_SIZE,BG_COLOR):
 def selectItem2(a):
 	curItem = treeview2.focus()
 	# print(curItem)
-	LIST = view_selected_rate('__main2.db',str(treeview2.item(curItem)['text']))
+	LIST = view_selected_rate(LAST_DATABASE_LINK,str(treeview2.item(curItem)['text']))
 	# print(LIST)
 	groove_entry35.delete(0,'end')
 	groove_entry35.insert(0, LIST[0][2])
@@ -2220,52 +2289,52 @@ def update_all_check_in(num,STATUS):
 		# trace_checkin_inputs = 1
 		groove_entry0F2.config(state="normal",readonlybackground="white")
 		groove_entry0F2.delete(0,'end')     #   serial folio no
-		groove_entry0F2.insert(0,str(select_from_booking_table_where_num('__main2.db',num)[0][1]).zfill(6))#   serial folio no
+		groove_entry0F2.insert(0,str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][1]).zfill(6))#   serial folio no
 		groove_entry0F2.config(state="readonly",readonlybackground="white")
 		groove_entry1F2.delete(0,'end')     #   first name
-		groove_entry1F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][2])     #   first name
+		groove_entry1F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][2])     #   first name
 		groove_entry2F2.delete(0,'end')     #   last name
-		groove_entry2F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][3])     #   last name
+		groove_entry2F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][3])     #   last name
 		groove_entry3F2.delete(0,'end')     #   Rcad_no 
-		groove_entry3F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][4])     #   Rcad_no 
-		countrylist.current(list(map(lambda x:x.strip(),lineList)).index(str(select_from_booking_table_where_num('__main2.db',num)[0][5])))         #   country  "LIST"
+		groove_entry3F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][4])     #   Rcad_no 
+		countrylist.current(list(map(lambda x:x.strip(),lineList)).index(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][5])))         #   country  "LIST"
 		groove_entry4F2.delete(0,'end')     #   adress
-		groove_entry4F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][6])          #   adress
-		ID_TYPE_LIST.current(ID_TYPES.index(str(select_from_booking_table_where_num('__main2.db',num)[0][7])))        #   id type "LIST"
+		groove_entry4F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][6])          #   adress
+		ID_TYPE_LIST.current(ID_TYPES.index(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][7])))        #   id type "LIST"
 		groove_entry5F2.delete(0,'end')     #   id_no 
-		groove_entry5F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][8])     #   id_no 
-		carlist.current(cars.index(str(select_from_booking_table_where_num('__main2.db',num)[0][9])))             #   "LIST"
+		groove_entry5F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][8])     #   id_no 
+		carlist.current(cars.index(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][9])))             #   "LIST"
 		groove_entry6F2.delete(0,'end')     #   plate no
-		groove_entry6F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][10])     #   plate no
+		groove_entry6F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][10])     #   plate no
 		groove_entry7F2.delete(0,'end')     #   room number
-		groove_entry7F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][0])     #   room number
-		DateIn.current(date_list.index(str(select_from_booking_table_where_num('__main2.db',num)[0][11])))              #   "list"
-		DateOut.current(date_list.index(str(select_from_booking_table_where_num('__main2.db',num)[0][13])))             #   "LIST"
+		groove_entry7F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][0])     #   room number
+		DateIn.current(date_list.index(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][11])))              #   "list"
+		DateOut.current(date_list.index(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][13])))             #   "LIST"
 		groove_entry8F2.delete(0,'end')     #   no of days
-		groove_entry8F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][14])     #   no of days
+		groove_entry8F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][14])     #   no of days
 		groove_entry9F2.delete(0,'end')     #   no of adults
-		groove_entry9F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][15])     #   no of adults
+		groove_entry9F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][15])     #   no of adults
 		groove_entry10F2.delete(0,'end')    #   no of childs
-		groove_entry10F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][16])    #   no of childs
+		groove_entry10F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][16])    #   no of childs
 		groove_entry11F2.delete(0,'end')    #   rate/period
-		groove_entry11F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][18])    #   rate/period
+		groove_entry11F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][18])    #   rate/period
 		groove_entry12F2.delete(0,'end')    #   total/charge
-		groove_entry12F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][19])    #   total/charge
+		groove_entry12F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][19])    #   total/charge
 		groove_entry14F2.delete(0,'end')    #   other charges
-		groove_entry14F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][20])    #   other charges
+		groove_entry14F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][20])    #   other charges
 		groove_entry15F2.delete(0,'end')    #   discount
-		groove_entry15F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][21])    #   discount
+		groove_entry15F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][21])    #   discount
 		groove_entry16F2.delete(0,'end')    #   total
-		groove_entry16F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][22])    #   total
+		groove_entry16F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][22])    #   total
 		groove_entry17F2.delete(0,'end')    #   amount paied
-		groove_entry17F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][23])    #   amount paied
+		groove_entry17F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][23])    #   amount paied
 		groove_entry18F2.delete(0,'end')    #   balance
-		groove_entry18F2.insert(0,select_from_booking_table_where_num('__main2.db',num)[0][24])    #   balance
+		groove_entry18F2.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,num)[0][24])    #   balance
 	if STATUS == "Free":
 		# trace_checkin_inputs = 0
 		groove_entry0F2.config(state="normal",readonlybackground="white")
 		groove_entry0F2.delete(0,'end')     #   serial folio no
-		groove_entry0F2.insert(0,f"{str(int(view_serial_table('__main2.db')[-1][0])+1).zfill(6)}")     #   serial folio no
+		groove_entry0F2.insert(0,f"{str(int(view_serial_table(LAST_DATABASE_LINK)[-1][0])+1).zfill(6)}")     #   serial folio no
 		groove_entry0F2.config(state="readonly",readonlybackground="white")
 		groove_entry1F2.delete(0,'end')                                             #   first name
 		groove_entry2F2.delete(0,'end')                                             #   last name
@@ -2316,13 +2385,13 @@ def switch_checkout_button(STATUS):
 def update_check_out_fields(Room_No):
 	global checkout_status
 	print('update checkout fields ......!')
-	# print(select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1])
+	# print(select_from_auto_free_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1])
 	if boolian_room_status(Room_No,'IN USE'):
-		if select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1] != 'autoFree':
+		if select_from_auto_free_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1] != 'autoFree':
 			checkout_full_in_use_mode(Room_No)
 			checkout_status.config(text="Amount open",background="pale green")
 			switch_checkout_button('normal')
-		elif select_from_auto_free_table_where_num('__main2.db',Room_No)[0][1] == 'autoFree':
+		elif select_from_auto_free_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1] == 'autoFree':
 			free_checkout_fields(Room_No)
 			checkout_status.config(text="Amount Paid",background="sky blue")
 			switch_checkout_button('disabled')
@@ -2333,9 +2402,9 @@ def update_check_out_fields(Room_No):
 
 
 def checkout_full_in_use_mode(Room_No):
-	#print(str(select_from_booking_table_where_num('__main2.db',Room_No)[0][1]).zfill(6))
-	first_name = select_from_booking_table_where_num('__main2.db',Room_No)[0][2]
-	last_name  = select_from_booking_table_where_num('__main2.db',Room_No)[0][3]
+	#print(str(select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][1]).zfill(6))
+	first_name = select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][2]
+	last_name  = select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][3]
 	groove_entry20.delete(0,'end')
 	groove_entry20.insert(0,f"{first_name} {last_name}")
 	groove_entry19.delete(0,'end')
@@ -2345,21 +2414,21 @@ def checkout_full_in_use_mode(Room_No):
 	groove_entry19c.delete(0,'end')
 	groove_entry19c.insert(0,groove_entry5F2.get()) #id number:
 	groove_entry21.delete(0,'end')
-	groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
+	groove_entry21.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][0])
 	groove_entry22.delete(0,'end')
-	groove_entry22.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][11])
+	groove_entry22.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][11])
 	groove_entry22b.delete(0,'end')
-	groove_entry22b.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][13])
+	groove_entry22b.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][13])
 	groove_entry23.delete(0,'end')
-	groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
+	groove_entry23.insert(0,view_selected_data(LAST_DATABASE_LINK,'All','All',Room_No)[0][2])
 	groove_entry24.delete(0,'end')
 	groove_entry24.insert(0,groove_entry11F2.get())
 	groove_entry25.delete(0,'end')
-	groove_entry25.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][14])
+	groove_entry25.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][14])
 	groove_entry26.delete(0,'end')
-	groove_entry26.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][15])
+	groove_entry26.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][15])
 	groove_entry27.delete(0,'end')
-	groove_entry27.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][16])
+	groove_entry27.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][16])
 	groove_entry28.delete(0,'end')
 	groove_entry28.insert(0,groove_entry14F2.get()) #other charges.
 	groove_entry29.delete(0,'end')
@@ -2379,11 +2448,11 @@ def free_checkout_fields(Room_No):
 	groove_entry20.delete(0,'end')
 	groove_entry19.delete(0,'end')
 	groove_entry21.delete(0,'end')
-	groove_entry21.insert(0,select_from_booking_table_where_num('__main2.db',Room_No)[0][0])
+	groove_entry21.insert(0,select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][0])
 	groove_entry22.delete(0,'end')
 	groove_entry22b.delete(0,'end')
 	groove_entry23.delete(0,'end')#rate type
-	groove_entry23.insert(0,view_selected_data('__main2.db','All','All',Room_No)[0][2])
+	groove_entry23.insert(0,view_selected_data(LAST_DATABASE_LINK,'All','All',Room_No)[0][2])
 	groove_entry24.delete(0,'end')
 	groove_entry24.insert(0,groove_entry11F2.get())
 	groove_entry25.delete(0,'end')
@@ -2414,7 +2483,7 @@ def selectItem(a):
 	normalize_checkin_fileds()
 	curItem = treeview1.focus()
 	# print(curItem)
-	LIST = view_selected_data('__main2.db','All','All',int(treeview1.item(curItem)['text']))
+	LIST = view_selected_data(LAST_DATABASE_LINK,'All','All',int(treeview1.item(curItem)['text']))
 	#print(LIST[0][0])
 	groove_entry1.delete(0,'end')
 	groove_entry1.insert(0, LIST[0][0])
@@ -2468,7 +2537,7 @@ def Room_View_Options():
 	#lists:
 	Status = ttk.Combobox(Room_View,values=['All','Free','In Use'],width=5)
 	R_Type = ttk.Combobox(Room_View,values=['All']+select_types("__main2.db"),width=11)
-	R_number = ttk.Combobox(Room_View,values=['All']+select_room_numbers('__main2.db'),width=3)
+	R_number = ttk.Combobox(Room_View,values=['All']+select_room_numbers(LAST_DATABASE_LINK),width=3)
 	#geometry:
 	Status.grid(row=2,column=1,sticky='w')
 	R_Type.grid(row=3,column=1,sticky='w')
@@ -2516,46 +2585,45 @@ def current_user(username):
 	Current_User.place(relx=0.74, rely=0.04, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Current User',bg="light gray").place(relx=.77, rely=0.04,anchor=tkinter.W)
 	tkinter.Label(Current_User, text=f' ',font=("Helvetica", 2),bg="light gray").pack(side=tkinter.TOP, anchor=tkinter.N)
-	user_name = tkinter.Label(Current_User, text=f'        {username}        ',font=("Helvetica", 15),bg="light gray")
+	user_name = tkinter.Label(Current_User, text=f'        {username}        ',font=("Helvetica", 15),bg="light gray",fg='blue')
 	user_name.pack(side=tkinter.TOP, anchor=tkinter.N)
 
 
-
 def main_functions(*args):
-	print(f'main functions: {args}')
-	create_main_database("__main2.db")
-	create_rate_table("__main2.db")
-	create_serial_table("__main2.db")
-	create_past_checkouts_table('__main2.db')
-	create_booking_table('__main2.db')
-	create_new_booking_room('__main2.db',1)
-	create_new_booking_room('__main2.db',2)
-	create_auto_free_table('__main2.db')
-	auto_create_list_of_auto_free_rooms()
-	create_users_table('__main2.db')
-	#create_type_table("__main2.db")
-	#insert_to_database(1,'single bed','Standard','Free','west','2xtoilets','2xsingle')
-	clock_date()
-	date_list()
-	view_selected_data('__main2.db','All','All','All')
-	table1()
-	Room_View_Options()
-	current_user(args[0][0])
-	Cashier_operations(args[0][1])
+
+	if not boolian_check_file_exists("config.ini"):
+		create_config_if_not_exists()
+
+	create_main_database(LAST_DATABASE_LINK)
+	
+	# create_rate_table(LAST_DATABASE_LINK)
+	# create_serial_table(LAST_DATABASE_LINK)
+	# create_past_checkouts_table(LAST_DATABASE_LINK)
+	# create_booking_table(LAST_DATABASE_LINK)
+	# create_new_booking_room(LAST_DATABASE_LINK,1)
+	# create_auto_free_table(LAST_DATABASE_LINK)
+	# auto_create_list_of_auto_free_rooms()
+	# create_users_table(LAST_DATABASE_LINK)
+
+	# clock_date()
+	# date_list()
+	# view_selected_data(LAST_DATABASE_LINK,'All','All','All')
+	# table1()
+	# Room_View_Options()
+	# current_user(args[0][0])
+	# Cashier_operations(args[0][1])
+
 	#print(f'types: {select_types("__main2.db")}')
 	#date_one_day_after("2020-04-14",1)
-	# insert_auto_free_room('__main2.db',2,'Free')
+	#insert_auto_free_room(LAST_DATABASE_LINK,2,'Free')
 	#create_list_of_auto_free_rooms()
 	#update_all_check_in()
 	
 
-
 def login():
-	
 	global fen1,can1
 	fen1 = tkinter.Tk()
 	fen1.title("User's Login")
-
 	combostyle = ttk.Style()
 	combostyle.theme_create('combostyle', parent='alt',
 	                         settings = {'TCombobox':
@@ -2565,23 +2633,18 @@ def login():
 	                                       'background': 'green'
 	                                       }}})
 	combostyle.theme_use('combostyle') 
-
 	can1 = tkinter.Canvas(fen1 , height=150,width=300)
-	
 	#labels:
 	tkinter.Label(can1,text="User Name",background="light gray",font="albattar 12 normal").grid(row=0,column=0,sticky='w')
 	tkinter.Label(can1,text="Password",background="light gray",font="albattar 12 normal").grid(row=1,column=0,sticky='w')
-	
 	#entry:
 	password_entry = tkinter.Entry(can1,font=10,relief="groove",background="white",width=14) # password
 	password_entry.grid(row=1,column=1,sticky='nsw')
 	password_entry.insert(0, "")
-	
 	#lists:
 	users_list = ttk.Combobox(can1,values=[""]+column_from_users_table(0),width=15,state="readonly")
 	users_list.grid(row=0,column=1)
 	users_list.current(0)
-
 	#buttons:
 	tkinter.Button(can1,text='Login',background="light gray",command=lambda:prestart(users_list,password_entry),width=10).grid(row=2, column=0,sticky='we')
 	tkinter.Button(can1,text='Cancel',background="light gray",command=lambda:print("cancel"),width=10).grid(row=2, column=1,sticky='we')
@@ -2590,45 +2653,30 @@ def login():
 
 
 def prestart(users_list,password_entry):
-
-	user_privs = read_from_users_table('__main2.db',users_list.get())[0][2:9]
-	print(read_from_users_table('__main2.db',users_list.get())[0][2:9])
-
+	user_privs = read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][2:9]
+	print(read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][2:9])
 	if not users_list.get().isspace() and users_list.get() != None and users_list.get() != '':
 		print('user name is not empty')
-
 		#check if user_name exists in database:
 		if users_list.get() in column_from_users_table(0):
 			print('user name in list')
-			
 			if not password_entry.get().isspace() and password_entry.get() != None and password_entry.get() != '':
 				print('password is not empty')
-
-
-				if str(password_entry.get()) == str(read_from_users_table('__main2.db',users_list.get())[0][1]):
+				if str(password_entry.get()) == str(read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][1]):
 					print('password is same password')
 					main(users_list.get(),user_privs)
 					fen1.destroy()
-					
-
-				elif str(password_entry.get()) != str(read_from_users_table('__main2.db',users_list.get())[0][1]):
+				elif str(password_entry.get()) != str(read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][1]):
 					print('password is not the same as password you entered .')
-
 			elif password_entry.get().isspace() or password_entry.get() == None or password_entry.get() == '':
 				print('password is empty')
-		
 		elif users_list.get() not in column_from_users_table(0):
 			print('user name not in list')
-			
 	elif users_list.get().isspace() or users_list.get() == None or users_list.get() == '':
 		print('username field is empty , choose user name')
 	
 
 def main(*args):
-
-	print(f'user name is: {args[0]}')
-	print(f'privilages are {args[1]}')
-
 	global fen,can
 	fen1.destroy()
 	fen = tkinter.Tk()
