@@ -133,6 +133,8 @@ def create_serial_table(DATABASE_NAME):
 				serial_num INT NOT NULL) ''')
 	conn.commit()
 	conn.close()
+	# insert_to_serial_table(LAST_DATABASE_LINK,"000001")
+
 
 
 def create_booking_table(DATABASE_NAME):
@@ -188,7 +190,7 @@ def insert_to_booking_table(DATABASE_NAME,Room_No,serial_num,First_name,Last_nam
 
 def database_booking_update(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE booking_table SET serial_num = ? , First_name = ? , Last_name = ? , R_CARD_No = ? , Country = ? , Adress = ? , ID_Type = ? , ID_No = ? , Car = ? , Plate_No = ? , Date_In = ? , TIME_IN = ? , Date_Out = ? , NO_OF_DAYS = ? , NO_OF_ADULTS = ? , NO_OF_CHILDS = ? , Rate_Type = ? , RATE_PERIOD = ? , TOTAL_CHARGE = ? , OTHER_CHARGES = ? , DISCOUNT = ? , TOTAL = ? , AMOUNT_PAID = ? , BALANCE = ? WHERE Room_No = ? ',(serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE,Room_No,))
 	conn.commit()
@@ -197,7 +199,7 @@ def database_booking_update(Room_No,serial_num,First_name,Last_name,R_CARD_No,Co
 
 def change_in_table_name_status(Room_No,STATUS):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE table_name SET Room_Status = ? WHERE Room_No = ? ',(STATUS,Room_No,))
 	conn.commit()
@@ -206,7 +208,7 @@ def change_in_table_name_status(Room_No,STATUS):
 
 def room_is_free(Room_No):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("SELECT Room_Status FROM table_name WHERE Room_No = ?",(Room_No,))
 	rows = c.fetchall()
@@ -270,13 +272,13 @@ def red_warning_entry_borders(ENTRY,COLOR):
 def find_and_mark_wrong_fields(Room_No,serial_num=None,First_name=None,Last_name=None,Adress=None,ID_No=None,NO_OF_DAYS=None,Rate_Type=None):
 	global check_in_input_error_messages,groove_entry7F2
 	check_in_input_error_messages = []
-	# print(int(Room_No) in list(zip(*select_room_numbers("__main2.db")))[0])
+	# print(int(Room_No) in list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0])
 	if Room_No == '' or Room_No == None:
 		red_warning_entry_borders('groove_entry7F2','RED')
 		check_in_input_error_messages.append("room number field is empty .!")
 	elif Room_No != '' or Room_No != None:
-		if int(Room_No) not in list(zip(*select_room_numbers("__main2.db")))[0]:
-			#print(int(Room_No) not in list(zip(*select_room_numbers("__main2.db")))[0])
+		if int(Room_No) not in list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]:
+			#print(int(Room_No) not in list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0])
 			red_warning_entry_borders('groove_entry7F2','RED')
 			check_in_input_error_messages.append("room number not in table name, its not exists, choose defferant room .!")
 		else:
@@ -353,10 +355,10 @@ def check_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adress,ID_No,
 	# print('1a) checking inputs all right .')
 	#inputs variables:
 	global SERIAL_TABLE,BOOKING_TABLE_ROOM_NUMS,BOOKING_TABLE_SERIAL_NUMS,TABLE_NAME_ROOM_NUMS
-	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
+	SERIAL_TABLE = list(zip(*view_serial_table(LAST_DATABASE_LINK)))[0]
 	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
 	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
-	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]
 
 	if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None:
 		if int(Room_No) in BOOKING_TABLE_ROOM_NUMS and int(Room_No) in  TABLE_NAME_ROOM_NUMS and int(serial_num) not in SERIAL_TABLE and int(serial_num) not in BOOKING_TABLE_SERIAL_NUMS:
@@ -407,7 +409,7 @@ def check_room_status():
 
 
 def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(DATABASE_NAME)
 	c = conn.cursor()
 	c.execute("INSERT OR IGNORE INTO serial_table(serial_num) VALUES (?)",(SERIAL_NUM,))
 	conn.commit()
@@ -417,7 +419,7 @@ def insert_to_serial_table(DATABASE_NAME,SERIAL_NUM):
 def check_if_serial_in_database(SERIAL_NUM):
 	my_list = []
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute(''' SELECT serial_num FROM serial_table ''')
 	rows = c.fetchall()
@@ -439,7 +441,7 @@ def view_serial_table(DATABESE_NAME):
 
 
 def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("INSERT OR IGNORE INTO table_name VALUES (?,?,?,?,?,?,?)"
 			,(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS))
@@ -449,7 +451,7 @@ def insert_to_database(Room_No,Room_Name,Room_Type,Room_Status,SIDE,DETAILS,BEDS
 
 
 def insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("INSERT OR IGNORE INTO rate_table(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate) VALUES (?,?,?,?,?)"
 			,(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate))
@@ -460,7 +462,7 @@ def insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extr
 
 def database_items_count():
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute(''' SELECT COUNT(*) FROM table_name ''')
 	result=c.fetchone()
@@ -472,7 +474,7 @@ def database_items_count():
 def check_if_room_in_database(NUM):
 	my_list = []
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute(''' SELECT * FROM table_name ''')
 	rows = c.fetchall()
@@ -485,7 +487,7 @@ def check_if_room_in_database(NUM):
 def check_if_rate_in_database(Rate_Type):
 	my_list = []
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute(''' SELECT * FROM rate_table ''')
 	rows = c.fetchall()
@@ -497,7 +499,7 @@ def check_if_rate_in_database(Rate_Type):
 
 def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE table_name SET Room_Name = ? , Room_Type = ? , Room_Side = ? , Room_Details = ? , Room_Beds = ? WHERE Room_No = ? ',(NAME,TYPE,SIDE,DETAILS,BEDS,NUM,))
 	conn.commit()
@@ -507,7 +509,7 @@ def database_room_update(NUM,NAME,TYPE,SIDE,DETAILS,BEDS):
 
 def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE rate_table SET  Room_Rate = ? , Person_No = ? , Extra_Adults_Rate = ? , Extra_Childrens_Rate = ? WHERE Rate_Type = ? ',(float(Room_Rate),int(float(Person_No)),float(Extra_Adults_Rate),float(Extra_Childrens_Rate),str(Rate_Type),))
 	conn.commit()
@@ -517,7 +519,7 @@ def database_rate_update(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_C
 
 def database_room_delete(NUM):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("DELETE from table_name where Room_No = ?",(NUM,))
 	conn.commit()
@@ -527,7 +529,7 @@ def database_room_delete(NUM):
 
 def database_rate_delete(Rate_Type):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("DELETE from rate_table where Rate_Type = ?",(Rate_Type,))
 	conn.commit()
@@ -651,7 +653,6 @@ def secound_table_show_options(RATE_TYPE):
 
 
 def Cashier_operations(*args):
-	
 	Cashier = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
 	Cashier.place(relx=0.015, rely=0.48, anchor=tkinter.NW)
 	tkinter.Label(fen, text='Cashier operations',background="light gray").place(relx=.12, rely=0.48,anchor=tkinter.W)
@@ -805,46 +806,48 @@ def column_from_users_table(column):
 		n += 1
 	return LIST
 
-
-def USER_SETTINGS(MASTER):
-	#add admin  user , undeletble , update only password , no privliages update , no change name.
-	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
-	
-
-	def create_new_user(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
-		global List_of_users
-		if password != confirm_password:
-			print('password not the same as cinfirm password...')
-		if confirm_password.isspace():
-			print('confirm password is empty')
-		if password.isspace():
-			print('password is empty...')
-		if  user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
-			print('this user is exist , try to use new user')
-		if user_name.isspace():
-			print('user name is empty....')	
-		#check if username not empty field
-		if not user_name.isspace():
-			#check if username not in database
-			if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
-				#check if password not empty
-				if not password.isspace():
-					#check if confirm password not empty
-					if not confirm_password.isspace():
-						#check if password == confirm_password
-						if password == confirm_password:
-							#if all right:
-							insert_to_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
-							#free three fields
+def create_new_user(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+	global List_of_users
+	if password != confirm_password:
+		print('password not the same as cinfirm password...')
+	if confirm_password.isspace():
+		print('confirm password is empty')
+	if password.isspace():
+		print('password is empty...')
+	if  user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
+		print('this user is exist , try to use new user')
+	if user_name.isspace():
+		print('user name is empty....')	
+	#check if username not empty field
+	if not user_name.isspace():
+		#check if username not in database
+		if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
+			#check if password not empty
+			if not password.isspace():
+				#check if confirm password not empty
+				if not confirm_password.isspace():
+					#check if password == confirm_password
+					if password == confirm_password:
+						#if all right:
+						insert_to_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+						#free three fields
+						if 'groove_entry1d' in globals():
 							groove_entry1d.delete(0,'end')
+						if 'groove_entry2d' in globals():
 							groove_entry2d.delete(0,'end')
+						if 'groove_entry3d' in globals():
 							groove_entry3d.delete(0,'end')
-							#refresh list of users
+						#refresh list of users
+						if 'List_of_users' in globals():
 							List_of_users['values'] = ['All']+column_from_users_table(0)
 							for i in range(1,8):
 								butons[i]["label"] = "off"
 								butons[i].set(0)
 
+def USER_SETTINGS(MASTER):
+	#add admin  user , undeletble , update only password , no privliages update , no change name.
+	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
+	
 	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
 		# print(read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1])
 		if user_name.isspace():
@@ -1100,10 +1103,10 @@ def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rat
 			if check_if_rate_in_database(Rate_Type) == False:
 				insert_rate_to_database(Rate_Type,Room_Rate,Person_No,Extra_Adults_Rate,Extra_Childrens_Rate)
 				clear_rate_fields()
-				Rate_Type_CHECKIN.config(values=select_types("__main2.db"))
-				groove_entry3.config(values=select_types("__main2.db"))
-				R_Type.config(values=['All']+select_types("__main2.db"))
-				Rate_Type_List.config(values=['All']+select_types("__main2.db"))
+				Rate_Type_CHECKIN.config(values=select_types(LAST_DATABASE_LINK))
+				groove_entry3.config(values=select_types(LAST_DATABASE_LINK))
+				R_Type.config(values=['All']+select_types(LAST_DATABASE_LINK))
+				Rate_Type_List.config(values=['All']+select_types(LAST_DATABASE_LINK))
 			elif check_if_rate_in_database(Rate_Type) == True:
 				tkinter.messagebox.showinfo(message="Editing Error Rate is exists ,add new Rate or use update current one .")
 		elif OPTION == 'update':	
@@ -1130,10 +1133,10 @@ def room_price_buttons(OPTION,Rate_Type,Room_Rate=0,Person_No=0,Extra_Adults_Rat
 				# print('delete')
 				database_rate_delete(Rate_Type)
 				clear_rate_fields()
-				Rate_Type_CHECKIN.config(values=select_types("__main2.db"))
-				groove_entry3.config(values=select_types("__main2.db"))
-				R_Type.config(values=['All']+select_types("__main2.db"))
-				Rate_Type_List.config(values=['All']+select_types("__main2.db"))
+				Rate_Type_CHECKIN.config(values=select_types(LAST_DATABASE_LINK))
+				groove_entry3.config(values=select_types(LAST_DATABASE_LINK))
+				R_Type.config(values=['All']+select_types(LAST_DATABASE_LINK))
+				Rate_Type_List.config(values=['All']+select_types(LAST_DATABASE_LINK))
 			elif check_if_rate_in_database(Rate_Type) == False:
 				tkinter.messagebox.showinfo(message="Delete Error , \n room  is not exists .")
 		else:
@@ -1189,14 +1192,14 @@ def room_price_options(MASTER,PRIV):
 	groove_entry37.insert(0, "")
 	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=3,column=5,columnspan=7,sticky='w')
 	#LISTS:
-	Rate_Type_List = ttk.Combobox(f4,values=['All']+select_types("__main2.db"),width=11)
+	Rate_Type_List = ttk.Combobox(f4,values=['All']+select_types(LAST_DATABASE_LINK),width=11)
 	Rate_Type_List.grid(row=2,column=0,sticky='w')
 	Rate_Type_List.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
 	Rate_Type_List.current(0)
 
 
 def insert_to_past_checkouts(DATABASE_NAME,Room_No):
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("INSERT INTO past_checkouts_table(Room_No,Guest_Name,Room_Type,serial_num,ID_Type,ID_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 			,(Room_No,groove_entry20.get(),groove_entry23.get(),groove_entry0F2.get(),ID_TYPE_LIST.get(),groove_entry5F2.get(),DateIn.get(),TIME_NOW(),DateOut.get(),groove_entry8F2.get(),groove_entry9F2.get(),groove_entry10F2.get(),Rate_Type_CHECKIN.get(),groove_entry11F2.get(),groove_entry12F2.get(),groove_entry14F2.get(),groove_entry15F2.get(),groove_entry16F2.get(),groove_entry17F2.get(),groove_entry18F2.get()))
@@ -1222,8 +1225,8 @@ def now_datetime():
 
 
 def booking_end_datetime(Room_No):
-	year,month,day = select_from_booking_table_where_num("__main2.db",Room_No)[0][13].split("-")
-	time = select_from_booking_table_where_num("__main2.db",Room_No)[0][12]
+	year,month,day = select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][13].split("-")
+	time = select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)[0][12]
 	last_timedate = f"{day}-{month}-{year} {time}"
 	return last_timedate
 
@@ -1256,7 +1259,7 @@ def update_auto_free_room(DATABASE_NAME,Room_No,STATUS):
 
 
 def auto_create_list_of_auto_free_rooms():
-	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]
 	for room in TABLE_NAME_ROOM_NUMS:
 		insert_auto_free_room(LAST_DATABASE_LINK,room,'Free')
 
@@ -1310,7 +1313,7 @@ def checkout_order(Room_No):
 
 		
 def CHECK_OUT(MASTER,DISCOUNT):
-
+	
 	if DISCOUNT == 'Off':
 		STATE = "disabled"
 	elif DISCOUNT == 'On':
@@ -1348,7 +1351,7 @@ def CHECK_OUT(MASTER,DISCOUNT):
 	#ENTRIES:
 	groove_entry20 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=32)
 	groove_entry20.grid(row=1,column=1,columnspan=5,sticky='nsw')
-	groove_entry20.insert(0, "guest name")
+	groove_entry20.insert(0, "") #guest name
 	groove_entry19b = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19b.grid(row=2,column=1,sticky='nsw')
 	groove_entry19b.insert(0,ID_TYPE_LIST.get())
@@ -1357,49 +1360,49 @@ def CHECK_OUT(MASTER,DISCOUNT):
 	groove_entry19c.insert(0,groove_entry5F2.get())
 	groove_entry19 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19.grid(row=4,column=1,sticky='nsw')
-	groove_entry19.insert(0, "serial number folio")
+	groove_entry19.insert(0, "") # serial number folio
 	groove_entry21 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=3)
 	groove_entry21.grid(row=5,column=1,sticky='nsw')
-	groove_entry21.insert(0, "room num")
+	groove_entry21.insert(0, "") #room num
 	groove_entry22 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry22.grid(row=6,column=1,sticky='nsw')
-	groove_entry22.insert(0, "2020-03-30")
+	groove_entry22.insert(0, "")
 	groove_entry22b = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry22b.grid(row=7,column=1,sticky='nsw')
-	groove_entry22b.insert(0, "2020-04-30")
+	groove_entry22b.insert(0, "")
 	groove_entry23 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry23.grid(row=8,column=1,sticky='nsw')
-	groove_entry23.insert(0, "Double")
+	groove_entry23.insert(0, "") #Double
 	groove_entry24 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=9)
 	groove_entry24.grid(row=2,column=3,columnspan=4,sticky='nsw')
-	groove_entry24.insert(0, "998.00")
+	groove_entry24.insert(0, "")
 	groove_entry25 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=3)
 	groove_entry25.grid(row=3,column=3,sticky='w')
-	groove_entry25.insert(0, "30")
+	groove_entry25.insert(0, "")
 	groove_entry26 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=3)
 	groove_entry26.grid(row=4,column=3,sticky='w')
-	groove_entry26.insert(0, "2")
+	groove_entry26.insert(0, "")
 	groove_entry27 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=3)
 	groove_entry27.grid(row=5,column=3,sticky='w')
-	groove_entry27.insert(0, "0")
+	groove_entry27.insert(0, "")
 	groove_entry28 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=9)
 	groove_entry28.grid(row=6,column=3,columnspan=5,sticky='nsw')
-	groove_entry28.insert(0, "0.00")
+	groove_entry28.insert(0, "")
 	groove_entry29 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=9)
 	groove_entry29.grid(row=7,column=3,columnspan=5,sticky='nsw')
-	groove_entry29.insert(0, "2,916.00")
+	groove_entry29.insert(0, "")
 	groove_entry30 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=6,state=STATE,disabledbackground="red")
 	groove_entry30.grid(row=8,column=3,columnspan=4,sticky='nsw')
-	groove_entry30.insert(0, "0.00")
+	groove_entry30.insert(0, "")
 	groove_entry31 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry31.grid(row=1,column=8,sticky='nsw')
-	groove_entry31.insert(0, "2,916.00")
+	groove_entry31.insert(0, "")
 	groove_entry32 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry32.grid(row=2,column=8,sticky='nsw')
-	groove_entry32.insert(0, "0.00")
+	groove_entry32.insert(0, "")
 	groove_entry33 = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry33.grid(row=3,column=8,sticky='nsw')
-	groove_entry33.insert(0, "2,916.00")
+	groove_entry33.insert(0, "")
 
 
 def modify_paymen_numbers_2(*args):
@@ -1488,7 +1491,7 @@ def modify_paymen_numbers_2(*args):
 			
 def database_booking_update_costumized_no_time_datein_serial(Room_No,serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE booking_table SET serial_num = ? , First_name = ? , Last_name = ? , R_CARD_No = ? , Country = ? , Adress = ? , ID_Type = ? , ID_No = ? , Car = ? , Plate_No = ? , Date_Out = ? , NO_OF_DAYS = ? , NO_OF_ADULTS = ? , NO_OF_CHILDS = ? , Rate_Type = ? , RATE_PERIOD = ? , TOTAL_CHARGE = ? , OTHER_CHARGES = ? , DISCOUNT = ? , TOTAL = ? , AMOUNT_PAID = ? , BALANCE = ? WHERE Room_No = ? ',(serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE,Room_No,))
 	conn.commit()
@@ -1498,7 +1501,7 @@ def database_booking_update_costumized_no_time_datein_serial(Room_No,serial_num,
 	
 def boolian_room_status(Room_No,STATUS):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("SELECT Room_Status FROM table_name WHERE Room_No = ?",(Room_No,))
 	rows = c.fetchall()
@@ -1508,7 +1511,7 @@ def boolian_room_status(Room_No,STATUS):
 
 def boolian_Room_No_same_where_serial(Room_No,serial_num):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("SELECT Room_No FROM booking_table WHERE serial_num  = ?",(int(serial_num),))
 	rows = c.fetchall()
@@ -1518,7 +1521,7 @@ def boolian_Room_No_same_where_serial(Room_No,serial_num):
 
 def get_Room_No_with_serial(serial_num):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("SELECT Room_No FROM booking_table WHERE serial_num  = ?",(int(serial_num),))
 	rows = c.fetchall()
@@ -1539,7 +1542,7 @@ def check_if_change_room_inputs_all_right(Room_No,serial_num,First_name,Last_nam
 
 def copy_between_rooms_booking_table(serial_num):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("SELECT * FROM booking_table WHERE serial_num  = ?",(int(serial_num),))
 	rows = c.fetchall()
@@ -1551,7 +1554,7 @@ def paste_details_to_free_room(Room_No,First_name,Last_name,R_CARD_No,Country,Ad
 	details = copy_between_rooms_booking_table(serial_num)
 	First_Room_No = details[0]
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE booking_table SET serial_num = ? , First_name = ? , Last_name = ? , R_CARD_No = ? , Country = ? , Adress = ? , ID_Type = ? , ID_No = ? , Car = ? , Plate_No = ? , Date_In = ? , TIME_IN = ? , Date_Out = ? , NO_OF_DAYS = ? , NO_OF_ADULTS = ? , NO_OF_CHILDS = ? , Rate_Type = ? , RATE_PERIOD = ? , TOTAL_CHARGE = ? , OTHER_CHARGES = ? , DISCOUNT = ? , TOTAL = ? , AMOUNT_PAID = ? , BALANCE = ? WHERE Room_No = ? ',(serial_num,First_name,Last_name,R_CARD_No,Country,Adress,ID_Type,ID_No,Car,Plate_No,Date_In,TIME_IN,Date_Out,NO_OF_DAYS,NO_OF_ADULTS,NO_OF_CHILDS,Rate_Type,RATE_PERIOD,TOTAL_CHARGE,OTHER_CHARGES,DISCOUNT,TOTAL,AMOUNT_PAID,BALANCE,Room_No,))
 	c.execute('UPDATE booking_table SET serial_num = NULL , First_name = NULL , Last_name = NULL , R_CARD_No = NULL , Country = NULL , Adress = NULL , ID_Type = NULL , ID_No = NULL , Car = NULL , Plate_No = NULL , Date_In = NULL , TIME_IN = NULL , Date_Out = NULL , NO_OF_DAYS = NULL , NO_OF_ADULTS = NULL , NO_OF_CHILDS = NULL , Rate_Type = NULL , RATE_PERIOD = NULL , TOTAL_CHARGE = NULL , OTHER_CHARGES = NULL , DISCOUNT = NULL , TOTAL = NULL , AMOUNT_PAID = NULL , BALANCE = NULL WHERE Room_No = ? ',(First_Room_No,))
@@ -1562,7 +1565,7 @@ def paste_details_to_free_room(Room_No,First_name,Last_name,R_CARD_No,Country,Ad
 def change_in_room_tabe_status(First_Room_No,Secound_Room_No):
 	#change statuses in tabele_name:
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("UPDATE table_name SET Room_Status = 'Free' WHERE Room_No = ?",(First_Room_No,))
 	c.execute("UPDATE table_name SET Room_Status = 'IN USE' WHERE Room_No = ?",(Secound_Room_No,))
@@ -1640,11 +1643,11 @@ def check_if_update_inputs_all_right(Room_No,serial_num,First_name,Last_name,Adr
 	update_trace_checkin_inputs = 1
 	print('checking for updating.....!!!')
 	normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS,Rate_Type)
-	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
+	SERIAL_TABLE = list(zip(*view_serial_table(LAST_DATABASE_LINK)))[0]
 	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
 	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
 	#use check_if_room_in_database(Room_No) insted to:
-	#TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	#TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]
 	if not Room_No.isspace():
 		if Room_No != '' and Room_No != None and serial_num != '' and serial_num != None and check_if_room_in_database(Room_No):
 			if int(serial_num) == (list(zip(*select_from_booking_table_where_num(LAST_DATABASE_LINK,Room_No)))[1][0]):
@@ -1679,10 +1682,10 @@ def normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO
 
 def looking_for_wrong_fields_and_mark_them(Room_No,serial_num,First_name,Last_name=None,Adress=None,ID_No=None,NO_OF_DAYS=None,Rate_Type=None):
 	# normalize_all_inputs(Room_No,serial_num,First_name,Last_name,Adress,ID_No,NO_OF_DAYS)
-	SERIAL_TABLE = list(zip(*view_serial_table("__main2.db")))[0]
+	SERIAL_TABLE = list(zip(*view_serial_table(LAST_DATABASE_LINK)))[0]
 	BOOKING_TABLE_ROOM_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'Room_No')))[0]
 	BOOKING_TABLE_SERIAL_NUMS = list(zip(*select_from_booking_table(LAST_DATABASE_LINK,'serial_num')))[0]
-	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers("__main2.db")))[0]
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]
 	global check_in_input_error_messages,groove_entry7F2
 	check_in_input_error_messages = []
 	if Room_No == '' or Room_No == None or len(Room_No) == 0 or Room_No.isspace():
@@ -1772,7 +1775,7 @@ def looking_for_wrong_fields_and_mark_them(Room_No,serial_num,First_name,Last_na
 
 def delete_feilds_in_booking_table(Room_No):
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute('UPDATE booking_table SET serial_num = NULL , First_name = NULL , Last_name = NULL , R_CARD_No = NULL , Country = NULL , Adress = NULL , ID_Type = NULL , ID_No = NULL , Car = NULL , Plate_No = NULL , Date_In = NULL , TIME_IN = NULL , Date_Out = NULL , NO_OF_DAYS = NULL , NO_OF_ADULTS = NULL , NO_OF_CHILDS = NULL , Rate_Type = NULL , RATE_PERIOD = NULL , TOTAL_CHARGE = NULL , OTHER_CHARGES = NULL , DISCOUNT = NULL , TOTAL = NULL , AMOUNT_PAID = NULL , BALANCE = NULL WHERE Room_No = ? ',(Room_No,))
 	conn.commit()
@@ -1782,7 +1785,7 @@ def delete_feilds_in_booking_table(Room_No):
 def change_table_name_room_status(Room_No,STATUS):
 	#change statuses in tabele_name:
 	conn =None;
-	conn = sqlite3.connect("__main2.db")
+	conn = sqlite3.connect(LAST_DATABASE_LINK)
 	c = conn.cursor()
 	c.execute("UPDATE table_name SET Room_Status = ? WHERE Room_No = ?",(STATUS,Room_No,))
 	conn.commit()
@@ -2010,7 +2013,7 @@ def CHECK_IN(MASTER,DISCOUNT):
 	DateOut.current(date_list.index(str(date_one_day_after(date.today().strftime("%Y-%m-%d"),1))))
 	DateOut.grid(row=5,column=3,columnspan=5,sticky='w')
 	DateOut.bind('<<ComboboxSelected>>', date_choose_checkin_trigger)
-	Rate_Type_CHECKIN = ttk.Combobox(f2,values=select_types("__main2.db"),width=11)
+	Rate_Type_CHECKIN = ttk.Combobox(f2,values=select_types(LAST_DATABASE_LINK),width=11)
 	Rate_Type_CHECKIN.grid(row=1,column=7,columnspan=8,sticky='w')
 	Rate_Type_CHECKIN.bind("<<ComboboxSelected>>",lambda event:modify_paymen_numbers_2(event))
 	#ENTRIES:
@@ -2134,7 +2137,6 @@ def rooms_options(MASTER,PRIV):
 	update_room.grid(row=0, column=1,sticky='sw')
 	delete_room   =  tkinter.Button(f1,text='delete   ',background="light gray",state=STATE,command=lambda:room_options_buttons('delete',groove_entry1.get()))
 	delete_room .grid(row=0, column=2,sticky='sw')
-	
 	#LABELS:
 	tkinter.Label(f1,text="Room Number ",background="light gray").grid(row=1,column=0,sticky='w')
 	tkinter.Label(f1,text="Room Name ",background="light gray").grid(row=2,column=0,sticky='w')
@@ -2148,9 +2150,12 @@ def rooms_options(MASTER,PRIV):
 	room_status = tkinter.Label(f1, text="       Free         ",background="pale green",relief="solid")
 	room_status.grid(row=1,column=4,sticky='w')
 	#LIST:
-	groove_entry3 = ttk.Combobox(f1,values=select_types("__main2.db"),width=11)
+	groove_entry3 = ttk.Combobox(f1,values=select_types(LAST_DATABASE_LINK),width=11)
 	groove_entry3.grid(row=3,column=1,columnspan=2,sticky='nw')
-	groove_entry3.current(0)
+	if select_types(LAST_DATABASE_LINK):
+		groove_entry3.current(0)
+	elif not select_types(LAST_DATABASE_LINK):
+		pass
 	#ENTRIES:
 	groove_entry1 = tkinter.Entry(f1, font=10,relief="groove",background="white")
 	groove_entry1.grid(row=1,column=1,columnspan=2,sticky='nw')
@@ -2536,7 +2541,7 @@ def Room_View_Options():
 	tkinter.Label(Room_View,text=" ",background="light gray").grid(row=5,column=0,sticky='w')
 	#lists:
 	Status = ttk.Combobox(Room_View,values=['All','Free','In Use'],width=5)
-	R_Type = ttk.Combobox(Room_View,values=['All']+select_types("__main2.db"),width=11)
+	R_Type = ttk.Combobox(Room_View,values=['All']+select_types(LAST_DATABASE_LINK),width=11)
 	R_number = ttk.Combobox(Room_View,values=['All']+select_room_numbers(LAST_DATABASE_LINK),width=3)
 	#geometry:
 	Status.grid(row=2,column=1,sticky='w')
@@ -2590,38 +2595,59 @@ def current_user(username):
 
 
 def main_functions(*args):
-
 	if not boolian_check_file_exists("config.ini"):
 		create_config_if_not_exists()
+	create_main_database(LAST_DATABASE_LINK)	
+	create_rate_table(LAST_DATABASE_LINK)
+	create_serial_table(LAST_DATABASE_LINK)
+	create_past_checkouts_table(LAST_DATABASE_LINK)
+	create_booking_table(LAST_DATABASE_LINK)
+	create_new_booking_room(LAST_DATABASE_LINK,1)
+	create_auto_free_table(LAST_DATABASE_LINK)
+	if not select_room_numbers(LAST_DATABASE_LINK):
+		print("list is empty")
+	else:
+		print("list is not empty.....!")
+		auto_create_list_of_auto_free_rooms()
+	create_users_table(LAST_DATABASE_LINK)
+	clock_date()
+	date_list()
+	view_selected_data(LAST_DATABASE_LINK,'All','All','All')
+	table1()
+	Room_View_Options()
+	current_user(args[0][0])
+	Cashier_operations(args[0][1])
 
-	create_main_database(LAST_DATABASE_LINK)
-	
-	# create_rate_table(LAST_DATABASE_LINK)
-	# create_serial_table(LAST_DATABASE_LINK)
-	# create_past_checkouts_table(LAST_DATABASE_LINK)
-	# create_booking_table(LAST_DATABASE_LINK)
-	# create_new_booking_room(LAST_DATABASE_LINK,1)
-	# create_auto_free_table(LAST_DATABASE_LINK)
-	# auto_create_list_of_auto_free_rooms()
-	# create_users_table(LAST_DATABASE_LINK)
-
-	# clock_date()
-	# date_list()
-	# view_selected_data(LAST_DATABASE_LINK,'All','All','All')
-	# table1()
-	# Room_View_Options()
-	# current_user(args[0][0])
-	# Cashier_operations(args[0][1])
-
-	#print(f'types: {select_types("__main2.db")}')
+	#print(f'types: {select_types(LAST_DATABASE_LINK)}')
 	#date_one_day_after("2020-04-14",1)
 	#insert_auto_free_room(LAST_DATABASE_LINK,2,'Free')
 	#create_list_of_auto_free_rooms()
 	#update_all_check_in()
-	
+
 
 def login():
 	global fen1,can1
+	create_main_database(LAST_DATABASE_LINK)	
+	create_rate_table(LAST_DATABASE_LINK)
+	create_serial_table(LAST_DATABASE_LINK)
+	if view_serial_table(LAST_DATABASE_LINK) :
+		print("list  exists")
+	else:
+		print("list  is not exits")
+		insert_to_serial_table(LAST_DATABASE_LINK,1)
+	#print(select_room_numbers(LAST_DATABASE_LINK))
+	if not select_room_numbers(LAST_DATABASE_LINK):
+		print("list is empty")
+	else:
+		print("list is not empty.....!")
+		auto_create_list_of_auto_free_rooms()
+	create_past_checkouts_table(LAST_DATABASE_LINK)
+	create_booking_table(LAST_DATABASE_LINK)
+	create_new_booking_room(LAST_DATABASE_LINK,1)
+	create_auto_free_table(LAST_DATABASE_LINK)
+	
+	create_users_table(LAST_DATABASE_LINK)
+	create_new_user('admin','123456','123456','On','On','On','On','On','On','On')
 	fen1 = tkinter.Tk()
 	fen1.title("User's Login")
 	combostyle = ttk.Style()
