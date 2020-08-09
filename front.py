@@ -13,6 +13,7 @@ import tkinter.messagebox
 
 
 '''
+769: refresh_all_fiels()
 sublime select multi-same word select-->"alt+f3"
 728: use the function to change variable and look for way in the web page which describe the way
 714: write this 
@@ -731,7 +732,7 @@ def create_config_if_not_exists():
 	config_object = ConfigParser()
 	#Assume we need 2 sections in the config file, let's call them USERINFO and SERVERCONFIG
 	config_object["DATABASE_INFO"] = {
-	    "LAST_DATABASE_LINK": "/home/mal/Templates/learnpy/projects/hotel_database/__main.db",
+	    "LAST_DATABASE_LINK": "'/home/mal/Templates/learnpy/projects/hotel_database/__main.db'",
 	    "loginid": "chankeypathak",
 	    "password": "tutswiki"
 	}
@@ -746,8 +747,6 @@ def create_config_if_not_exists():
 
 
 
-
-
 def boolian_check_file_exists(path):
 	return os.path.isfile(path)
 
@@ -756,18 +755,50 @@ def open_database_file():
 	global groove_entry1m
 	import os
 	from tkinter import filedialog
+	import time
+
+	def secound_table_show_options_2(RATE_TYPE,DATABASE_LINK):
+		ITEMS_NO = len(view_selected_rate(DATABASE_LINK,RATE_TYPE))
+		COLUMN_NO = 5
+		if ITEMS_NO > 0:
+			ITEMS_LIST = view_selected_rate(DATABASE_LINK,RATE_TYPE)
+		elif ITEMS_NO <= 0:
+			ITEMS_LIST = None
+		treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
+
+	def first_table_show_options_2(STATUS,TYPE,NUM,DATABASE_LINK):
+		print("refresh is just working......!")
+		ITEMS_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM))
+		ITEMS_LIST = view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)
+		if ITEMS_NO > 0: 
+			COLUMN_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)[0])
+		treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
+
+	def refresh_all_fiels(can_filename):
+		first_table_show_options_2('All','All','All',f"{can_filename}")
+		#refresh_table_2_room_price_options()
+		secound_table_show_options('All')
+		secound_table_show_options_2('All',f"{can_filename}")
+
+		#refresh_user_settings_list_of_users()
+
 	can.filename =  filedialog.askopenfilename(initialdir = f"{os.path.dirname(os.path.abspath(__file__))}",title = "Select file",filetypes = (("database file","*.db "),("all files","*.*")))
 	groove_entry1m.delete(0,"end")
 	groove_entry1m.insert(0,f"{can.filename}")
 
+	# first_table_show_options_2('All','All','All',f"{can.filename}")
 	if boolian_check_file_exists("config.ini"):
-		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , can.filename)
+		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
+		# time.sleep(10)
+		# first_table_show_options_2('All','All','All',f"{can.filename}")
+		refresh_all_fiels(can.filename)
 	elif not boolian_check_file_exists("config.ini"):
 		create_config_if_not_exists()
+		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
+		# time.sleep(10)
+		# first_table_show_options_2('All','All','All',f"{can.filename}")
+		refresh_all_fiels(can.filename)
 
-	# write this on  first line of script
-	# LAST_DATABASE_LINK
-	# set_value_in_property_file(file_path, section, key, value)
 
 
 def  create_new_database():
@@ -1354,7 +1385,7 @@ def CHECK_OUT(MASTER,DISCOUNT):
 	groove_entry20.insert(0, "") #guest name
 	groove_entry19b = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19b.grid(row=2,column=1,sticky='nsw')
-	groove_entry19b.insert(0,ID_TYPE_LIST.get())
+	groove_entry19b.insert(0,"") #id type
 	groove_entry19c = tkinter.Entry(f3,font=10,relief="groove",background="white",width=10)
 	groove_entry19c.grid(row=3,column=1,sticky='nsw')
 	groove_entry19c.insert(0,groove_entry5F2.get())
@@ -1498,7 +1529,6 @@ def database_booking_update_costumized_no_time_datein_serial(Room_No,serial_num,
 	c.close()
 
 
-	
 def boolian_room_status(Room_No,STATUS):
 	conn =None;
 	conn = sqlite3.connect(LAST_DATABASE_LINK)
@@ -2178,7 +2208,6 @@ def rooms_options(MASTER,PRIV):
 
 def first_table_show_options(STATUS,TYPE,NUM):
 	ITEMS_NO = len(view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM))
-	# print(ITEMS_NO)
 	ITEMS_LIST = view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM)
 	if ITEMS_NO > 0: 
 		COLUMN_NO = len(view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM)[0])
