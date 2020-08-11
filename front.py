@@ -700,10 +700,12 @@ def Cashier_operations(*args):
 	if args[0][3] == 'Off' and args[0][4] == 'Off':
 		print('rooms_option dissabled......!')
 	
-	if args[0][5] == 'On': 
+	if args[0][5] == 'On':
+		global F5
 		f5 = tkinter.Frame(nb,background="light gray")
 		nb.add(f5, text=" User Settings ")
-		USER_SETTINGS(f5)	
+		USER_SETTINGS(f5)
+		F5 = f5	
 	elif args[0][5] == 'Off': 
 		print('user settings is off for this user')
 
@@ -774,13 +776,71 @@ def open_database_file():
 			COLUMN_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)[0])
 		treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
 
+
+	def free_room_settings():
+		global groove_entry1,groove_entry2,groove_entry5,groove_entry4,groove_entry6
+		groove_entry1.delete(0, "end")
+		groove_entry2.delete(0, "end")
+		groove_entry5.delete(0, "end")
+		groove_entry4.delete(0, "end")
+		groove_entry6.delete(0, "end")
+
+
+	def free_check_in_fields():		
+		global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2
+		global groove_entry6F2,groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2
+		global groove_entry12F2,groove_entry14F2,groove_entry15F2,groove_entry16F2
+		groove_entry0F2.config(state="normal")
+		groove_entry0F2.delete(0, "end")
+		groove_entry0F2.config(state="readonly",readonlybackground="white")
+		groove_entry1F2.delete(0, "end")
+		groove_entry2F2.delete(0, "end")
+		groove_entry3F2.delete(0, "end")
+		groove_entry4F2.delete(0, "end")
+		groove_entry5F2.delete(0, "end")
+		groove_entry6F2.delete(0, "end")
+		groove_entry7F2.delete(0, "end")
+		groove_entry8F2.delete(0, "end")
+		groove_entry9F2.delete(0, "end")
+		groove_entry10F2.delete(0, "end")
+		groove_entry11F2.delete(0, "end")
+		groove_entry12F2.delete(0, "end")
+		groove_entry14F2.delete(0, "end")
+		groove_entry15F2.delete(0, "end")
+		groove_entry16F2.delete(0, "end")
+		groove_entry17F2.delete(0, "end")
+		groove_entry18F2.delete(0, "end")
+
+
+	def free_check_out_fields():
+		global countrylist,carlist,Rate_Type_CHECKIN
+		countrylist.current(0)
+		carlist.current(0)
+		Rate_Type_CHECKIN.current(0)
+
+
+	def refresh_user_settings_list_of_users():
+		
+		global List_of_users
+		List_of_users = ttk.Combobox(F5,values=['All']+column_from_users_table(0),width=13)
+		
+		if "F5" in globals():
+			pass
+			# global List_of_users
+			# List_of_users = ttk.Combobox(F5,values=['All']+column_from_users_table(0),width=13)
+		else:
+			pass
+
+
+		
 	def refresh_all_fiels(can_filename):
 		first_table_show_options_2('All','All','All',f"{can_filename}")
-		#refresh_table_2_room_price_options()
-		secound_table_show_options('All')
+		free_room_settings()
+		free_check_in_fields()
+		free_check_out_fields()
 		secound_table_show_options_2('All',f"{can_filename}")
-
-		#refresh_user_settings_list_of_users()
+		refresh_user_settings_list_of_users()
+		
 
 	can.filename =  filedialog.askopenfilename(initialdir = f"{os.path.dirname(os.path.abspath(__file__))}",title = "Select file",filetypes = (("database file","*.db "),("all files","*.*")))
 	groove_entry1m.delete(0,"end")
@@ -1877,12 +1937,10 @@ def TIME_NOW():
 	return timenow
 
 def CHECK_IN(MASTER,DISCOUNT):
-	
 	if DISCOUNT == 'Off':
 		STATE = "disabled"
 	elif DISCOUNT == 'On':
 		STATE = "normal"
-
 	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2,groove_entry6F2
 	global groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2,groove_entry12F2,groove_entry13F2
 	global groove_entry14F2,groove_entry15F2,groove_entry16F2,groove_entry17F2,groove_entry18F2,CHECKIN_CHOICE
@@ -1891,7 +1949,6 @@ def CHECK_IN(MASTER,DISCOUNT):
 	CHECKIN_CHOICE = None
 	trace_checkin_inputs = 0
 	update_trace_checkin_inputs = 0
-	
 	def trace_entry(ENTRY_VAR):
 		def callback(sv):
 			print(f'CHECKIN_CHOICE: {CHECKIN_CHOICE}')
@@ -2158,8 +2215,7 @@ def rooms_options(MASTER,PRIV):
 	elif PRIV == 'read|write':
 		print('buttons open')
 		# switch_rooms_options_buttons("normal")
-		STATE = "normal"
-	
+		STATE = "normal"	
 	#BUTTONS:
 	add_new_room  =  tkinter.Button(f1, text='  add new     ',background="light gray",state=STATE ,command=lambda:room_options_buttons('new',groove_entry1.get(),groove_entry2.get(),groove_entry3.get(),groove_entry5.get(),groove_entry4.get(),groove_entry6.get()))
 	add_new_room.grid(row=0, column=0,sticky='sw')
@@ -2212,7 +2268,6 @@ def first_table_show_options(STATUS,TYPE,NUM):
 	if ITEMS_NO > 0: 
 		COLUMN_NO = len(view_selected_data(LAST_DATABASE_LINK,STATUS,TYPE,NUM)[0])
 	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
-
 
 
 def treeview_inserts(MASTER,TABLE_NUM,ITEMS_NO,ITEMS_LIST,MAX_ROWS,COLUMN_NO):
@@ -2476,6 +2531,7 @@ def checkout_full_in_use_mode(Room_No):
 	groove_entry33.delete(0,'end')
 	groove_entry33.insert(0,groove_entry18F2.get())
 
+
 def free_checkout_fields(Room_No):
 	groove_entry19b.delete(0,'end')
 	groove_entry19c.delete(0,'end')
@@ -2646,7 +2702,6 @@ def main_functions(*args):
 	Room_View_Options()
 	current_user(args[0][0])
 	Cashier_operations(args[0][1])
-
 	#print(f'types: {select_types(LAST_DATABASE_LINK)}')
 	#date_one_day_after("2020-04-14",1)
 	#insert_auto_free_room(LAST_DATABASE_LINK,2,'Free')
@@ -2747,6 +2802,8 @@ def main(*args):
 #widget:
 if __name__ == '__main__':
 	login()
+
+
 
 
 
