@@ -63,7 +63,7 @@ BROWN1        =    "brown1"
 first_list_Scorll_X = 562
 first_list_Scorll_Y = 80
 cars = ["","Abarth","Alfa Romeo","Aston Martin","Audi","Bentley","BMW","Bugatti","Cadillac","Chevrolet","Chrysler","Citroën","Dacia","Daewoo","Daihatsu","Dodge","Donkervoort","DS","Ferrari","Fiat","Fisker","Ford","Honda","Hummer","Hyundai","Infiniti","Iveco","Jaguar","Jeep","Kia","KTM","Lada","Lamborghini","Lancia","Land Rover","Landwind","Lexus","Lotus","Maserati","Maybach","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Morgan","Nissan","Opel","Peugeot","Porsche","Renault","Rolls-Royce","Rover","Saab","Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"]
-room_types = ['Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package']
+room_types = ['','Standard','Deluxe','Off-Season','Royal','Dopule Joint','Suite','Prepaid','Loyalty','Membership','Special','Group','Family','Package']
 ID_TYPES = ["(SSN)Social Security Number","Passport number","Driver license","taxpayer ID number","patient ID number"]
 date_list = []
 
@@ -577,6 +577,7 @@ def select_types(DATABESE_NAME):
 	c = conn.cursor()
 	c.execute(''' SELECT Rate_Type FROM rate_table ORDER BY id''' )
 	rows = c.fetchall()
+	my_list.append("")
 	for row in rows:
 		my_list.append(row)
 	return my_list
@@ -724,7 +725,8 @@ def set_value_in_property_file(file_path, section, key, value):
 	config.read(file_path)
 	config.set(section,key,value)                         
 	cfgfile = open(file_path,'w')
-	config.write(cfgfile, space_around_delimiters=False)  # use flag in case case you need to avoid white space.
+	config.write(cfgfile, space_around_delimiters=False)  
+	# use flag in case case you need to avoid white space.
 	cfgfile.close()
 
 
@@ -753,6 +755,15 @@ def boolian_check_file_exists(path):
 	return os.path.isfile(path)
 
 
+def column_from_users_table_2(DATABASE_NAME,column):
+	n = 0
+	LIST = []
+	for i in read_from_users_table(DATABASE_NAME,'All'):
+		LIST.append(read_from_users_table(DATABASE_NAME,'All')[n][column])
+		n += 1
+	return LIST
+
+
 def open_database_file():
 	global groove_entry1m
 	import os
@@ -777,19 +788,25 @@ def open_database_file():
 		treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
 
 
-	def free_room_settings():
-		global groove_entry1,groove_entry2,groove_entry5,groove_entry4,groove_entry6
+	def free_room_settings(DATABASE_LINK):
+		global groove_entry1,groove_entry2,groove_entry5,groove_entry4,groove_entry6,groove_entry3
 		groove_entry1.delete(0, "end")
 		groove_entry2.delete(0, "end")
 		groove_entry5.delete(0, "end")
 		groove_entry4.delete(0, "end")
 		groove_entry6.delete(0, "end")
+		groove_entry3.config(values=select_types(DATABASE_LINK))
 
 
-	def free_check_in_fields():		
+	def free_check_in_fields(DATABASE_LINK):		
 		global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2
 		global groove_entry6F2,groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2
 		global groove_entry12F2,groove_entry14F2,groove_entry15F2,groove_entry16F2
+		global countrylist,carlist,Rate_Type_CHECKIN
+		countrylist.current(0)
+		carlist.current(0)
+		Rate_Type_CHECKIN.config(values=select_types(DATABASE_LINK))
+		Rate_Type_CHECKIN.current(0)
 		groove_entry0F2.config(state="normal")
 		groove_entry0F2.delete(0, "end")
 		groove_entry0F2.config(state="readonly",readonlybackground="white")
@@ -813,53 +830,67 @@ def open_database_file():
 
 
 	def free_check_out_fields():
-		global countrylist,carlist,Rate_Type_CHECKIN
-		countrylist.current(0)
-		carlist.current(0)
-		Rate_Type_CHECKIN.current(0)
+		global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b
+		global groove_entry19c,groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27
+		global groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
+		groove_entry20.delete(0,"end")
+		groove_entry19b.delete(0,"end")
+		groove_entry19c.delete(0,"end")
+		groove_entry19.delete(0,"end")
+		groove_entry21.delete(0,"end")
+		groove_entry22.delete(0,"end")
+		groove_entry22b.delete(0,"end")
+		groove_entry23.delete(0,"end")
+		groove_entry24.delete(0,"end")
+		groove_entry25.delete(0,"end")
+		groove_entry26.delete(0,"end")
+		groove_entry27.delete(0,"end")
+		groove_entry28.delete(0,"end")
+		groove_entry29.delete(0,"end")
+		groove_entry30.delete(0,"end")
+		groove_entry31.delete(0,"end")
+		groove_entry32.delete(0,"end")
+		groove_entry33.delete(0,"end")
 
 
-	def refresh_user_settings_list_of_users():
-		
-		global List_of_users
-		List_of_users = ttk.Combobox(F5,values=['All']+column_from_users_table(0),width=13)
-		
+
+	def refresh_user_settings_list_of_users(DATABASE_NAME):
 		if "F5" in globals():
-			pass
-			# global List_of_users
-			# List_of_users = ttk.Combobox(F5,values=['All']+column_from_users_table(0),width=13)
+			global List_of_users
+			List_of_users.config(values=['All']+column_from_users_table_2(DATABASE_NAME,0))
 		else:
 			pass
 
 
+	def refresh_room_price_options(DATABASE_NAME):
+		global Rate_Type_List,RATES_LIST
+		RATES_LIST = select_types(DATABASE_NAME)
+		RATES_LIST.insert(1,'All')
+		Rate_Type_List.config(values=RATES_LIST)
+		secound_table_show_options_2('All',DATABASE_NAME)
 		
+
 	def refresh_all_fiels(can_filename):
 		first_table_show_options_2('All','All','All',f"{can_filename}")
-		free_room_settings()
-		free_check_in_fields()
+		free_room_settings(f"{can_filename}")
+		free_check_in_fields(f"{can_filename}")
 		free_check_out_fields()
-		secound_table_show_options_2('All',f"{can_filename}")
-		refresh_user_settings_list_of_users()
+		refresh_room_price_options(f"{can_filename}")
+		refresh_user_settings_list_of_users(f"{can_filename}")
 		
 
 	can.filename =  filedialog.askopenfilename(initialdir = f"{os.path.dirname(os.path.abspath(__file__))}",title = "Select file",filetypes = (("database file","*.db "),("all files","*.*")))
 	groove_entry1m.delete(0,"end")
 	groove_entry1m.insert(0,f"{can.filename}")
 
-	# first_table_show_options_2('All','All','All',f"{can.filename}")
+	
 	if boolian_check_file_exists("config.ini"):
 		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
-		# time.sleep(10)
-		# first_table_show_options_2('All','All','All',f"{can.filename}")
 		refresh_all_fiels(can.filename)
 	elif not boolian_check_file_exists("config.ini"):
 		create_config_if_not_exists()
 		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
-		# time.sleep(10)
-		# first_table_show_options_2('All','All','All',f"{can.filename}")
 		refresh_all_fiels(can.filename)
-
-
 
 def  create_new_database():
 	from tkinter.filedialog import asksaveasfile 
@@ -1010,7 +1041,7 @@ def USER_SETTINGS(MASTER):
 	groove_entry3d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
 	groove_entry3d.grid(row=1,column=5,sticky='nwe')
 	groove_entry3d.insert(0, "") 
-	#LISTS:
+	
 	#change users list and and function related to:
 	def users_choose_trigger(args):
 		if List_of_users.get() == 'All':
@@ -1051,6 +1082,8 @@ def USER_SETTINGS(MASTER):
 					print('something else.....!')
 					print(read_from_users_table(LAST_DATABASE_LINK,List_of_users.get())[0][i+1])
 
+	#LISTS:
+	global List_of_users
 	List_of_users = ttk.Combobox(f5,values=['All']+column_from_users_table(0),width=13)
 	List_of_users.grid(row=0,column=1,sticky='w')
 	List_of_users.bind('<<ComboboxSelected>>', users_choose_trigger)
@@ -1244,7 +1277,6 @@ def rate_type_choose_trigger(*args):
 
 
 def room_price_options(MASTER,PRIV):
-
 	if PRIV == 'read':
 		print('buttons dissabled')
 		STATE = "disabled"
@@ -1283,7 +1315,10 @@ def room_price_options(MASTER,PRIV):
 	groove_entry37.insert(0, "")
 	tkinter.Label(f4,text=" "*45,background="light gray").grid(row=3,column=5,columnspan=7,sticky='w')
 	#LISTS:
-	Rate_Type_List = ttk.Combobox(f4,values=['All']+select_types(LAST_DATABASE_LINK),width=11)
+	global RATES_LIST,Rate_Type_List
+	RATES_LIST = select_types(LAST_DATABASE_LINK)
+	RATES_LIST.insert(1,'All')
+	Rate_Type_List = ttk.Combobox(f4,values=RATES_LIST,width=11)
 	Rate_Type_List.grid(row=2,column=0,sticky='w')
 	Rate_Type_List.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
 	Rate_Type_List.current(0)
@@ -2171,6 +2206,7 @@ def date_choose_checkin_trigger(even):
 
 
 def room_options_buttons(OPTION,ROOM_NO,NAME=None,TYPE=None,SIDE=None,DETAILS=None,BEDS=None):
+
 	try:
 		if OPTION == 'new':
 			if check_if_room_in_database(ROOM_NO) == False:
@@ -2602,6 +2638,8 @@ def selectItem(a):
 	groove_entry7F2.delete(0,'end')
 	groove_entry7F2.insert(0,LIST[0][0])
 	#update Room Type:
+	print("room types:")
+	print(room_types)
 	Rate_Type_CHECKIN.current(room_types.index(LIST[0][2]))
 	modify_paymen_numbers_2()
 	if LIST[0][3] == "IN USE":
