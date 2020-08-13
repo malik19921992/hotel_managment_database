@@ -10,6 +10,9 @@ from datetime import timedelta, date , datetime
 from dateutil.relativedelta import relativedelta
 import sqlite3
 import tkinter.messagebox
+from tkinter import filedialog
+import time
+from tkinter.filedialog import asksaveasfile 
 
 
 '''
@@ -594,7 +597,7 @@ def select_room_numbers(DATABESE_NAME):
 	return my_list
 
 
-##date list:#########################################################
+##date list:################################################################
 def date_list():
 	global date_list
 	date_list = []
@@ -606,14 +609,14 @@ def date_list():
 	d_after     =   six_months_after.day
 	y_before    =   six_months_before.year
 	y_after     =   six_months_after.year
-	def daterange(date1, date2):
-		for n in range(int ((date2 - date1).days)+1):
-			yield date1 + timedelta(n)
 	start_dt = date(y_before,m_before,d_before)
 	end_dt = date(y_after,m_after,d_after)
 	for dt in daterange(start_dt, end_dt):
 		date_list.append(dt.strftime("%Y-%m-%d"))
 
+def daterange(date1, date2):
+	for n in range(int ((date2 - date1).days)+1):
+		yield date1 + timedelta(n)
 
 def date_one_day_after(MAIN_DATE,DAYS_AFTER):
 	year,month,day = MAIN_DATE.split("-")
@@ -763,14 +766,7 @@ def column_from_users_table_2(DATABASE_NAME,column):
 		n += 1
 	return LIST
 
-
-def open_database_file():
-	global groove_entry1m
-	import os
-	from tkinter import filedialog
-	import time
-
-	def secound_table_show_options_2(RATE_TYPE,DATABASE_LINK):
+def secound_table_show_options_2(RATE_TYPE,DATABASE_LINK):
 		ITEMS_NO = len(view_selected_rate(DATABASE_LINK,RATE_TYPE))
 		COLUMN_NO = 5
 		if ITEMS_NO > 0:
@@ -779,124 +775,133 @@ def open_database_file():
 			ITEMS_LIST = None
 		treeview_inserts(fen,2,ITEMS_NO,ITEMS_LIST,8,COLUMN_NO)
 
-	def first_table_show_options_2(STATUS,TYPE,NUM,DATABASE_LINK):
-		print("refresh is just working......!")
-		ITEMS_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM))
-		ITEMS_LIST = view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)
-		if ITEMS_NO > 0: 
-			COLUMN_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)[0])
-		treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
+
+def first_table_show_options_2(STATUS,TYPE,NUM,DATABASE_LINK):
+	ITEMS_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM))
+	ITEMS_LIST = view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)
+	if ITEMS_NO > 0: 
+		COLUMN_NO = len(view_selected_data(DATABASE_LINK,STATUS,TYPE,NUM)[0])
+	treeview_inserts(fen,1,ITEMS_NO,ITEMS_LIST,8,4)		
 
 
-	def free_room_settings(DATABASE_LINK):
-		global groove_entry1,groove_entry2,groove_entry5,groove_entry4,groove_entry6,groove_entry3
-		groove_entry1.delete(0, "end")
-		groove_entry2.delete(0, "end")
-		groove_entry5.delete(0, "end")
-		groove_entry4.delete(0, "end")
-		groove_entry6.delete(0, "end")
-		groove_entry3.config(values=select_types(DATABASE_LINK))
+def free_room_settings(DATABASE_LINK):
+	global groove_entry1,groove_entry2,groove_entry5,groove_entry4,groove_entry6,groove_entry3
+	groove_entry1.delete(0, "end")
+	groove_entry2.delete(0, "end")
+	groove_entry5.delete(0, "end")
+	groove_entry4.delete(0, "end")
+	groove_entry6.delete(0, "end")
+	groove_entry3.config(values=select_types(DATABASE_LINK))
 
 
-	def free_check_in_fields(DATABASE_LINK):		
-		global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2
-		global groove_entry6F2,groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2
-		global groove_entry12F2,groove_entry14F2,groove_entry15F2,groove_entry16F2
-		global countrylist,carlist,Rate_Type_CHECKIN
-		countrylist.current(0)
-		carlist.current(0)
-		Rate_Type_CHECKIN.config(values=select_types(DATABASE_LINK))
-		Rate_Type_CHECKIN.current(0)
-		groove_entry0F2.config(state="normal")
-		groove_entry0F2.delete(0, "end")
-		groove_entry0F2.config(state="readonly",readonlybackground="white")
-		groove_entry1F2.delete(0, "end")
-		groove_entry2F2.delete(0, "end")
-		groove_entry3F2.delete(0, "end")
-		groove_entry4F2.delete(0, "end")
-		groove_entry5F2.delete(0, "end")
-		groove_entry6F2.delete(0, "end")
-		groove_entry7F2.delete(0, "end")
-		groove_entry8F2.delete(0, "end")
-		groove_entry9F2.delete(0, "end")
-		groove_entry10F2.delete(0, "end")
-		groove_entry11F2.delete(0, "end")
-		groove_entry12F2.delete(0, "end")
-		groove_entry14F2.delete(0, "end")
-		groove_entry15F2.delete(0, "end")
-		groove_entry16F2.delete(0, "end")
-		groove_entry17F2.delete(0, "end")
-		groove_entry18F2.delete(0, "end")
+def free_check_in_fields(DATABASE_LINK):		
+	global groove_entry0F2,groove_entry1F2,groove_entry2F2,groove_entry3F2,groove_entry4F2,groove_entry5F2
+	global groove_entry6F2,groove_entry7F2,groove_entry8F2,groove_entry9F2,groove_entry10F2,groove_entry11F2
+	global groove_entry12F2,groove_entry14F2,groove_entry15F2,groove_entry16F2
+	global countrylist,carlist,Rate_Type_CHECKIN
+	countrylist.current(0)
+	carlist.current(0)
+	Rate_Type_CHECKIN.config(values=select_types(DATABASE_LINK))
+	Rate_Type_CHECKIN.current(0)
+	groove_entry0F2.config(state="normal")
+	groove_entry0F2.delete(0, "end")
+	groove_entry0F2.config(state="readonly",readonlybackground="white")
+	groove_entry1F2.delete(0, "end")
+	groove_entry2F2.delete(0, "end")
+	groove_entry3F2.delete(0, "end")
+	groove_entry4F2.delete(0, "end")
+	groove_entry5F2.delete(0, "end")
+	groove_entry6F2.delete(0, "end")
+	groove_entry7F2.delete(0, "end")
+	groove_entry8F2.delete(0, "end")
+	groove_entry9F2.delete(0, "end")
+	groove_entry10F2.delete(0, "end")
+	groove_entry11F2.delete(0, "end")
+	groove_entry12F2.delete(0, "end")
+	groove_entry14F2.delete(0, "end")
+	groove_entry15F2.delete(0, "end")
+	groove_entry16F2.delete(0, "end")
+	groove_entry17F2.delete(0, "end")
+	groove_entry18F2.delete(0, "end")
 
 
-	def free_check_out_fields():
-		global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b
-		global groove_entry19c,groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27
-		global groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
-		groove_entry20.delete(0,"end")
-		groove_entry19b.delete(0,"end")
-		groove_entry19c.delete(0,"end")
-		groove_entry19.delete(0,"end")
-		groove_entry21.delete(0,"end")
-		groove_entry22.delete(0,"end")
-		groove_entry22b.delete(0,"end")
-		groove_entry23.delete(0,"end")
-		groove_entry24.delete(0,"end")
-		groove_entry25.delete(0,"end")
-		groove_entry26.delete(0,"end")
-		groove_entry27.delete(0,"end")
-		groove_entry28.delete(0,"end")
-		groove_entry29.delete(0,"end")
-		groove_entry30.delete(0,"end")
-		groove_entry31.delete(0,"end")
-		groove_entry32.delete(0,"end")
-		groove_entry33.delete(0,"end")
+def free_check_out_fields():
+	global groove_entry21,groove_entry19,groove_entry20,groove_entry22,groove_entry22b,groove_entry19b
+	global groove_entry19c,groove_entry23,groove_entry24,groove_entry25,groove_entry26,groove_entry27
+	global groove_entry28,groove_entry29,groove_entry30,groove_entry31,groove_entry32,groove_entry33
+	groove_entry20.delete(0,"end")
+	groove_entry19b.delete(0,"end")
+	groove_entry19c.delete(0,"end")
+	groove_entry19.delete(0,"end")
+	groove_entry21.delete(0,"end")
+	groove_entry22.delete(0,"end")
+	groove_entry22b.delete(0,"end")
+	groove_entry23.delete(0,"end")
+	groove_entry24.delete(0,"end")
+	groove_entry25.delete(0,"end")
+	groove_entry26.delete(0,"end")
+	groove_entry27.delete(0,"end")
+	groove_entry28.delete(0,"end")
+	groove_entry29.delete(0,"end")
+	groove_entry30.delete(0,"end")
+	groove_entry31.delete(0,"end")
+	groove_entry32.delete(0,"end")
+	groove_entry33.delete(0,"end")
 
 
 
-	def refresh_user_settings_list_of_users(DATABASE_NAME):
-		if "F5" in globals():
-			global List_of_users
-			List_of_users.config(values=['All']+column_from_users_table_2(DATABASE_NAME,0))
-		else:
-			pass
+def refresh_user_settings_list_of_users(DATABASE_NAME):
+	if "F5" in globals():
+		global List_of_users
+		List_of_users.config(values=['All']+column_from_users_table_2(DATABASE_NAME,0))
+	else:
+		pass
 
 
-	def refresh_room_price_options(DATABASE_NAME):
-		global Rate_Type_List,RATES_LIST
-		RATES_LIST = select_types(DATABASE_NAME)
-		RATES_LIST.insert(1,'All')
-		Rate_Type_List.config(values=RATES_LIST)
-		secound_table_show_options_2('All',DATABASE_NAME)
-		
+def refresh_room_price_options(DATABASE_NAME):
+	global Rate_Type_List,RATES_LIST
+	RATES_LIST = select_types(DATABASE_NAME)
+	RATES_LIST.insert(1,'All')
+	Rate_Type_List.config(values=RATES_LIST)
+	secound_table_show_options_2('All',DATABASE_NAME)
+	
 
-	def refresh_all_fiels(can_filename):
-		first_table_show_options_2('All','All','All',f"{can_filename}")
-		free_room_settings(f"{can_filename}")
-		free_check_in_fields(f"{can_filename}")
-		free_check_out_fields()
-		refresh_room_price_options(f"{can_filename}")
-		refresh_user_settings_list_of_users(f"{can_filename}")
-		
+def refresh_all_fields(DATABASE_NAME):
+	first_table_show_options_2('All','All','All',f"{DATABASE_NAME}")
+	free_room_settings(f"{DATABASE_NAME}")
+	free_check_in_fields(f"{DATABASE_NAME}")
+	free_check_out_fields()
+	refresh_room_price_options(f"{DATABASE_NAME}")
+	refresh_user_settings_list_of_users(f"{DATABASE_NAME}")
 
+
+def use_database_in_program(DATABASE_NAME):
+	if boolian_check_file_exists("config.ini"):
+		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{DATABASE_NAME}")
+		refresh_all_fields(DATABASE_NAME)
+	elif not boolian_check_file_exists("config.ini"):
+		create_config_if_not_exists()
+		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{DATABASE_NAME}")
+		refresh_all_fields(DATABASE_NAME)
+
+
+def open_database_file():
+	global groove_entry1m
 	can.filename =  filedialog.askopenfilename(initialdir = f"{os.path.dirname(os.path.abspath(__file__))}",title = "Select file",filetypes = (("database file","*.db "),("all files","*.*")))
 	groove_entry1m.delete(0,"end")
 	groove_entry1m.insert(0,f"{can.filename}")
+	use_database_in_program(can.filename)
 
 	
-	if boolian_check_file_exists("config.ini"):
-		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
-		refresh_all_fiels(can.filename)
-	elif not boolian_check_file_exists("config.ini"):
-		create_config_if_not_exists()
-		set_value_in_property_file("config.ini", "DATABASE_INFO" , "LAST_DATABASE_LINK" , f"{can.filename}")
-		refresh_all_fiels(can.filename)
-
-def  create_new_database():
-	from tkinter.filedialog import asksaveasfile 
+def create_new_database():
+	global groove_entry1m
 	files = [('SQLite Database file', "*.db"),]
 	types = ['.db',]
-	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types ) 
+	database = asksaveasfile(mode = "w",filetypes = files, defaultextension = types )
+	groove_entry1m.delete(0,"end")
+	groove_entry1m.insert(0,f"{database.name}")
+	create_basic_fields_in_database_if_not_exists(f"{database.name}")
+	use_database_in_program(database.name)
 
 
 def save_database():
@@ -909,15 +914,16 @@ def save_database():
 def DATABASE_SETTINGS(MASTER):
 	global groove_entry1m
 	f6 = MASTER
+	tkinter.Label(f6,text=" ",background="light gray").grid(row=0,column=0,sticky='w')
 	groove_entry1m = tkinter.Entry(f6,font=10,relief="groove",background="white",width=55)
 	groove_entry1m.grid(row=1,column=0,columnspan=7,sticky='we')
 	groove_entry1m.insert(0,"")
 	if boolian_check_file_exists("config.ini"):
 		groove_entry1m.insert(0,read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK"))
-	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=0,column=0,sticky='we')
-	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=0,column=1,sticky='we')
-	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=0,column=2,sticky='we')
-	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=0,column=3,sticky='we')
+	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=2,column=0,sticky='we')
+	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=2,column=1,sticky='we')
+	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=2,column=2,sticky='we')
+	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=2,column=3,sticky='we')
 
 
 def column_from_users_table(column):
@@ -928,7 +934,8 @@ def column_from_users_table(column):
 		n += 1
 	return LIST
 
-def create_new_user(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
+
+def create_new_user(DATABASE_LINK,user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
 	global List_of_users
 	if password != confirm_password:
 		print('password not the same as cinfirm password...')
@@ -936,14 +943,14 @@ def create_new_user(user_name,password,confirm_password,read_room_settings,write
 		print('confirm password is empty')
 	if password.isspace():
 		print('password is empty...')
-	if  user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
+	if  user_name in read_column_from_users_table(DATABASE_LINK,"user_name"):
 		print('this user is exist , try to use new user')
 	if user_name.isspace():
 		print('user name is empty....')	
 	#check if username not empty field
 	if not user_name.isspace():
 		#check if username not in database
-		if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
+		if user_name not in read_column_from_users_table(DATABASE_LINK,"user_name"):
 			#check if password not empty
 			if not password.isspace():
 				#check if confirm password not empty
@@ -951,7 +958,7 @@ def create_new_user(user_name,password,confirm_password,read_room_settings,write
 					#check if password == confirm_password
 					if password == confirm_password:
 						#if all right:
-						insert_to_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+						insert_to_users_table(DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
 						#free three fields
 						if 'groove_entry1d' in globals():
 							groove_entry1d.delete(0,'end')
@@ -962,37 +969,40 @@ def create_new_user(user_name,password,confirm_password,read_room_settings,write
 						#refresh list of users
 						if 'List_of_users' in globals():
 							List_of_users['values'] = ['All']+column_from_users_table(0)
-							for i in range(1,8):
-								butons[i]["label"] = "off"
-								butons[i].set(0)
+							if "butons" in globals():
+								for i in range(1,8):
+									butons[i]["label"] = "Off"
+									butons[i].set(0)
+
+
 
 def USER_SETTINGS(MASTER):
 	#add admin  user , undeletble , update only password , no privliages update , no change name.
-	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users
-	
+	global groove_entry1d,groove_entry2d,groove_entry3d,List_of_users	
 	def update_user_details(user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
-		# print(read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1])
+		# print(read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1]
 		if user_name.isspace():
-			print('user name is empty field , choose user')
+			tkinter.messagebox.showinfo(message='user name is empty field , choose user')
 		if user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
-			print('user name not exists')
+			tkinter.messagebox.showinfo(message='user name not exists')
 		if not user_name.isspace():
 			#check if username not in database
 			if user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
 				if not password.isspace():
 					if password == read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1]:
-						update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+						update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,'Off')
 					elif password != read_from_users_table(LAST_DATABASE_LINK,user_name)[0][1]:
 						if not confirm_password.isspace():
 							if confirm_password == password:
 								print('change password')
-								update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings)
+								update_users_table(LAST_DATABASE_LINK,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,'Off')
 							elif confirm_password != password:
-								print('password not the same as confirm')
+								tkinter.messagebox.showinfo(message='password not the same as confirm')
 						if confirm_password.isspace():
-							print('type confirm password.....!to change')
+							tkinter.messagebox.showinfo(message='type confirm password.....!to change')
 				elif password.isspace():
-					print('password is empty field....!')
+					tkinter.messagebox.showinfo(message='password is empty field....!')
+
 	
 	def delete_user(user_name):
 		#if user_name exists in databas":
@@ -1012,18 +1022,18 @@ def USER_SETTINGS(MASTER):
 					groove_entry2d.delete(0,'end')
 					groove_entry3d.delete(0,'end')
 					for i in range(1,8):
-						butons[i]["label"] = "off"
+						butons[i]["label"] = "Off"
 						butons[i].set(0)
 
 				elif DELETE_USER == 'no':
 					pass
 			elif user_name == 'admin':
-				print('admin user is indeletable....!')
+				tkinter.messagebox.showinfo(message='admin user is undeletable....!')
 		elif user_name not in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
-			print('user name not exists...!')
+			tkinter.messagebox.showinfo(message='user name not exists...!')
 	f5 = MASTER
 	#BUTTONS:
-	tkinter.Button(f5,text='new user ',background="light gray",command=lambda:create_new_user(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=2,sticky='we')
+	tkinter.Button(f5,text='new user ',background="light gray",command=lambda:create_new_user(LAST_DATABASE_LINK,groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=2,sticky='we')
 	tkinter.Button(f5,text='update user ',background="light gray",command=lambda:update_user_details(groove_entry1d.get(),groove_entry2d.get(),groove_entry3d.get(),butons[1]["label"],butons[2]["label"],butons[3]["label"],butons[4]["label"],butons[5]["label"],butons[6]["label"],butons[7]["label"])).grid(row=0, column=3,sticky='we')
 	tkinter.Button(f5,text='delete user ',background="light gray",command=lambda:delete_user(groove_entry1d.get())).grid(row=0, column=4,sticky='we')
 	#LABELS:
@@ -1041,6 +1051,7 @@ def USER_SETTINGS(MASTER):
 	groove_entry3d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
 	groove_entry3d.grid(row=1,column=5,sticky='nwe')
 	groove_entry3d.insert(0, "") 
+
 	
 	#change users list and and function related to:
 	def users_choose_trigger(args):
@@ -1162,13 +1173,30 @@ def insert_to_users_table(DATABASE_NAME,user_name,password,read_room_settings,wr
 	c.close()
 
 
-def update_users_table(DATABASE_NAME,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
-	conn = sqlite3.connect(DATABASE_NAME)
-	c = conn.cursor()
-	c.execute('UPDATE users_table SET password = ? , read_room_settings = ? , write_room_settings = ? , Discount = ? , read_room_price = ? , write_room_price = ? , allow_user_settings = ? , allow_database_settings = ?  WHERE user_name = ? ',
-			(password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,user_name,))
-	conn.commit()
-	c.close()
+def update_users_table(DATABASE_NAME,user_name,password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,ADMIN_CHANGE_PRIV_USER):
+	
+	if user_name != 'admin':
+		conn = sqlite3.connect(DATABASE_NAME)
+		c = conn.cursor()
+		c.execute('UPDATE users_table SET password = ? , read_room_settings = ? , write_room_settings = ? , Discount = ? , read_room_price = ? , write_room_price = ? , allow_user_settings = ? , allow_database_settings = ?  WHERE user_name = ? ',
+				(password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,user_name,))
+		conn.commit()
+		c.close()
+	elif user_name == 'admin':
+		if ADMIN_CHANGE_PRIV_USER == 'On':
+			conn = sqlite3.connect(DATABASE_NAME)
+			c = conn.cursor()
+			c.execute('UPDATE users_table SET password = ? , read_room_settings = ? , write_room_settings = ? , Discount = ? , read_room_price = ? , write_room_price = ? , allow_user_settings = ? , allow_database_settings = ?  WHERE user_name = ? ',
+					(password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings,user_name,))
+			conn.commit()
+			c.close()
+		elif ADMIN_CHANGE_PRIV_USER == 'Off':
+			conn = sqlite3.connect(DATABASE_NAME)
+			c = conn.cursor()
+			c.execute('UPDATE users_table SET password = ?  WHERE user_name = ? ',
+					(password,user_name,))
+			conn.commit()
+			c.close()
 
 
 def read_from_users_table(DATABASE_NAME,user_name):
@@ -1183,6 +1211,7 @@ def read_from_users_table(DATABASE_NAME,user_name):
 	for row in rows:
 		my_list.append(row)
 	return my_list
+
 
 def delete_user_from_users_table(DATABASE_NAME,user_name):
 	conn = sqlite3.connect(DATABASE_NAME)
@@ -1201,10 +1230,6 @@ def read_column_from_users_table(DATABASE_NAME,column_name):
 	for row in rows:
 		my_list.append(row[0])
 	return my_list
-
-
-# def DATABASE_SETTINGS(MASTER):
-# 	pass
 
 
 def clear_rate_fields():
@@ -1384,10 +1409,10 @@ def update_auto_free_room(DATABASE_NAME,Room_No,STATUS):
 	conn.close()
 
 
-def auto_create_list_of_auto_free_rooms():
-	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(LAST_DATABASE_LINK)))[0]
+def auto_create_list_of_auto_free_rooms(DATABASE_NAME):
+	TABLE_NAME_ROOM_NUMS = list(zip(*select_room_numbers(DATABASE_NAME)))[0]
 	for room in TABLE_NAME_ROOM_NUMS:
-		insert_auto_free_room(LAST_DATABASE_LINK,room,'Free')
+		insert_auto_free_room(DATABASE_NAME,room,'Free')
 
 
 def get_auto_free_status(DATABASE_NAME,Room_No,STATUS):
@@ -2718,21 +2743,7 @@ def current_user(username):
 
 
 def main_functions(*args):
-	if not boolian_check_file_exists("config.ini"):
-		create_config_if_not_exists()
-	create_main_database(LAST_DATABASE_LINK)	
-	create_rate_table(LAST_DATABASE_LINK)
-	create_serial_table(LAST_DATABASE_LINK)
-	create_past_checkouts_table(LAST_DATABASE_LINK)
-	create_booking_table(LAST_DATABASE_LINK)
-	create_new_booking_room(LAST_DATABASE_LINK,1)
-	create_auto_free_table(LAST_DATABASE_LINK)
-	if not select_room_numbers(LAST_DATABASE_LINK):
-		print("list is empty")
-	else:
-		print("list is not empty.....!")
-		auto_create_list_of_auto_free_rooms()
-	create_users_table(LAST_DATABASE_LINK)
+	create_basic_fields_in_database_if_not_exists(LAST_DATABASE_LINK)
 	clock_date()
 	date_list()
 	view_selected_data(LAST_DATABASE_LINK,'All','All','All')
@@ -2740,36 +2751,36 @@ def main_functions(*args):
 	Room_View_Options()
 	current_user(args[0][0])
 	Cashier_operations(args[0][1])
-	#print(f'types: {select_types(LAST_DATABASE_LINK)}')
-	#date_one_day_after("2020-04-14",1)
-	#insert_auto_free_room(LAST_DATABASE_LINK,2,'Free')
-	#create_list_of_auto_free_rooms()
-	#update_all_check_in()
+
+
+
+def create_basic_fields_in_database_if_not_exists(DATABASE_NAME):
+	if not boolian_check_file_exists("config.ini"):
+		create_config_if_not_exists()
+	create_main_database(DATABASE_NAME)	
+	create_rate_table(DATABASE_NAME)
+	create_serial_table(DATABASE_NAME)
+	if view_serial_table(DATABASE_NAME) :
+		pass
+	else:
+		insert_to_serial_table(DATABASE_NAME,1)
+	if not select_room_numbers(DATABASE_NAME):
+		pass
+	else:
+		auto_create_list_of_auto_free_rooms(DATABASE_NAME)
+	create_past_checkouts_table(DATABASE_NAME)
+	create_booking_table(DATABASE_NAME)
+	create_new_booking_room(DATABASE_NAME,1)
+	create_auto_free_table(DATABASE_NAME)
+	create_users_table(DATABASE_NAME)
+	create_new_user(DATABASE_NAME,'admin','123456','123456','On','On','On','On','On','On','On')
+
+
 
 
 def login():
 	global fen1,can1
-	create_main_database(LAST_DATABASE_LINK)	
-	create_rate_table(LAST_DATABASE_LINK)
-	create_serial_table(LAST_DATABASE_LINK)
-	if view_serial_table(LAST_DATABASE_LINK) :
-		print("list  exists")
-	else:
-		print("list  is not exits")
-		insert_to_serial_table(LAST_DATABASE_LINK,1)
-	#print(select_room_numbers(LAST_DATABASE_LINK))
-	if not select_room_numbers(LAST_DATABASE_LINK):
-		print("list is empty")
-	else:
-		print("list is not empty.....!")
-		auto_create_list_of_auto_free_rooms()
-	create_past_checkouts_table(LAST_DATABASE_LINK)
-	create_booking_table(LAST_DATABASE_LINK)
-	create_new_booking_room(LAST_DATABASE_LINK,1)
-	create_auto_free_table(LAST_DATABASE_LINK)
-	
-	create_users_table(LAST_DATABASE_LINK)
-	create_new_user('admin','123456','123456','On','On','On','On','On','On','On')
+	create_basic_fields_in_database_if_not_exists(LAST_DATABASE_LINK)
 	fen1 = tkinter.Tk()
 	fen1.title("User's Login")
 	combostyle = ttk.Style()
