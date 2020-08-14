@@ -849,7 +849,6 @@ def free_check_out_fields():
 	groove_entry33.delete(0,"end")
 
 
-
 def refresh_user_settings_list_of_users(DATABASE_NAME):
 	if "F5" in globals():
 		global List_of_users
@@ -922,9 +921,12 @@ def DATABASE_SETTINGS(MASTER):
 		groove_entry1m.insert(0,read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK"))
 	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=2,column=0,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=2,column=1,sticky='we')
-	tkinter.Button(f6,text='over network',background="light gray",command=print("nigit")).grid(row=2,column=2,sticky='we')
+	tkinter.Button(f6,text='over network',background="light gray",command=connect_database_over_network).grid(row=2,column=2,sticky='we')
 	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=2,column=3,sticky='we')
 
+
+def connect_database_over_network():
+	pass
 
 def column_from_users_table(column):
 	n = 0
@@ -938,7 +940,7 @@ def column_from_users_table(column):
 def create_new_user(DATABASE_LINK,user_name,password,confirm_password,read_room_settings,write_room_settings,Discount,read_room_price,write_room_price,allow_user_settings,allow_database_settings):
 	global List_of_users
 	if password != confirm_password:
-		print('password not the same as cinfirm password...')
+		tkinter.messagebox.showinfo(message='password not the same as cinfirm password...')
 	if confirm_password.isspace():
 		print('confirm password is empty')
 	if password.isspace():
@@ -948,7 +950,7 @@ def create_new_user(DATABASE_LINK,user_name,password,confirm_password,read_room_
 	if user_name.isspace():
 		print('user name is empty....')	
 	#check if username not empty field
-	if not user_name.isspace():
+	if not user_name.isspace() and user_name != '':
 		#check if username not in database
 		if user_name not in read_column_from_users_table(DATABASE_LINK,"user_name"):
 			#check if password not empty
@@ -1003,7 +1005,12 @@ def USER_SETTINGS(MASTER):
 				elif password.isspace():
 					tkinter.messagebox.showinfo(message='password is empty field....!')
 
-	
+	def reftersh_list_of_users_in_user_settings():
+		global List_of_users
+		List_of_users.config(values=['All']+column_from_users_table(0))
+		List_of_users.current(0)
+
+
 	def delete_user(user_name):
 		#if user_name exists in databas":
 		if user_name in read_column_from_users_table(LAST_DATABASE_LINK,"user_name"):
@@ -1024,6 +1031,7 @@ def USER_SETTINGS(MASTER):
 					for i in range(1,8):
 						butons[i]["label"] = "Off"
 						butons[i].set(0)
+					reftersh_list_of_users_in_user_settings()
 
 				elif DELETE_USER == 'no':
 					pass
@@ -1051,7 +1059,6 @@ def USER_SETTINGS(MASTER):
 	groove_entry3d = tkinter.Entry(f5,font=10,relief="groove",background="white",width=13)
 	groove_entry3d.grid(row=1,column=5,sticky='nwe')
 	groove_entry3d.insert(0, "") 
-
 	
 	#change users list and and function related to:
 	def users_choose_trigger(args):
@@ -1065,7 +1072,7 @@ def USER_SETTINGS(MASTER):
 			groove_entry3d.delete(0,'end')
 			#off all user privilages
 			for i in range(1,8):
-				butons[i]["label"] = "off"
+				butons[i]["label"] = "Off"
 				butons[i].set(0)
 				# butons[i]["state"] = "disabled"
 		else:
@@ -1116,7 +1123,7 @@ def USER_SETTINGS(MASTER):
 			butons[int(args[1])]["label"] = "Off"
 
 	tkinter.Label(prev,text=" "*25,background="light gray").grid(row=0,column=0,columnspan=7,sticky='w')
-	butons[1] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "off" ,bg="light gray",command =lambda event:degis(event,'1'))
+	butons[1] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off" ,bg="light gray",command =lambda event:degis(event,'1'))
 	butons[1].grid(row=1,column=1,sticky='nwe')
 	butons[2] = tkinter.Scale(prev , orient=tkinter.HORIZONTAL,width=15,length = 50,to = 1,showvalue = False,sliderlength = 25,label = "Off",bg="light gray",command =lambda event:degis(event,'2'))
 	butons[2].grid(row=2,column=1,sticky='nwe')
@@ -2679,9 +2686,9 @@ def Room_View_Options():
 	global Status,R_Type,R_number
 	#main frame:
 	Room_View = tkinter.Frame(fen, relief=tkinter.GROOVE, borderwidth=2,background="light gray")
-	Room_View.place(relx=0.74, rely=0.260, anchor=tkinter.NW)
+	Room_View.place(relx=0.74, rely=0.272, anchor=tkinter.NW)
 	#Labels:
-	tkinter.Label(fen, text='Rooms Show Options',background="light gray").place(relx=.77, rely=0.260,anchor=tkinter.W)
+	tkinter.Label(fen, text='Rooms Show Options',background="light gray").place(relx=.77, rely=0.272,anchor=tkinter.W)
 	tkinter.Label(Room_View, text="   ",background="light gray").grid(row=0,column=0,sticky='w')
 	tkinter.Label(Room_View,text="Room Status",background="light gray").grid(row=2,column=0,sticky='w')
 	tkinter.Label(Room_View,text="Room Type",background="light gray").grid(row=3,column=0,sticky='w')
