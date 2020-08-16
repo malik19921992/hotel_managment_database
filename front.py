@@ -12,7 +12,8 @@ import sqlite3
 import tkinter.messagebox
 from tkinter import filedialog
 import time
-from tkinter.filedialog import asksaveasfile 
+from tkinter.filedialog import asksaveasfile
+import socket
 
 
 '''
@@ -622,6 +623,7 @@ def date_one_day_after(MAIN_DATE,DAYS_AFTER):
 	year,month,day = MAIN_DATE.split("-")
 	DATE = date(int(year),int(month),int(day))
 	return DATE + timedelta(days=DAYS_AFTER)
+
 ################################################################################
 ####:OTHER functions:###########################################################
 ################################################################################
@@ -677,13 +679,12 @@ def Cashier_operations(*args):
 	if args[0][0] == 'Off' and args[0][1] == 'Off':
 		print('rooms_option dissabled......!')
 
-
 	f2 = tkinter.Frame(nb,background="light gray")	
 	f3 = tkinter.Frame(nb,background="light gray")	
 	nb.add(f2, text=" CheckIn ")
 	nb.add(f3, text=" CheckOut ")
-	nb.select(f1)
-
+	if "f1" in locals():
+		nb.select(f1)
 	if args[0][2] == 'On': #discount On:
 		CHECK_IN(f2,'On')
 		CHECK_OUT(f3,'On')
@@ -721,7 +722,6 @@ def Cashier_operations(*args):
 		print('database settings is off for this user')
 
 
-
 def set_value_in_property_file(file_path, section, key, value):
 	import configparser
 	config = configparser.RawConfigParser()
@@ -729,7 +729,6 @@ def set_value_in_property_file(file_path, section, key, value):
 	config.set(section,key,value)                         
 	cfgfile = open(file_path,'w')
 	config.write(cfgfile, space_around_delimiters=False)  
-	# use flag in case case you need to avoid white space.
 	cfgfile.close()
 
 
@@ -765,6 +764,7 @@ def column_from_users_table_2(DATABASE_NAME,column):
 		LIST.append(read_from_users_table(DATABASE_NAME,'All')[n][column])
 		n += 1
 	return LIST
+
 
 def secound_table_show_options_2(RATE_TYPE,DATABASE_LINK):
 		ITEMS_NO = len(view_selected_rate(DATABASE_LINK,RATE_TYPE))
@@ -2749,6 +2749,75 @@ def current_user(username):
 	user_name.pack(side=tkinter.TOP, anchor=tkinter.N)
 
 
+def server(HOST,PORT,MESSAGE):
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+		s.bind((HOST, PORT))
+		s.listen()
+		while True:
+			conn, addr = s.accept()
+			# print(conn)
+			print(f"connection from {addr} has been established.....!")
+			conn.send(bytes(MESSAGE,"utf-8"))
+			data = conn.recv(1024)
+			print(data)
+
+def IP_ADRESS():
+	hostname = socket.gethostname()
+	ip_address = socket.gethostbyname(hostname)
+	return ip_address
+	
+
+def find_unused_port_for_socket_server():
+	global SOCKET_PORT 
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+		s.bind(('127.0.0.1', 0))
+		# print(s.getsockname()[1])
+		SOCKET_PORT  = s.getsockname()[1]
+
+
+def excuter_function(func,*args):
+	#it does excute the function with this name and its arguments
+	func(args)
+
+
+def background_threading(FUNC,*args):
+	import threading
+	threading.Thread(target = FUNC,args = (args)).start()
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+def open_hosting_server():
+	find_unused_port_for_socket_server()
+	# ip_adress = IP_ADRESS()
+	print(get_ip())
+	print(SOCKET_PORT)
+	background_threading(server,get_ip(),SOCKET_PORT,"its just working")
+	# server("127.0.0.1",SOCKET_PORT,"it just works....!")
+	# print(f"socket port is {SOCKET_PORT}")
+
+	#in background:
+	#while True:
+	#find my local ip
+	#find opened ports and make list of them
+	#generate random port number
+	#check if the number not in the list
+	#if in list do again and again
+	#if not in list PORT = PORT
+	#HOST = MY_HOST
+	# MESSAGE = EXCUTE_COMMAND()
+	# server(HOST,PORT,MESSAGE)
+
+
 def main_functions(*args):
 	create_basic_fields_in_database_if_not_exists(LAST_DATABASE_LINK)
 	clock_date()
@@ -2758,6 +2827,7 @@ def main_functions(*args):
 	Room_View_Options()
 	current_user(args[0][0])
 	Cashier_operations(args[0][1])
+	open_hosting_server()
 
 
 
@@ -2820,7 +2890,7 @@ def login():
 
 def prestart(users_list,password_entry):
 	user_privs = read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][2:9]
-	print(read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][2:9])
+	# print(read_from_users_table(LAST_DATABASE_LINK,users_list.get())[0][2:9])
 	if not users_list.get().isspace() and users_list.get() != None and users_list.get() != '':
 		print('user name is not empty')
 		#check if user_name exists in database:
