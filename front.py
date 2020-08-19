@@ -2755,11 +2755,33 @@ def server(HOST,PORT,MESSAGE):
 		s.listen()
 		while True:
 			conn, addr = s.accept()
-			# print(conn)
 			print(f"connection from {addr} has been established.....!")
 			conn.send(bytes(MESSAGE,"utf-8"))
-			data = conn.recv(1024)
-			print(data)
+			try:
+				data = conn.recv(1024)
+				if data:
+					data = data.decode('utf-8')
+					data = eval(data)
+					if callable(eval(data[0])):
+						feed_back = excuter_function(globals()[data[0]],*data[1:])
+						conn.send(bytes(f'{feed_back}',"utf-8"))
+					else:
+						pass
+			except ConnectionResetError:
+				pass
+
+
+def connection_test_feed_back():
+	return True
+
+
+def client(HOST,PORT,*args):
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+	    s.connect((HOST, PORT))
+	    data = s.recv(1024)
+	    print(data)
+	    s.send(bytes(args,"utf-8"))
+
 
 def IP_ADRESS():
 	hostname = socket.gethostname()
@@ -2774,10 +2796,28 @@ def find_unused_port_for_socket_server():
 		# print(s.getsockname()[1])
 		SOCKET_PORT  = s.getsockname()[1]
 
+def find_unused_port_for_socket_server_range(low,up):
+	global SOCKET_PORT
+	SOCKET_PORT  = 0
+	with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+		port = low
+		while True:
+			if port == up:
+				s.close()
+				break
+			try:
+				s.bind(('127.0.0.1',port))
+				SOCKET_PORT  = s.getsockname()[1]
+				s.close()
+				break
+			except PermissionError:
+				port += 1
+
+
 
 def excuter_function(func,*args):
-	#it does excute the function with this name and its arguments
-	func(args)
+	FUNC = func
+	return FUNC(*args)
 
 
 def background_threading(FUNC,*args):
@@ -2796,12 +2836,24 @@ def get_ip():
         s.close()
     return IP
 
+def connect_database_over_network():
+	#scan network ips and ports:
+	#connect dataabase ip and port
+	#while True:
+		#check all needed fields and tables from database and refresh app fields
+		#sleep(time)
+		#check_connection
+		#reconnect if  connection lose with past ip
+	pass
+
+
 def open_hosting_server():
-	find_unused_port_for_socket_server()
+	# find_unused_port_for_socket_server()
+	find_unused_port_for_socket_server_range(2000,2700)
 	# ip_adress = IP_ADRESS()
 	print(get_ip())
 	print(SOCKET_PORT)
-	background_threading(server,get_ip(),SOCKET_PORT,"its just working")
+	background_threading(server,get_ip(),SOCKET_PORT,"Hotel_Database_managment_server_V1_is_connecting")
 	# server("127.0.0.1",SOCKET_PORT,"it just works....!")
 	# print(f"socket port is {SOCKET_PORT}")
 
