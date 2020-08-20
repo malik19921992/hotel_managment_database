@@ -48,7 +48,8 @@ def read_from_config(file_path,section,key):
 
 #VARS:
 LAST_DATABASE_LINK = read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK")
-TABLE_HEIGHT=0
+TABLE_HEIGHT= 0
+TABLE3_HEIGHT = 0
 COLOR_TAG = {}
 COLOR_CHOICE = 0
 COLOR_TAG[0] = 'gray'
@@ -910,6 +911,72 @@ def save_database():
 	file = asksaveasfile(mode = "w",filetypes = files, defaultextension = types )
 
 
+def table3(TABLE_NUM,master):
+	treeview_table_generator(master,TABLE_NUM,["","IP","Hostname","Port"],[70,160,350,110],10,80,8,geometry={'grid':{'row':2,'column':0,'columnspan':10,'sticky':'sw'},'place':{'X':10,'Y':85}},COUNT='OK')
+	Style_generator(TABLE_NUM,None,9,'light gray')
+	# globals()[f"treeview{TABLE_NUM}"].bind('<<TreeviewSelect>>',selectItem)
+	globals()[f'treeview{TABLE_NUM}'].tag_configure('gray', background='#cccccc')
+	globals()[f'treeview{TABLE_NUM}'].tag_configure('bb', background='light gray')
+	# globals()['treeview1'].bind('<<TreeviewSelect>>',selectItem)
+	# first_table_show_options('All','All','All')
+
+
+def connect2():
+	global fen2,can2
+	print("its connecting....!")
+	fen2 = tkinter.Tk()
+	can2 = tkinter.Canvas(fen2 , height=350,width=710)
+	fen2.geometry('+450+180')
+	fen2.title("Connect servers Over Network")
+	# tkinter.Label(fen2,text=" ",background="light gray").grid(row=2,column=1,sticky='w')
+	#labels
+	IP_LABEL = tkinter.Label(fen2,text="IP Range: ",background="light gray",font="albattar 12 normal")
+	IP_LABEL.grid(row=1,column=0,sticky='wen')
+	IP_LABEL.place(x=10,y=6)
+	PORT_LABEL = tkinter.Label(fen2,text="to",background="light gray",font="albattar 12 normal")
+	PORT_LABEL.grid(row=1,column=3,sticky='wen')
+	PORT_LABEL.place(x=277,y=6)
+	#Entries:
+	IP_RANGE = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=16) 
+	IP_RANGE.grid(row=1,column=1,columnspan=2,sticky='wen')
+	IP_RANGE.place(x=93,y=10)
+	IP_RANGE.insert(0, "")
+	####
+	IP_TO = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=16) 
+	IP_TO.grid(row=1,column=4,columnspan=5,sticky='wen')
+	IP_TO.place(x=300,y=10)
+	IP_TO.insert(0, "")
+	table3(3,fen2)
+	can2.grid()
+	fen2.mainloop()
+
+
+def connect_database_over_network():
+	print("connect over network....!")
+	global fen2,can2
+	fen2 = tkinter.Tk()
+	fen2.geometry('450x180+300+300')
+	fen2.title("User's Login")
+	img = tkinter.PhotoImage(file='ico.ico')
+	fen2.tk.call('wm', 'iconphoto', fen2._w, img)
+	can2 = tkinter.Canvas(fen2 , height=150,width=300)
+	# #labels:
+	# tkinter.Label(can2,text="User Name",background="light gray",font="albattar 12 normal").grid(row=0,column=0,sticky='w')
+	# tkinter.Label(can2,text="Password",background="light gray",font="albattar 12 normal").grid(row=1,column=0,sticky='w')
+	# #entry:
+	# password_entry = tkinter.Entry(can2,font=10,relief="groove",background="white",width=14) # password
+	# password_entry.grid(row=1,column=1,sticky='nsw')
+	# password_entry.insert(0, "")
+	# #lists:
+	# users_list = ttk.Combobox(can2,values=[""]+column_from_users_table(0),width=15,state="readonly")
+	# users_list.grid(row=0,column=1)
+	# users_list.current(0)
+	# #buttons:
+	# tkinter.Button(can2,text='Login',background="light gray",command=lambda:prestart(users_list,password_entry),width=10).grid(row=2, column=0,sticky='we')
+	# tkinter.Button(can2,text='Cancel',background="light gray",command=lambda:print("cancel"),width=10).grid(row=2, column=1,sticky='we')
+	can2.grid()
+	fen2.mainloop()
+
 def DATABASE_SETTINGS(MASTER):
 	global groove_entry1m
 	f6 = MASTER
@@ -921,12 +988,10 @@ def DATABASE_SETTINGS(MASTER):
 		groove_entry1m.insert(0,read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK"))
 	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=2,column=0,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=2,column=1,sticky='we')
-	tkinter.Button(f6,text='over network',background="light gray",command=connect_database_over_network).grid(row=2,column=2,sticky='we')
+	tkinter.Button(f6,text='over network',background="light gray",command=connect2).grid(row=2,column=2,sticky='we')
 	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=2,column=3,sticky='we')
 
 
-def connect_database_over_network():
-	pass
 
 def column_from_users_table(column):
 	n = 0
@@ -2750,26 +2815,33 @@ def current_user(username):
 
 
 def server(HOST,PORT,MESSAGE):
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		s.bind((HOST, PORT))
-		s.listen()
-		while True:
-			conn, addr = s.accept()
-			print(f"connection from {addr} has been established.....!")
-			conn.send(bytes(MESSAGE,"utf-8"))
-			try:
-				data = conn.recv(1024)
-				if data:
-					data = data.decode('utf-8')
-					data = eval(data)
-					if callable(eval(data[0])):
-						feed_back = excuter_function(globals()[data[0]],*data[1:])
-						conn.send(bytes(f'{feed_back}',"utf-8"))
-					else:
-						pass
-			except ConnectionResetError:
-				pass
-
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			s.bind((HOST, PORT))
+			s.listen()
+			while True:
+				conn, addr = s.accept()
+				print(f"connection from {addr} has been established.....!")
+				conn.send(bytes(MESSAGE,"utf-8"))
+				try:
+					data = conn.recv(1024)
+					if data:
+						data = data.decode('utf-8')
+						data = eval(data)
+						if callable(eval(data[0])):
+							feed_back = excuter_function(globals()[data[0]],*data[1:])
+							conn.send(bytes(f'{feed_back}',"utf-8"))
+						else:
+							pass
+				except ConnectionResetError:
+					pass
+			s.close()
+	except OSError:
+		print("os error in server functionality")
+		fix_server_port(HOST,PORT)
+		server(HOST,PORT,MESSAGE)
+		return 1
 
 def connection_test_feed_back():
 	return True
@@ -2797,23 +2869,41 @@ def find_unused_port_for_socket_server():
 		SOCKET_PORT  = s.getsockname()[1]
 
 def find_unused_port_for_socket_server_range(low,up):
+	print("find port function works")
 	global SOCKET_PORT
 	SOCKET_PORT  = 0
+	# global s
 	with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		port = low
-		while True:
+		running = True
+		while running:
 			if port == up:
-				s.close()
+				running = False
 				break
 			try:
+				print(f"port number is {port}")
 				s.bind(('127.0.0.1',port))
 				SOCKET_PORT  = s.getsockname()[1]
-				s.close()
+				running = False
 				break
-			except PermissionError:
+			except Exception as e:
 				port += 1
+				print(e)
+				return
+		s.close()
 
 
+
+def fix_server_port(HOST,PORT):
+	with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+		conn = s.connect_ex((HOST,PORT))
+		if conn == 0:
+			print("port is open")
+		elif conn != 0:
+			print("port is closed")
+
+		s.close()
 
 def excuter_function(func,*args):
 	FUNC = func
@@ -2848,12 +2938,12 @@ def connect_database_over_network():
 
 
 def open_hosting_server():
-	# find_unused_port_for_socket_server()
 	find_unused_port_for_socket_server_range(2000,2700)
 	# ip_adress = IP_ADRESS()
 	print(get_ip())
 	print(SOCKET_PORT)
 	background_threading(server,get_ip(),SOCKET_PORT,"Hotel_Database_managment_server_V1_is_connecting")
+	
 	# server("127.0.0.1",SOCKET_PORT,"it just works....!")
 	# print(f"socket port is {SOCKET_PORT}")
 
@@ -2912,6 +3002,10 @@ def login():
 	create_basic_fields_in_database_if_not_exists(LAST_DATABASE_LINK)
 	fen1 = tkinter.Tk()
 	fen1.title("User's Login")
+	fen1.geometry('+450+180')
+	img = tkinter.PhotoImage(file='ico.ico')
+	fen1.tk.call('wm', 'iconphoto', fen1._w, img)
+
 	combostyle = ttk.Style()
 	combostyle.theme_create('combostyle', parent='alt',
 	                         settings = {'TCombobox':
@@ -2968,13 +3062,18 @@ def main(*args):
 	global fen,can
 	fen1.destroy()
 	fen = tkinter.Tk()
+	fen.geometry('+450+180')
 	fen.title('Hotel')
+	# fen.wm_iconbitmap('@ico.xbm')
+	img = tkinter.PhotoImage(file='ico.ico')
+	fen.tk.call('wm', 'iconphoto', fen._w, img)
 	can = tkinter.Canvas(fen , height=570,width=800,bg="light gray")
 	can.create_text(85,45,fill="black",font="albattar 20 bold",text="Hotel Name",tags="NAME")
 	can.create_rectangle(9, 80, 578, 261, outline="white", fill="grey")
 	main_functions(args)
 	can.pack()
 	fen.mainloop()
+	fen.destroy()
 
 
 #widget:
