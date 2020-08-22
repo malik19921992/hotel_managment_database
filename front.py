@@ -17,6 +17,7 @@ import socket
 
 
 '''
+978: change the arrow for the blow big arrow on desktop
 769: refresh_all_fiels()
 sublime select multi-same word select-->"alt+f3"
 728: use the function to change variable and look for way in the web page which describe the way
@@ -922,7 +923,8 @@ def table3(TABLE_NUM,master):
 
 
 def connect2():
-	global fen2,can2
+	# import tkinter
+	# global fen2,can2
 	print("its connecting....!")
 	fen2 = tkinter.Tk()
 	can2 = tkinter.Canvas(fen2 , height=350,width=710)
@@ -935,17 +937,69 @@ def connect2():
 	IP_LABEL.place(x=10,y=6)
 	PORT_LABEL = tkinter.Label(fen2,text="to",background="light gray",font="albattar 12 normal")
 	PORT_LABEL.grid(row=1,column=3,sticky='wen')
-	PORT_LABEL.place(x=277,y=6)
-	#Entries:
-	IP_RANGE = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=16) 
+	PORT_LABEL.place(x=245,y=6)
+	##################################################################################################
+	CHOOSED_IP = tkinter.Label(fen2,text="IP: ",background="light gray",font="albattar 12 normal")
+	CHOOSED_IP.grid(row=2,column=0,sticky='wen')
+	CHOOSED_IP.place(x=62,y=36)
+	###########
+	#Entries: #
+	###########
+	IP_RANGE = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=14) 
 	IP_RANGE.grid(row=1,column=1,columnspan=2,sticky='wen')
 	IP_RANGE.place(x=93,y=10)
 	IP_RANGE.insert(0, "")
 	####
-	IP_TO = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=16) 
+	IP_TO = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=14) 
 	IP_TO.grid(row=1,column=4,columnspan=5,sticky='wen')
-	IP_TO.place(x=300,y=10)
+	IP_TO.place(x=275,y=10)
 	IP_TO.insert(0, "")
+	####
+	CHOOSEN_IP = tkinter.Entry(fen2,font=10,relief="groove",background="white",width=14) 
+	CHOOSEN_IP.grid(row=1,column=4,columnspan=5,sticky='wen')
+	CHOOSEN_IP.place(x=93,y=40)
+	CHOOSEN_IP.insert(0, "")
+#######################################################################
+
+	global style
+	style = ttk.Style(fen2)
+	style.configure("ItemEditor.TCombobox")
+	style.map("ItemEditor.TCombobox",
+                    fieldbackground=[("readonly", "pink")],
+                    selectbackground=[("readonly", "gray70")],
+                    selectforeground=[("readonly","yellow")],
+                    background=[("readonly","cyan")],
+                    foreground=[("readonly","black")],
+                    arrowcolor=[("readonly","red")],
+                    bordercolor=[("readonly","yellow")],
+                    darkcolor=[("readonly","yellow")],
+                    focusfill=[("readonly","yellow")],
+                    padding=[("readonly","green")],
+                    postoffset=[("readonly","green")],
+                    activestyle=[("readonly","yellow")],
+                    listbackground=[("readonly","blow")],
+                    highlightbackground=[("readonly","green")],
+                    highlightforground=[("readonly",'red')])
+	print(style.theme_names())
+
+	#LISTS:
+	lendersR = tkinter.StringVar(fen2)
+	lendersR.set('Netmask')  # set the default option
+	print(lendersR.get())
+	NETMASK_List = ttk.Combobox(fen2,textvariable=lendersR,values=["/26","/24"],width=14, state = 'readonly',style='ItemEditor.TCombobox',height=15)
+	NETMASK_List.grid(row=1,column=7,sticky='wen')
+	NETMASK_List.place(x=290,y=40)
+	# NETMASK_List.bind('<<ComboboxSelected>>', rate_type_choose_trigger)
+	# NETMASK_List.current(0)
+	
+	#BUTTONS:
+	photo  = tkinter.PhotoImage(file="/home/mal/Templates/learnpy/projects/hotel_database/01_final_test/red_arrow.png",master=fen2)
+	photo = photo.subsample(35,35) 
+	# IP_BUTTON = tkinter.Button(fen2,text=' IP',background="light gray",command=lambda:print("hello world"))
+	IP_BUTTON = tkinter.Button(fen2,compound = tkinter.LEFT,image=photo,text="IP ",width="30",height="13",font=("bold",11),padx=2)
+	# IP_BUTTON.config(image=photo1,compound = tkinter.LEFT)
+	IP_BUTTON.grid(row=1, column=6,sticky='we')
+	IP_BUTTON.place(x=245,y=40)
 	table3(3,fen2)
 	can2.grid()
 	fen2.mainloop()
@@ -953,13 +1007,13 @@ def connect2():
 
 def connect_database_over_network():
 	print("connect over network....!")
-	global fen2,can2
-	fen2 = tkinter.Tk()
-	fen2.geometry('450x180+300+300')
-	fen2.title("User's Login")
+	global fen3,can3
+	fen3 = tkinter.Tk()
+	fen3.geometry('450x180+300+300')
+	fen3.title("User's Login")
 	img = tkinter.PhotoImage(file='ico.ico')
-	fen2.tk.call('wm', 'iconphoto', fen2._w, img)
-	can2 = tkinter.Canvas(fen2 , height=150,width=300)
+	fen3.tk.call('wm', 'iconphoto', fen3._w, img)
+	can3 = tkinter.Canvas(fen3 , height=150,width=300)
 	# #labels:
 	# tkinter.Label(can2,text="User Name",background="light gray",font="albattar 12 normal").grid(row=0,column=0,sticky='w')
 	# tkinter.Label(can2,text="Password",background="light gray",font="albattar 12 normal").grid(row=1,column=0,sticky='w')
@@ -974,8 +1028,8 @@ def connect_database_over_network():
 	# #buttons:
 	# tkinter.Button(can2,text='Login',background="light gray",command=lambda:prestart(users_list,password_entry),width=10).grid(row=2, column=0,sticky='we')
 	# tkinter.Button(can2,text='Cancel',background="light gray",command=lambda:print("cancel"),width=10).grid(row=2, column=1,sticky='we')
-	can2.grid()
-	fen2.mainloop()
+	can3.grid()
+	fen3.mainloop()
 
 def DATABASE_SETTINGS(MASTER):
 	global groove_entry1m
@@ -988,7 +1042,7 @@ def DATABASE_SETTINGS(MASTER):
 		groove_entry1m.insert(0,read_from_config("config.ini","DATABASE_INFO","LAST_DATABASE_LINK"))
 	tkinter.Button(f6,text='open database ',background="light gray",command=open_database_file).grid(row=2,column=0,sticky='we')
 	tkinter.Button(f6,text='new database ',background="light gray",command=create_new_database).grid(row=2,column=1,sticky='we')
-	tkinter.Button(f6,text='over network',background="light gray",command=connect2).grid(row=2,column=2,sticky='we')
+	tkinter.Button(f6,text='over network',background="light gray",command=lambda:connect2()).grid(row=2,column=2,sticky='we')
 	tkinter.Button(f6,text='save as',background="light gray",command=save_database).grid(row=2,column=3,sticky='we')
 
 
